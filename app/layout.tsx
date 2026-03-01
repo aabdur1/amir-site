@@ -1,15 +1,25 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { DM_Serif_Display, DM_Sans, Share_Tech_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const dmSerif = DM_Serif_Display({
+  weight: "400",
   subsets: ["latin"],
+  display: "swap",
+  variable: "--font-display",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const dmSans = DM_Sans({
   subsets: ["latin"],
+  display: "swap",
+  variable: "--font-body",
+});
+
+const shareTechMono = Share_Tech_Mono({
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-mono",
 });
 
 export const metadata: Metadata = {
@@ -23,12 +33,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body>
+    <html
+      lang="en"
+      className={`${dmSerif.variable} ${dmSans.variable} ${shareTechMono.variable} antialiased`}
+    >
+      <body>{children}</body>
     </html>
   );
 }
