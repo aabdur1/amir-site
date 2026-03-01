@@ -25,12 +25,22 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
   return (
     <div onContextMenu={(e) => e.preventDefault()}>
       {/* Header area */}
-      <div className="px-6 pt-24 pb-8 max-w-7xl mx-auto">
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-[family-name:var(--font-display)] text-forest dark:text-night-text text-center">
-          Photography
-        </h1>
+      <div className="px-6 pt-24 pb-12 max-w-7xl mx-auto">
+        <div className="flex flex-col items-center">
+          <p className="text-xs tracking-[0.3em] uppercase font-[family-name:var(--font-mono)]
+            text-forest/60 dark:text-green-light/60 mb-4">
+            Portfolio
+          </p>
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-[family-name:var(--font-display)] text-forest dark:text-night-text text-center">
+            Photography
+          </h1>
+          <div className="mt-4 h-px w-16 bg-forest dark:bg-green-light" />
+          <p className="mt-4 text-sm text-slate-muted dark:text-night-muted font-[family-name:var(--font-mono)]">
+            {photos.length} images &middot; Sony Alpha
+          </p>
+        </div>
         {/* Sort controls */}
-        <div className="mt-6 flex justify-center sm:justify-end">
+        <div className="mt-8 flex justify-center sm:justify-end">
           <SortControls value={sortBy} onChange={(v) => setSortBy(v as SortBy)} />
         </div>
       </div>
