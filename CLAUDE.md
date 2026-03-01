@@ -6,7 +6,8 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Two-page static sit
 
 - **Framework:** Next.js 16 (App Router) + TypeScript
 - **Styling:** Tailwind CSS 4 (CSS-first `@theme` configuration in `app/globals.css`)
-- **Deployment:** Netlify (connected to GitHub repo)
+- **Lightbox:** yet-another-react-lightbox (gallery EXIF overlay + zoom)
+- **Deployment:** Netlify (connected to GitHub repo, `@netlify/plugin-nextjs`)
 - **Domain:** amirabdurrahim.com
 
 ## Key Conventions
@@ -16,6 +17,13 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Two-page static sit
 - **Fonts via next/font/google.** DM Serif Display (headings), DM Sans (body), Share Tech Mono (mono/tags). Loaded as CSS variables in `app/layout.tsx`.
 - **Dark mode via class toggle.** Uses `.dark` class on `<html>`. Custom variant defined in globals.css: `@custom-variant dark (&:where(.dark, .dark *));`
 - **No icon libraries.** Icons are inline SVGs.
+- **Client components marked explicitly.** Six components use `"use client"`: nav, dark-mode-toggle, hero, animated-text, cursor-gradient, badges. Gallery components (masonry-grid, photo-card, sort-controls) are also client components.
+
+## Key Patterns
+
+- **Hydration safety via `useSyncExternalStore`.** Components that need to differ between server and client (dark-mode-toggle, hero, animated-text) use a `useHydrated()` hook built on `useSyncExternalStore(subscribe, () => true, () => false)` to safely detect client-side hydration without flicker.
+- **Scroll-triggered reveals via Intersection Observer.** The badges section and gallery photo cards use `IntersectionObserver` with `threshold` and `triggerOnce` patterns to animate elements into view on scroll.
+- **Blur-up image loading.** Gallery photo cards show a blurred placeholder and transition to the full image on load, using CSS opacity transitions.
 
 ## Design System
 
@@ -27,7 +35,7 @@ Full design doc: `docs/plans/2026-03-01-personal-site-redesign-design.md`
 
 **Effects:** Grain texture overlay (SVG noise at 3.5% opacity), multi-layer shadows, staggered fade-in-up animations, scroll-triggered reveals via Intersection Observer.
 
-**Bold aesthetic:** This is a personal portfolio, not clinical software. Animations are more dramatic than typical — hero text reveals word-by-word, gallery photos scale-in with rotation, hover states lift 8-12px. Typography is large and confident (hero name at 6-8rem).
+**Bold aesthetic:** This is a personal portfolio, not clinical software. Animations are more dramatic than typical -- hero text reveals word-by-word, gallery photos scale-in with rotation, hover states lift 8-12px. Typography is large and confident (hero name at 6-8rem).
 
 ## File Structure
 
@@ -40,8 +48,8 @@ app/
     page.tsx          # Photography gallery page
 components/
   nav.tsx             # Sticky nav with backdrop blur
-  dark-mode-toggle.tsx
-  hero.tsx            # Full-viewport hero with animated text
+  dark-mode-toggle.tsx# Class toggle with localStorage + system pref
+  hero.tsx            # Full-viewport hero with animated text + parallax
   animated-text.tsx   # Staggered word-by-word text reveal
   badges.tsx          # Scroll-triggered credential badges
   cursor-gradient.tsx # Cursor-reactive gradient on hero
@@ -54,6 +62,8 @@ lib/
   types.ts            # Photo type definition
 public/
   photos.json         # Photo metadata (S3 URLs, EXIF data)
+netlify.toml          # Netlify build config
+.nvmrc                # Node version for Netlify
 ```
 
 ## Photos
