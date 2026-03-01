@@ -24,8 +24,16 @@ const shareTechMono = Share_Tech_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Amir Abdur-Rahim",
-  description: "Personal site of Amir Abdur-Rahim.",
+  metadataBase: new URL('https://amirabdurrahim.com'),
+  title: {
+    default: 'Amir Abdur-Rahim',
+    template: '%s | Amir Abdur-Rahim',
+  },
+  description: 'Personal site of Amir Abdur-Rahim.',
+  openGraph: {
+    siteName: 'Amir Abdur-Rahim',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({

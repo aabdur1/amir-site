@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import photosData from '@/public/photos.json'
 import { MasonryGrid } from '@/components/gallery/masonry-grid'
+import { PageTransition } from '@/components/page-transition'
 import type { Photo } from '@/lib/types'
 
 export const metadata: Metadata = {
@@ -20,8 +21,8 @@ const photos: Photo[] = photosData
 
 export default function GalleryPage() {
   return (
-    <div>
+    <PageTransition>
       <MasonryGrid photos={photos} />
-    </div>
+    </PageTransition>
   )
 }
