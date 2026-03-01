@@ -3,6 +3,7 @@
 import { useEffect, useRef, useCallback, useSyncExternalStore } from "react";
 import { AnimatedText } from "@/components/animated-text";
 import { CursorGradient } from "@/components/cursor-gradient";
+import { InteractiveHeadshot } from "@/components/interactive-headshot";
 
 const emptySubscribe = () => () => {};
 
@@ -13,8 +14,6 @@ function useHydrated() {
     () => false,
   );
 }
-
-const HEADSHOT_URL = "https://d36t8s1mzbufg5.cloudfront.net/_DSC4482.jpg";
 
 const badges = [
   "1st Place — AWS National Cloud Quest",
@@ -59,7 +58,7 @@ export function Hero() {
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-hidden min-h-screen flex items-center justify-center"
+      className="relative overflow-hidden min-h-[calc(100dvh-4.125rem)] flex items-center justify-center"
     >
       <CursorGradient />
 
@@ -120,12 +119,14 @@ export function Hero() {
               Software &middot; Healthcare &middot; Photography
             </p>
 
-            {/* Name — massive */}
+            {/* Name — two lines: first name / last name */}
             <h1
               className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-[0.9] tracking-tight
                 text-forest dark:text-night-text font-[family-name:var(--font-display)]"
             >
-              <AnimatedText text="Amir Abdur-Rahim" />
+              <AnimatedText text="Amir" />
+              <br />
+              <AnimatedText text="Abdur-Rahim" delay={200} />
             </h1>
 
             {/* Decorative horizontal rule — animated grow */}
@@ -158,7 +159,7 @@ export function Hero() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="GitHub"
-                className="flex items-center justify-center w-11 h-11 rounded-full
+                className="btn-lift flex items-center justify-center w-11 h-11 rounded-full
                   text-slate-muted dark:text-night-muted
                   hover:text-forest hover:bg-forest/5 dark:hover:text-green-light dark:hover:bg-green-light/5
                   transition-all duration-200"
@@ -176,7 +177,7 @@ export function Hero() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="LinkedIn"
-                className="flex items-center justify-center w-11 h-11 rounded-full
+                className="btn-lift flex items-center justify-center w-11 h-11 rounded-full
                   text-slate-muted dark:text-night-muted
                   hover:text-forest hover:bg-forest/5 dark:hover:text-green-light dark:hover:bg-green-light/5
                   transition-all duration-200"
@@ -192,7 +193,7 @@ export function Hero() {
               <a
                 href="mailto:amirabdurrahim@gmail.com"
                 aria-label="Email"
-                className="flex items-center justify-center w-11 h-11 rounded-full
+                className="btn-lift flex items-center justify-center w-11 h-11 rounded-full
                   text-slate-muted dark:text-night-muted
                   hover:text-forest hover:bg-forest/5 dark:hover:text-green-light dark:hover:bg-green-light/5
                   transition-all duration-200"
@@ -216,7 +217,7 @@ export function Hero() {
                   className="rounded-full px-4 py-2
                     bg-forest/8 dark:bg-green-light/8
                     border border-parchment-border dark:border-night-border
-                    text-xs font-[family-name:var(--font-mono)]
+                    text-xs tracking-wide font-[family-name:var(--font-badge)]
                     text-forest/80 dark:text-green-light/80
                     hover:-translate-y-0.5 hover:shadow-card hover:text-forest dark:hover:text-green-light
                     transition-all duration-300"
@@ -236,7 +237,7 @@ export function Hero() {
             </div>
           </div>
 
-          {/* Right column: headshot */}
+          {/* Right column: headshot — cursor-reactive 3D tilt */}
           <div
             className="order-1 lg:order-2 flex justify-center lg:justify-end"
             style={{
@@ -244,32 +245,7 @@ export function Hero() {
               ...(mounted ? { animation: "fade-in 1s ease-out 0.3s forwards" } : {}),
             }}
           >
-            <div
-              className="relative"
-              style={{
-                animation: mounted ? "float 6s ease-in-out infinite" : "none",
-                animationDelay: "2s",
-              }}
-            >
-              {/* Decorative offset border */}
-              <div className="absolute -inset-3 border border-forest/20 dark:border-green-light/20 rounded-2xl translate-x-3 translate-y-3" />
-              {/* Second offset border for depth */}
-              <div className="absolute -inset-1.5 border border-forest/10 dark:border-green-light/10 rounded-2xl translate-x-1 translate-y-1" />
-              <img
-                src={HEADSHOT_URL}
-                alt="Amir Abdur-Rahim"
-                className="relative w-48 h-48 sm:w-56 sm:h-56 lg:w-72 lg:h-72
-                  object-cover rounded-2xl shadow-card"
-              />
-              {/* Pulsing green glow behind the image */}
-              <div
-                className="absolute -inset-10 bg-green-light/6 dark:bg-green-light/10 rounded-full blur-3xl -z-10"
-                style={{
-                  animation: mounted ? "pulse-glow 4s ease-in-out infinite" : "none",
-                  animationDelay: "1s",
-                }}
-              />
-            </div>
+            <InteractiveHeadshot />
           </div>
         </div>
       </div>

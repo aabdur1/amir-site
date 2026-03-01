@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Serif_Display, DM_Sans, Share_Tech_Mono } from "next/font/google";
+import { DM_Serif_Display, DM_Sans, Share_Tech_Mono, Lora } from "next/font/google";
 import Nav from "@/components/nav";
 import "./globals.css";
 
@@ -23,6 +23,13 @@ const shareTechMono = Share_Tech_Mono({
   variable: "--font-mono",
 });
 
+const lora = Lora({
+  weight: "500",
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-badge",
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://amirabdurrahim.com'),
   title: {
@@ -44,7 +51,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${dmSerif.variable} ${dmSans.variable} ${shareTechMono.variable} antialiased`}
+      className={`${dmSerif.variable} ${dmSans.variable} ${shareTechMono.variable} ${lora.variable} antialiased`}
     >
       <body>
         <Nav />

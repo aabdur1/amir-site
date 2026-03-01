@@ -15,9 +15,11 @@ function useHydrated() {
 interface AnimatedTextProps {
   text: string;
   className?: string;
+  /** Extra delay in ms added before the stagger starts */
+  delay?: number;
 }
 
-export function AnimatedText({ text, className = "" }: AnimatedTextProps) {
+export function AnimatedText({ text, className = "", delay = 0 }: AnimatedTextProps) {
   const hydrated = useHydrated();
 
   const words = text.split(" ");
@@ -34,7 +36,7 @@ export function AnimatedText({ text, className = "" }: AnimatedTextProps) {
             ...(hydrated
               ? {
                   animation: "fade-in-up 0.6s ease-out forwards",
-                  animationDelay: `${index * 100}ms`,
+                  animationDelay: `${delay + index * 100}ms`,
                 }
               : {}),
           }}

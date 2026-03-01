@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Hero } from "@/components/hero";
+import { Certifications } from "@/components/certifications";
 import { PageTransition } from '@/components/page-transition'
 
 export const metadata: Metadata = {
@@ -24,6 +25,7 @@ export default function Home() {
   return (
     <PageTransition>
       <Hero />
+      <Certifications />
     </PageTransition>
   );
 }

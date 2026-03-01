@@ -1,9 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
 
 function subscribe(callback: () => void) {
-  // Watch for class changes on documentElement (triggered by toggle())
   const observer = new MutationObserver(callback);
   observer.observe(document.documentElement, {
     attributes: true,
@@ -20,11 +19,11 @@ function getServerSnapshot(): boolean {
   return false;
 }
 
-export default function DarkModeToggle({ className }: { className?: string }) {
+export default function DarkModeToggle() {
   const dark = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const swapKeyRef = useRef(0);
+  const iconRef = useRef<HTMLSpanElement>(null);
 
-  // Initialize theme from localStorage / system preference on mount.
-  // This is a pure DOM side-effect (no setState) -- exactly what effects are for.
   useEffect(() => {
     const stored = localStorage.getItem("theme");
     let isDark: boolean;
@@ -40,66 +39,54 @@ export default function DarkModeToggle({ className }: { className?: string }) {
     const next = !document.documentElement.classList.contains("dark");
     document.documentElement.classList.toggle("dark", next);
     localStorage.setItem("theme", next ? "dark" : "light");
+    // Trigger the swap animation by bumping the key
+    swapKeyRef.current += 1;
+    if (iconRef.current) {
+      iconRef.current.classList.remove("dark-toggle-swap-enter");
+      // Force reflow to restart animation
+      void iconRef.current.offsetWidth;
+      iconRef.current.classList.add("dark-toggle-swap-enter");
+    }
   }, []);
 
-  // suppressHydrationWarning is on the button so the server-rendered sun icon
-  // won't warn if the client immediately shows the moon icon instead.
   return (
     <button
       onClick={toggle}
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
       suppressHydrationWarning
-      className={className ?? `fixed top-5 right-5 z-50 flex h-11 w-11 items-center justify-center rounded-full
+      className={`dark-toggle-btn flex h-11 w-11 items-center justify-center rounded-xl
         bg-parchment-dark/80 dark:bg-night-card/80 backdrop-blur-sm
         border border-parchment-border dark:border-night-border
-        text-slate dark:text-night-text
-        cursor-pointer transition-colors duration-300
-        hover:bg-parchment-border dark:hover:bg-night-border`}
+        cursor-pointer transition-all duration-200
+        hover:bg-parchment-border dark:hover:bg-night-border
+        hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]
+        dark:hover:shadow-[0_4px_12px_rgba(0,0,0,0.3)]
+        ${dark ? "dark-toggle-sun" : "dark-toggle-moon"}`}
     >
-      <span className="relative h-5 w-5">
-        {/* Sun icon */}
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={`absolute inset-0 h-5 w-5 transition-all duration-300 ${
-            dark
-              ? "rotate-90 scale-0 opacity-0"
-              : "rotate-0 scale-100 opacity-100"
-          }`}
-        >
-          <circle cx="12" cy="12" r="5" />
-          <line x1="12" y1="1" x2="12" y2="3" />
-          <line x1="12" y1="21" x2="12" y2="23" />
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-          <line x1="1" y1="12" x2="3" y2="12" />
-          <line x1="21" y1="12" x2="23" y2="12" />
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-        </svg>
-
-        {/* Moon icon */}
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={`absolute inset-0 h-5 w-5 transition-all duration-300 ${
-            dark
-              ? "rotate-0 scale-100 opacity-100"
-              : "-rotate-90 scale-0 opacity-0"
-          }`}
-        >
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-        </svg>
+      <span ref={iconRef} className="dark-toggle-icon relative h-5 w-5">
+        {dark ? (
+          /* Sun icon — amber, shown in dark mode */
+          <svg
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            className="h-5 w-5 text-amber-400"
+          >
+            <path
+              fillRule="evenodd"
+              d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+              clipRule="evenodd"
+            />
+          </svg>
+        ) : (
+          /* Moon icon — blue, shown in light mode */
+          <svg
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            className="h-5 w-5 text-blue-500"
+          >
+            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+          </svg>
+        )}
       </span>
     </button>
   );

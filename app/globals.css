@@ -25,6 +25,7 @@
   --font-display: var(--font-display);
   --font-body: var(--font-body);
   --font-mono: var(--font-mono);
+  --font-badge: var(--font-badge);
 
   /* Shadows - bold, multi-layer */
   --shadow-card: 0 2px 4px rgba(0,0,0,0.06), 0 8px 16px rgba(0,0,0,0.08), 0 20px 40px rgba(0,0,0,0.10);
@@ -130,6 +131,93 @@ body::before {
     var(--color-night-border) 39px,
     var(--color-night-border) 40px
   );
+}
+
+/* Heading text-shadow — subtle depth, not an obvious effect */
+h1 {
+  text-shadow:
+    0 1px 2px hsl(152deg 30% 15% / 0.06),
+    0 2px 4px hsl(152deg 30% 15% / 0.04),
+    0 4px 8px hsl(152deg 30% 15% / 0.03);
+}
+
+.dark h1 {
+  text-shadow:
+    0 1px 2px hsl(152deg 20% 5% / 0.12),
+    0 2px 6px hsl(152deg 20% 5% / 0.08),
+    0 0 30px hsl(152deg 50% 50% / 0.03);
+}
+
+/* Dark mode toggle — DocDefend-inspired animations */
+@keyframes icon-swap-in {
+  0% { transform: scale(0.5) rotate(-90deg); opacity: 0; }
+  60% { transform: scale(1.1) rotate(10deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes sun-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(180deg); }
+}
+
+@keyframes moon-rock {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-12deg); }
+  75% { transform: rotate(12deg); }
+}
+
+@keyframes sun-glow {
+  0%, 100% { filter: drop-shadow(0 0 0px transparent); }
+  50% { filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.5)); }
+}
+
+@keyframes moon-glow {
+  0%, 100% { filter: drop-shadow(0 0 0px transparent); }
+  50% { filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.45)); }
+}
+
+.dark-toggle-icon {
+  display: inline-flex;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark-toggle-swap-enter {
+  animation: icon-swap-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.dark-toggle-sun:hover .dark-toggle-icon {
+  animation: sun-spin 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark-toggle-sun:hover .dark-toggle-icon svg {
+  animation: sun-glow 0.6s ease-in-out;
+}
+
+.dark-toggle-moon:hover .dark-toggle-icon {
+  animation: moon-rock 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark-toggle-moon:hover .dark-toggle-icon svg {
+  animation: moon-glow 0.6s ease-in-out;
+}
+
+/* DocDefend-inspired interaction utilities */
+.btn-lift {
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+.btn-lift:hover {
+  transform: translateY(-1px);
+}
+.btn-lift:active {
+  transform: translateY(0);
+}
+
+.card-hover {
+  transition: transform 300ms ease, box-shadow 300ms ease, border-color 300ms ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
 }
 
 /* Selection color */
