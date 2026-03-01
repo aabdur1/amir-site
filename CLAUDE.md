@@ -68,7 +68,7 @@ netlify.toml          # Netlify build config
 
 ## Photos
 
-- Hosted on S3: `amirabdurrahim-photos.s3.us-east-2.amazonaws.com`
+- Hosted on S3: `d36t8s1mzbufg5.cloudfront.net`
 - Metadata in `public/photos.json` (URL, date, camera, lens)
 - ~50 photos, Sony Alpha cameras (ILCE-6300, ILCE-6700)
 - Right-click disabled on gallery images

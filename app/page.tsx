@@ -11,13 +11,13 @@ export const metadata: Metadata = {
     description: 'Healthcare meets technology. Chicago.',
     url: 'https://amirabdurrahim.com',
     type: 'website',
-    images: ['https://amirabdurrahim-photos.s3.us-east-2.amazonaws.com/_DSC4482.jpg'],
+    images: ['https://d36t8s1mzbufg5.cloudfront.net/_DSC4482.jpg'],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Amir Abdur-Rahim',
     description: 'Healthcare meets technology. Chicago.',
-    images: ['https://amirabdurrahim-photos.s3.us-east-2.amazonaws.com/_DSC4482.jpg'],
+    images: ['https://d36t8s1mzbufg5.cloudfront.net/_DSC4482.jpg'],
   },
 }
 
