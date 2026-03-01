@@ -1,6 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import Lightbox from 'yet-another-react-lightbox'
+import Zoom from 'yet-another-react-lightbox/plugins/zoom'
+import 'yet-another-react-lightbox/styles.css'
 import type { Photo } from '@/lib/types'
 import { PhotoCard } from './photo-card'
 
@@ -8,6 +11,8 @@ type SortBy = 'date' | 'camera' | 'lens'
 
 export function MasonryGrid({ photos }: { photos: Photo[] }) {
   const [sortBy, setSortBy] = useState<SortBy>('date')
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
 
   const sortedPhotos = [...photos].sort((a, b) => {
     if (sortBy === 'date') return b.date.localeCompare(a.date) // newest first
@@ -46,12 +51,36 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
               photo={photo}
               index={i}
               onClick={() => {
-                // Lightbox will be added in Task 10
+                setLightboxIndex(i)
+                setLightboxOpen(true)
               }}
             />
           ))}
         </div>
       </div>
+
+      <Lightbox
+        open={lightboxOpen}
+        close={() => setLightboxOpen(false)}
+        index={lightboxIndex}
+        slides={sortedPhotos.map((photo) => ({ src: photo.url }))}
+        plugins={[Zoom]}
+        render={{
+          slideFooter: ({ slide }) => {
+            const photo = sortedPhotos.find(p => p.url === slide.src)
+            if (!photo) return null
+            return (
+              <div className="text-center py-3 px-4 text-sm text-white/70 font-[family-name:var(--font-body)]">
+                <span>{photo.date}</span>
+                <span className="mx-2">&middot;</span>
+                <span>{photo.camera}</span>
+                <span className="mx-2">&middot;</span>
+                <span>{photo.lens}</span>
+              </div>
+            )
+          }
+        }}
+      />
     </div>
   )
 }
