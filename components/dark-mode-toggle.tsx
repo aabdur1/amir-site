@@ -20,7 +20,7 @@ function getServerSnapshot(): boolean {
   return false;
 }
 
-export default function DarkModeToggle() {
+export default function DarkModeToggle({ className }: { className?: string }) {
   const dark = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   // Initialize theme from localStorage / system preference on mount.
@@ -49,12 +49,12 @@ export default function DarkModeToggle() {
       onClick={toggle}
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
       suppressHydrationWarning
-      className="fixed top-5 right-5 z-50 flex h-10 w-10 items-center justify-center rounded-full
+      className={className ?? `fixed top-5 right-5 z-50 flex h-10 w-10 items-center justify-center rounded-full
         bg-parchment-dark/80 dark:bg-night-card/80 backdrop-blur-sm
         border border-parchment-border dark:border-night-border
         text-slate dark:text-night-text
         cursor-pointer transition-colors duration-300
-        hover:bg-parchment-border dark:hover:bg-night-border"
+        hover:bg-parchment-border dark:hover:bg-night-border`}
     >
       <span className="relative h-5 w-5">
         {/* Sun icon */}

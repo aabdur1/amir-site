@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Serif_Display, DM_Sans, Share_Tech_Mono } from "next/font/google";
-import DarkModeToggle from "@/components/dark-mode-toggle";
+import Nav from "@/components/nav";
 import "./globals.css";
 
 const dmSerif = DM_Serif_Display({
@@ -39,7 +39,7 @@ export default function RootLayout({
       className={`${dmSerif.variable} ${dmSans.variable} ${shareTechMono.variable} antialiased`}
     >
       <body>
-        <DarkModeToggle />
+        <Nav />
         {children}
       </body>
     </html>
