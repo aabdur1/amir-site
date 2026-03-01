@@ -61,6 +61,7 @@ body {
   font-family: var(--font-body), system-ui, sans-serif;
   background-color: var(--color-parchment);
   color: var(--color-slate);
+  overflow-x: hidden;
   transition: background-color 300ms cubic-bezier(0.4, 0, 0.2, 1),
               color 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }

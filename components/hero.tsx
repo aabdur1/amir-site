@@ -92,14 +92,14 @@ export function Hero() {
         </p>
 
         {/* Social links */}
-        <div className="flex gap-6 items-center justify-center mt-8">
+        <div className="flex gap-2 items-center justify-center mt-8">
           {/* GitHub */}
           <a
             href="https://github.com/aabdur1"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="GitHub"
-            className="text-slate-muted dark:text-night-muted hover:text-forest dark:hover:text-green-light transition-colors duration-200"
+            className="flex items-center justify-center min-w-[44px] min-h-[44px] text-slate-muted dark:text-night-muted hover:text-forest dark:hover:text-green-light transition-colors duration-200"
             style={{
               opacity: 0,
               ...(mounted
@@ -121,7 +121,7 @@ export function Hero() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="LinkedIn"
-            className="text-slate-muted dark:text-night-muted hover:text-forest dark:hover:text-green-light transition-colors duration-200"
+            className="flex items-center justify-center min-w-[44px] min-h-[44px] text-slate-muted dark:text-night-muted hover:text-forest dark:hover:text-green-light transition-colors duration-200"
             style={{
               opacity: 0,
               ...(mounted
@@ -141,7 +141,7 @@ export function Hero() {
           <a
             href="mailto:amirabdurrahim@gmail.com"
             aria-label="Email"
-            className="text-slate-muted dark:text-night-muted hover:text-forest dark:hover:text-green-light transition-colors duration-200"
+            className="flex items-center justify-center min-w-[44px] min-h-[44px] text-slate-muted dark:text-night-muted hover:text-forest dark:hover:text-green-light transition-colors duration-200"
             style={{
               opacity: 0,
               ...(mounted

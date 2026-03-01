@@ -63,11 +63,11 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
             const photo = sortedPhotos.find(p => p.url === slide.src)
             if (!photo) return null
             return (
-              <div className="text-center py-3 px-4 text-sm text-white/70 font-[family-name:var(--font-body)]">
+              <div className="text-center py-3 px-4 text-xs sm:text-sm text-white/70 font-[family-name:var(--font-body)] flex flex-wrap justify-center gap-x-2 gap-y-1">
                 <span>{photo.date}</span>
-                <span className="mx-2">&middot;</span>
+                <span className="hidden sm:inline">&middot;</span>
                 <span>{photo.camera}</span>
-                <span className="mx-2">&middot;</span>
+                <span className="hidden sm:inline">&middot;</span>
                 <span>{photo.lens}</span>
               </div>
             )

@@ -49,7 +49,7 @@ export default function DarkModeToggle({ className }: { className?: string }) {
       onClick={toggle}
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
       suppressHydrationWarning
-      className={className ?? `fixed top-5 right-5 z-50 flex h-10 w-10 items-center justify-center rounded-full
+      className={className ?? `fixed top-5 right-5 z-50 flex h-11 w-11 items-center justify-center rounded-full
         bg-parchment-dark/80 dark:bg-night-card/80 backdrop-blur-sm
         border border-parchment-border dark:border-night-border
         text-slate dark:text-night-text
