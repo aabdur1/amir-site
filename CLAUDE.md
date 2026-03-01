@@ -17,41 +17,44 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Two-page static sit
 - **Fonts via next/font/google.** DM Serif Display (headings), DM Sans (body), Share Tech Mono (mono/tags). Loaded as CSS variables in `app/layout.tsx`.
 - **Dark mode via class toggle.** Uses `.dark` class on `<html>`. Custom variant defined in globals.css: `@custom-variant dark (&:where(.dark, .dark *));`
 - **No icon libraries.** Icons are inline SVGs.
-- **Client components marked explicitly.** Six components use `"use client"`: nav, dark-mode-toggle, hero, animated-text, cursor-gradient, badges. Gallery components (masonry-grid, photo-card, sort-controls) are also client components.
+- **Client components marked explicitly.** Components using `"use client"`: nav, dark-mode-toggle, hero, animated-text, cursor-gradient. Gallery components (masonry-grid, photo-card, sort-controls) are also client components.
 
 ## Key Patterns
 
 - **Hydration safety via `useSyncExternalStore`.** Components that need to differ between server and client (dark-mode-toggle, hero, animated-text) use a `useHydrated()` hook built on `useSyncExternalStore(subscribe, () => true, () => false)` to safely detect client-side hydration without flicker.
-- **Scroll-triggered reveals via Intersection Observer.** The badges section and gallery photo cards use `IntersectionObserver` with `threshold` and `triggerOnce` patterns to animate elements into view on scroll.
+- **Scroll-triggered reveals via Intersection Observer.** Gallery photo cards use `IntersectionObserver` with `threshold` and `triggerOnce` patterns to animate elements into view on scroll.
 - **Blur-up image loading.** Gallery photo cards show a blurred placeholder and transition to the full image on load, using CSS opacity transitions.
+- **Parallax via refs + RAF.** Hero content parallax uses `requestAnimationFrame` with passive scroll listener and visibility gating — no state re-renders.
+- **Cursor-reactive gradient.** `CursorGradient` tracks mouse with RAF + lerp smoothing, disabled on touch devices.
 
 ## Design System
 
 Full design doc: `docs/plans/2026-03-01-personal-site-redesign-design.md`
 
-**Color tokens (light):** parchment backgrounds (`#FAF6EF`, `#F5EFE0`), forest green accent (`#1B4332`), slate text (`#1e293b`)
+**Color tokens (light):** parchment backgrounds (`#EDE6D3`, `#E4DBBF`), parchment border (`#C4B896`), forest green accent (`#1B4332`), slate text (`#1e293b`)
 
-**Color tokens (dark):** night backgrounds (`#0D0E12`, `#1A1D2E`), light green accent (`#52B788`), light text (`#e8ecf2`)
+**Color tokens (dark):** night backgrounds (`#0D0E12`, `#1A1D2E`), night border (`#252A3A`), light green accent (`#52B788`), light text (`#e8ecf2`)
 
-**Effects:** Grain texture overlay (SVG noise at 3.5% opacity), multi-layer shadows, staggered fade-in-up animations, scroll-triggered reveals via Intersection Observer.
+**Effects:** Grain texture overlay (SVG noise at 7% opacity), prescription-pad horizontal lines (3% opacity), multi-layer shadows, green text selection, ambient gradient orbs.
 
-**Bold aesthetic:** This is a personal portfolio, not clinical software. Animations are more dramatic than typical -- hero text reveals word-by-word, gallery photos scale-in with rotation, hover states lift 8-12px. Typography is large and confident (hero name at 6-8rem).
+**Animations:** `fade-in`, `fade-in-up`, `scale-in`, `dropdown-in`, `line-grow` (accent rule), `shimmer` (scroll indicator), `float` (headshot bob), `pulse-glow` (headshot glow). Staggered delays throughout hero.
+
+**Bold aesthetic:** This is a personal portfolio, not clinical software. Hero has asymmetric editorial layout with floating headshot, double offset decorative borders, pulsing green glow, ambient gradient orbs, growing accent line. Gallery photos scale-in with rotation, hover states lift with shadow. Typography is large and confident (hero name at 5-8rem responsive).
 
 ## File Structure
 
 ```
 app/
   layout.tsx          # Root layout, fonts, metadata, nav
-  page.tsx            # Landing page (hero + badges)
+  page.tsx            # Landing page (hero with integrated badges)
   globals.css         # Tailwind @theme config, base styles, keyframes
   gallery/
     page.tsx          # Photography gallery page
 components/
   nav.tsx             # Sticky nav with backdrop blur
   dark-mode-toggle.tsx# Class toggle with localStorage + system pref
-  hero.tsx            # Full-viewport hero with animated text + parallax
+  hero.tsx            # Asymmetric hero: animated name, headshot, badges, parallax
   animated-text.tsx   # Staggered word-by-word text reveal
-  badges.tsx          # Scroll-triggered credential badges
   cursor-gradient.tsx # Cursor-reactive gradient on hero
   page-transition.tsx # Fade-in page wrapper
   gallery/
@@ -61,7 +64,7 @@ components/
 lib/
   types.ts            # Photo type definition
 public/
-  photos.json         # Photo metadata (S3 URLs, EXIF data)
+  photos.json         # Photo metadata (CloudFront URLs, EXIF data)
 netlify.toml          # Netlify build config
 .nvmrc                # Node version for Netlify
 ```
