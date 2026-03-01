@@ -4,7 +4,7 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Two-page static sit
 
 ## Tech Stack
 
-- **Framework:** Next.js 15 (App Router) + TypeScript
+- **Framework:** Next.js 16 (App Router) + TypeScript
 - **Styling:** Tailwind CSS 4 (CSS-first `@theme` configuration in `app/globals.css`)
 - **Deployment:** Netlify (connected to GitHub repo)
 - **Domain:** amirabdurrahim.com
