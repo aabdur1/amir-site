@@ -72,6 +72,33 @@ export function Hero() {
         }}
       />
 
+      {/* Decorative vertical line — right side, shorter */}
+      <div
+        className="hidden lg:block absolute right-20 top-1/4 h-1/3 w-px bg-parchment-border/50 dark:bg-night-border/50"
+        style={{
+          opacity: 0,
+          ...(mounted ? { animation: "fade-in 1.5s ease-out 1s forwards" } : {}),
+        }}
+      />
+
+      {/* Ambient gradient orb — top right */}
+      <div
+        className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-green-light/[0.04] dark:bg-green-light/[0.06] blur-[100px]"
+        style={{
+          opacity: 0,
+          ...(mounted ? { animation: "fade-in 2s ease-out 0.5s forwards" } : {}),
+        }}
+      />
+
+      {/* Ambient gradient orb — bottom left */}
+      <div
+        className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-forest/[0.03] dark:bg-green-light/[0.04] blur-[80px]"
+        style={{
+          opacity: 0,
+          ...(mounted ? { animation: "fade-in 2s ease-out 0.8s forwards" } : {}),
+        }}
+      />
+
       <div
         ref={contentRef}
         className="relative w-full max-w-6xl mx-auto px-6 sm:px-12 lg:px-20 py-24 will-change-transform"
@@ -101,12 +128,13 @@ export function Hero() {
               <AnimatedText text="Amir Abdur-Rahim" />
             </h1>
 
-            {/* Decorative horizontal rule */}
+            {/* Decorative horizontal rule — animated grow */}
             <div
-              className="mt-6 sm:mt-8 h-px w-24 bg-forest dark:bg-green-light"
+              className="mt-6 sm:mt-8 h-px w-24 bg-forest dark:bg-green-light origin-left"
               style={{
                 opacity: 0,
-                ...(mounted ? { animation: "fade-in 0.8s ease-out 0.6s forwards" } : {}),
+                transform: "scaleX(0)",
+                ...(mounted ? { animation: "fade-in 0.4s ease-out 0.5s forwards, line-grow 0.8s ease-out 0.5s forwards" } : {}),
               }}
             />
 
@@ -216,17 +244,31 @@ export function Hero() {
               ...(mounted ? { animation: "fade-in 1s ease-out 0.3s forwards" } : {}),
             }}
           >
-            <div className="relative">
+            <div
+              className="relative"
+              style={{
+                animation: mounted ? "float 6s ease-in-out infinite" : "none",
+                animationDelay: "2s",
+              }}
+            >
               {/* Decorative offset border */}
-              <div className="absolute -inset-3 border border-forest/20 dark:border-green-light/20 rounded-2xl translate-x-2 translate-y-2" />
+              <div className="absolute -inset-3 border border-forest/20 dark:border-green-light/20 rounded-2xl translate-x-3 translate-y-3" />
+              {/* Second offset border for depth */}
+              <div className="absolute -inset-1.5 border border-forest/10 dark:border-green-light/10 rounded-2xl translate-x-1 translate-y-1" />
               <img
                 src={HEADSHOT_URL}
                 alt="Amir Abdur-Rahim"
                 className="relative w-48 h-48 sm:w-56 sm:h-56 lg:w-72 lg:h-72
                   object-cover rounded-2xl shadow-card"
               />
-              {/* Subtle green glow behind the image */}
-              <div className="absolute -inset-8 bg-green-light/5 dark:bg-green-light/8 rounded-full blur-3xl -z-10" />
+              {/* Pulsing green glow behind the image */}
+              <div
+                className="absolute -inset-10 bg-green-light/6 dark:bg-green-light/10 rounded-full blur-3xl -z-10"
+                style={{
+                  animation: mounted ? "pulse-glow 4s ease-in-out infinite" : "none",
+                  animationDelay: "1s",
+                }}
+              />
             </div>
           </div>
         </div>
@@ -240,10 +282,16 @@ export function Hero() {
           ...(mounted ? { animation: "fade-in 0.8s ease-out 2.2s forwards" } : {}),
         }}
       >
-        <span className="text-[10px] tracking-[0.2em] uppercase font-[family-name:var(--font-mono)] text-slate-muted/50 dark:text-night-muted/50">
+        <span
+          className="text-[10px] tracking-[0.2em] uppercase font-[family-name:var(--font-mono)] text-slate-muted/50 dark:text-night-muted/50"
+          style={{ animation: mounted ? "shimmer 3s ease-in-out infinite" : "none", animationDelay: "3s" }}
+        >
           Scroll
         </span>
-        <div className="w-px h-8 bg-gradient-to-b from-slate-muted/40 to-transparent dark:from-night-muted/40" />
+        <div
+          className="w-px h-8 bg-gradient-to-b from-slate-muted/40 to-transparent dark:from-night-muted/40"
+          style={{ animation: mounted ? "float 2s ease-in-out infinite" : "none" }}
+        />
       </div>
     </section>
   );
