@@ -6,6 +6,7 @@ import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 import 'yet-another-react-lightbox/styles.css'
 import type { Photo } from '@/lib/types'
 import { PhotoCard } from './photo-card'
+import { SortControls } from './sort-controls'
 
 type SortBy = 'date' | 'camera' | 'lens'
 
@@ -30,15 +31,7 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
         </h1>
         {/* Sort controls */}
         <div className="mt-6 flex justify-center sm:justify-end">
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortBy)}
-            className="px-4 py-2 rounded-full text-sm bg-parchment-dark dark:bg-night-card border border-parchment-border dark:border-night-border text-forest dark:text-green-light font-[family-name:var(--font-mono)] cursor-pointer"
-          >
-            <option value="date">Date</option>
-            <option value="camera">Camera</option>
-            <option value="lens">Lens</option>
-          </select>
+          <SortControls value={sortBy} onChange={(v) => setSortBy(v as SortBy)} />
         </div>
       </div>
 
