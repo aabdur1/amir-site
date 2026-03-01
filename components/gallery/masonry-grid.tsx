@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { Photo } from '@/lib/types'
+import { PhotoCard } from './photo-card'
 
 type SortBy = 'date' | 'camera' | 'lens'
 
@@ -39,15 +40,15 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
       {/* Masonry grid */}
       <div className="px-4 sm:px-6 pb-16 max-w-7xl mx-auto">
         <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
-          {sortedPhotos.map((photo) => (
-            <div key={photo.url} className="mb-4 break-inside-avoid">
-              <img
-                src={photo.url}
-                alt={`Photo taken on ${photo.date}`}
-                loading="lazy"
-                className="w-full rounded-lg"
-              />
-            </div>
+          {sortedPhotos.map((photo, i) => (
+            <PhotoCard
+              key={photo.url}
+              photo={photo}
+              index={i}
+              onClick={() => {
+                // Lightbox will be added in Task 10
+              }}
+            />
           ))}
         </div>
       </div>
