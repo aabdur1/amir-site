@@ -277,3 +277,17 @@ h1, h2 {
 .dark ::selection {
   background-color: rgba(203, 166, 247, 0.25);
 }
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Clean tap highlight on mobile */
+a, button {
+  -webkit-tap-highlight-color: transparent;
+}

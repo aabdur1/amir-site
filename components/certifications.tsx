@@ -77,7 +77,7 @@ export function Certifications({ badges }: CertificationsProps) {
         </div>
 
         {/* Badge grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 min-[375px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
           {badges.map((badge, i) => (
             <a
               key={badge.name}
@@ -139,7 +139,7 @@ export function Certifications({ badges }: CertificationsProps) {
             className="inline-flex items-center gap-2 text-sm font-[family-name:var(--font-body)]
               text-ink-muted dark:text-night-muted
               hover:text-ink dark:hover:text-night-text
-              transition-colors duration-200"
+              py-3 transition-colors duration-200"
           >
             View all on Credly
             <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
