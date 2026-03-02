@@ -1,6 +1,6 @@
 # amir-site
 
-Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Two-page static site: landing page + photography gallery.
+Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero + 5 editorial resume sections) + photography gallery.
 
 ## Tech Stack
 
@@ -17,13 +17,13 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Two-page static sit
 - **Fonts via next/font/google.** DM Serif Display (headings), DM Sans (body), Share Tech Mono (mono/tags), Lora (credential badges). Loaded as CSS variables (`--font-display`, `--font-body`, `--font-mono`, `--font-badge`) in `app/layout.tsx`.
 - **Dark mode via class toggle.** Uses `.dark` class on `<html>`. Custom variant defined in globals.css: `@custom-variant dark (&:where(.dark, .dark *));`. Blocking inline `<script>` in `layout.tsx` prevents flash of wrong theme on load. Toggle adds `.theme-transitioning` class for smooth 300ms crossfade.
 - **No icon libraries.** Icons are inline SVGs.
-- **Client components marked explicitly.** Components using `"use client"`: nav, dark-mode-toggle, hero, animated-text, hero-speckles, interactive-headshot, certifications, footer, scroll-progress, page-transition. Gallery components (masonry-grid, photo-card, sort-controls) are also client components.
+- **Client components marked explicitly.** Components using `"use client"`: nav, dark-mode-toggle, hero, animated-text, hero-speckles, interactive-headshot, certifications, experience, projects, skills, education, footer, scroll-progress, page-transition. Gallery components (masonry-grid, photo-card, sort-controls) are also client components.
 - **No shorthand/longhand mixing in inline styles.** Always fold `animationDelay` into the `animation` shorthand to avoid React warnings.
 
 ## Key Patterns
 
 - **Hydration safety via `useSyncExternalStore`.** Components that need to differ between server and client (dark-mode-toggle, hero, animated-text) use a `useHydrated()` hook built on `useSyncExternalStore(subscribe, () => true, () => false)` to safely detect client-side hydration without flicker.
-- **Scroll-triggered reveals via Intersection Observer.** Gallery photo cards use `IntersectionObserver` with `threshold` and `triggerOnce` patterns to animate elements into view on scroll.
+- **Scroll-triggered reveals via Intersection Observer.** Landing page sections (experience, projects, certifications, skills, education) and gallery photo cards use `IntersectionObserver` with `threshold: 0.1` and disconnect-after-first-intersection pattern. `visible` state gates all animations within each section.
 - **`next/image` for optimized images.** Headshot uses `fill` + `priority` (LCP element), badges use explicit `width/height`, gallery photos use `unoptimized` (direct CloudFront delivery — avoids `/_next/image` proxy overhead for ~50 large photos). Remote patterns configured in `next.config.ts` for CloudFront and Credly domains.
 - **Blur-up image loading.** Gallery photo cards show a blurred placeholder and transition to the full image on load, using CSS filter transitions. Custom implementation (not `placeholder="blur"`) to avoid needing `blurDataURL` per remote image.
 - **Branded OG images.** `app/opengraph-image.tsx` and `app/gallery/opengraph-image.tsx` generate 1200x630 PNGs at build time using `ImageResponse` from `next/og`. Catppuccin Mocha branding with DM Serif Display font loaded from Google Fonts gstatic (with try/catch fallback if font fetch fails). No hardcoded `images` in metadata — Next.js auto-injects from these routes.
@@ -36,6 +36,8 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Two-page static sit
 - **Parallax delayed start.** Hero parallax scroll listener attaches after 2.5s delay to avoid `style.transform` conflicting with CSS `fade-in-up` animation `forwards` fill during entrance animations.
 - **Scroll progress bar.** `ScrollProgress` component shows a 2px mauve bar at the top of the viewport. Only renders on pages >2x viewport height (via ResizeObserver). RAF-gated scroll, fades in after first scroll.
 - **Gallery count-up animation.** Photo count in gallery subtitle animates from 0 to target using RAF with cubic ease-out over 1.2s. Triggers on viewport entry via IntersectionObserver. Respects `prefers-reduced-motion`.
+- **Numbered editorial sections.** Landing page sections use `01/`–`05/` numbered mono labels (peach accent number + slash separator). Sections alternate backgrounds: transparent → `bg-cream-dark/40 dark:bg-night-card/30` → transparent, etc. Each section has an ornamental diamond divider at top, display font heading, and mauve accent rule with `line-grow` animation.
+- **Multi-accent section pills.** Experience, Projects, Skills, and Education sections reuse the hero badge pill pattern — accent-tinted `bg-{color}/10`, `border-{color}/25`, colored dot, badge font. Each section/category gets a distinct accent from the Catppuccin palette.
 
 ## Design System — Catppuccin Editorial
 
@@ -50,20 +52,20 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Two-page static sit
 - Peach (`#fe640b` / `#fab387`) — decorative: section numbers, ornaments, separators
 - Sapphire (`#209fb5` / `#74c7ec`) — interactive: hover borders, footer link hovers
 - Lavender (`#7287fd` / `#b4befe`) — ambient: headshot glow, moon icon, scroll indicator
-- Rosewater (`#dc8a78` / `#f5e0dc`) — warm highlight: footer ornamental diamond
+- Rosewater (`#dc8a78` / `#f5e0dc`) — warm highlight: footer ornamental diamond. Note: `--color-gold-muted` in CSS is legacy name for this token.
 - Yellow (`#df8e1d` / `#f9e2af`) — kept only for dark mode toggle sun icon
 
-**Effects:** Grain texture overlay (SVG noise at 12% light / 4% dark), sharp editorial shadows, gold text selection, cursor-reactive color speckles (dark mode only).
+**Effects:** Grain texture overlay (SVG noise at 12% light / 4% dark), sharp editorial shadows, mauve text selection, cursor-reactive color speckles (dark mode only).
 
-**Animations:** `fade-in`, `fade-in-up`, `scale-in`, `dropdown-in`, `line-grow` (gold accent rule), `shimmer` (scroll indicator), `float` (scroll line bob). Dark mode toggle: `icon-swap-in` (springy pop), `sun-spin`, `moon-rock`, `sun-glow` (gold), `moon-glow` (blue). Staggered delays throughout hero + certifications.
+**Animations:** `fade-in`, `fade-in-up`, `scale-in`, `dropdown-in`, `line-grow` (mauve accent rule), `shimmer` (scroll indicator), `float` (scroll line bob). Dark mode toggle: `icon-swap-in` (springy pop), `sun-spin`, `moon-rock`, `sun-glow` (gold), `moon-glow` (lavender). Staggered delays throughout hero and all landing page sections (experience, projects, certifications, skills, education).
 
 **Utility classes:** `btn-lift` (hover: translateY(-1px) with spring overshoot, active: snap back), `card-hover` (hover: translateY(-2px) + elevated shadow with spring overshoot).
 
-**CSS-based nav animations:** `.nav-wordmark::after` (gold underline sweep), `.nav-gallery-pill::before` (gold fill sweep), `.hero-line` (gradient vertical line with dark mode support). These use real CSS `transform: scaleX()` for reliable transitions.
+**CSS-based nav animations:** `.nav-wordmark::after` (mauve underline sweep), `.nav-gallery-pill::before` (sapphire fill sweep), `.hero-line` (gradient vertical line with dark mode support). These use real CSS `transform: scaleX()` for reliable transitions.
 
 **Spring easing:** Interactive elements use `cubic-bezier(0.34, 1.56, 0.64, 1)` for hover entry (slight overshoot bounce) and `cubic-bezier(0.22, 1, 0.36, 1)` for settle-back. Applied to `btn-lift`, `card-hover`, nav gallery pill fill, nav wordmark underline, hero badge pills, and certification cards.
 
-**Bold aesthetic:** Personal portfolio with editorial energy. Hero has per-element layered parallax (elements spread apart on scroll at different rates), cursor-reactive 3D headshot, cursor-reactive color speckle field (dark mode), decorative offset borders. Gallery photos scale-in with rotation, hover states use gentle scale-up (1.02) + shadow bloom + slow inner image zoom (cinematic Ken Burns feel). Typography is large and confident (hero name at 5-8rem responsive). Navbar name hidden on home page while hero is visible, fades in on scroll.
+**Bold aesthetic:** Editorial energy with large confident typography (hero name at 5-8rem responsive). Gallery hover states use gentle scale-up (1.02) + shadow bloom + slow inner image zoom (cinematic Ken Burns feel). Decorative offset borders on headshot.
 
 ## Mobile & Accessibility
 
@@ -84,7 +86,7 @@ app/
   layout.tsx              # Root layout, fonts (4 families), metadata, nav, footer, scroll progress
   not-found.tsx           # Custom 404 page (editorial "wandered off the map")
   opengraph-image.tsx     # Branded OG image (Catppuccin Mocha, 1200x630)
-  page.tsx                # Landing: Hero + Certifications
+  page.tsx                # Landing: Hero, Experience, Projects, Certifications, Skills, Education
   globals.css             # @theme tokens, keyframes, utility classes, theme transitions
   gallery/
     opengraph-image.tsx   # Gallery OG image (Catppuccin Mocha, 1200x630)
@@ -95,7 +97,11 @@ components/
   dark-mode-toggle.tsx    # Animated sun/moon toggle with smooth theme crossfade
   hero.tsx                # Asymmetric hero: animated name, headshot, badges, parallax
   interactive-headshot.tsx# Cursor-reactive 3D tilt headshot (light-source shadow)
-  certifications.tsx      # Scroll-triggered Credly badge grid (8 certs)
+  certifications.tsx      # 03/ Scroll-triggered Credly badge grid (8 certs)
+  experience.tsx          # 01/ Professional Experience — featured ScribeAmerica card
+  projects.tsx            # 02/ Things I've Built — DocDefend+, StudentPM, LightERP, CTF
+  skills.tsx              # 04/ Technical Stack — 5 categorized pill rows
+  education.tsx           # 05/ Education — MS MIS + BA Psychology with coursework
   animated-text.tsx       # Staggered word-by-word text reveal
   hero-speckles.tsx       # Cursor-reactive color dot field (dark mode only)
   scroll-progress.tsx     # Mauve scroll progress bar (auto-hides on short pages)
@@ -110,6 +116,8 @@ lib/
 public/
   photos.json             # Photo metadata (CloudFront URLs, EXIF data)
   badges/                 # Non-Credly badge images (e.g. Zscaler)
+docs/
+  plans/                  # Design docs and implementation plans
 netlify.toml              # Netlify build config
 .nvmrc                    # Node version for Netlify
 ```
@@ -141,9 +149,3 @@ npm run lint      # ESLint (flat config via eslint.config.mjs, not next lint)
 - New Credly badges appear automatically on next build/revalidation
 - To add a non-Credly badge: add entry to `manualBadges` in `lib/badges.ts`, put image in `public/badges/`
 - Credly profile: `https://www.credly.com/users/amir-abdur-rahim`
-
-## Plans
-
-- Full implementation: `docs/plans/2026-03-01-personal-site-implementation.md`
-- Mobile responsiveness: `docs/plans/2026-03-01-mobile-responsiveness.md`
-- Design polish: `docs/plans/2026-03-02-design-polish.md`
