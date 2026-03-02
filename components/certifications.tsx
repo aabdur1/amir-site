@@ -80,10 +80,11 @@ export function Certifications({ badges }: CertificationsProps) {
         <div className="grid grid-cols-1 min-[375px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
           {badges.map((badge, i) => (
             <a
-              key={badge.name}
+              key={badge.url}
               href={badge.url}
               target="_blank"
               rel="noopener noreferrer"
+              aria-label={`${badge.name} (opens in new tab)`}
               className={`group flex flex-col items-center text-center p-4 sm:p-5 rounded-2xl
                 bg-cream/80 dark:bg-night/60
                 border border-cream-border/60 dark:border-night-border/60

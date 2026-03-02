@@ -54,7 +54,15 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${dmSerif.variable} ${dmSans.variable} ${shareTechMono.variable} ${lora.variable} antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})()`,
+          }}
+        />
+      </head>
       <body>
         <Nav />
         {children}

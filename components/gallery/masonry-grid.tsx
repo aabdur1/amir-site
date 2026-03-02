@@ -61,7 +61,7 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
         </div>
         {/* Sort controls */}
         <div className="mt-8 flex justify-center sm:justify-end">
-          <SortControls value={sortBy} onChange={(v) => setSortBy(v as SortBy)} />
+          <SortControls value={sortBy} onChange={(v) => { setSortBy(v as SortBy); setLightboxOpen(false) }} />
         </div>
       </div>
 

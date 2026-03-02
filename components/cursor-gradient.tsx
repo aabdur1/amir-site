@@ -35,6 +35,17 @@ export function CursorGradient() {
 
       gradientRef.current.style.background = `radial-gradient(600px circle at ${currentRef.current.x}px ${currentRef.current.y}px, var(--cursor-gradient-color) 0%, transparent 100%)`;
 
+      // Convergence check — stop loop when position is close enough
+      const dx = Math.abs(positionRef.current.x - currentRef.current.x);
+      const dy = Math.abs(positionRef.current.y - currentRef.current.y);
+      if (dx < 0.1 && dy < 0.1) {
+        currentRef.current.x = positionRef.current.x;
+        currentRef.current.y = positionRef.current.y;
+        activeRef.current = false;
+        rafRef.current = 0;
+        return;
+      }
+
       rafRef.current = requestAnimationFrame(animate);
     }
 

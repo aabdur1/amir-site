@@ -55,6 +55,7 @@ function deriveShortName(fullName: string): string {
 
 /** Derive a short org name from Credly issuer */
 function deriveOrg(issuerName: string): string {
+  if (!issuerName) return "Unknown";
   if (issuerName.includes("Amazon Web Services")) return "AWS";
   if (issuerName.includes("Google Cloud")) return "Google Cloud";
   return issuerName.split(" ").slice(0, 2).join(" ");

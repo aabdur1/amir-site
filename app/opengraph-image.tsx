@@ -4,10 +4,20 @@ export const alt = 'Amir Abdur-Rahim'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
+async function loadFont(): Promise<ArrayBuffer | null> {
+  try {
+    const res = await fetch(
+      'https://fonts.gstatic.com/s/dmserifdisplay/v17/-nFnOHM81r4j6k0gjAW3mujVU2B2K_c.ttf'
+    )
+    if (!res.ok) return null
+    return res.arrayBuffer()
+  } catch {
+    return null
+  }
+}
+
 export default async function Image() {
-  const dmSerifDisplay = await fetch(
-    'https://fonts.gstatic.com/s/dmseriftext/v12/rnCu-xZa_krGokauCeNq1wWyafOPXHIJErY.ttf'
-  ).then((res) => res.arrayBuffer())
+  const fontData = await loadFont()
 
   return new ImageResponse(
     (
@@ -72,14 +82,9 @@ export default async function Image() {
     ),
     {
       ...size,
-      fonts: [
-        {
-          name: 'DM Serif',
-          data: dmSerifDisplay,
-          style: 'normal',
-          weight: 400,
-        },
-      ],
+      fonts: fontData
+        ? [{ name: 'DM Serif', data: fontData, style: 'normal' as const, weight: 400 as const }]
+        : [],
     }
   )
 }

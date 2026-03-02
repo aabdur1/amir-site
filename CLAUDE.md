@@ -35,7 +35,7 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Two-page static sit
 
 ## Design System — Catppuccin Editorial
 
-**Aesthetic:** Magazine/editorial typography on Catppuccin color palette. Both modes are dark — Frappé (blue-grey) for "light" and Mocha (deep purple) for dark.
+**Aesthetic:** Magazine/editorial typography on Catppuccin color palette. Latte (warm grey) for light mode, Mocha (deep purple) for dark.
 
 **Color tokens (light — Catppuccin Latte):** Base (`#eff1f5`), Mantle (`#e6e9ef`), Surface0 (`#ccd0da`), Text (`#4c4f69`), Subtext0 (`#6c6f85`), Overlay1 (`#8c8fa1`)
 
@@ -65,6 +65,7 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Two-page static sit
 - **`prefers-reduced-motion` supported.** Global CSS media query kills all animation durations/iterations. Hero parallax scroll listener is skipped entirely. Cursor effects already gated behind `(pointer: fine)`.
 - **`-webkit-tap-highlight-color: transparent`** on all `a` and `button` elements for clean mobile taps.
 - **`100dvh` for hero.** Uses dynamic viewport height to account for mobile browser chrome.
+- **Hero decorative line hidden on mobile.** The vertical accent line (`hero-line`) is `hidden sm:block` — only visible at 640px+ where left margin clears content.
 - **`overflow-x: hidden` on body.** Prevents accidental horizontal scroll.
 
 ## File Structure
@@ -116,7 +117,7 @@ netlify.toml              # Netlify build config
 npm run dev       # Start dev server (Turbopack)
 npm run build     # Production build
 npm run start     # Serve production build locally
-npm run lint      # ESLint
+npm run lint      # ESLint (flat config via eslint.config.mjs, not next lint)
 ```
 
 ## Certifications

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 
 // Module-level Set persists across navigations within the SPA session,
@@ -11,13 +11,22 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const hasVisited = visitedPages.has(pathname)
   const items = React.Children.toArray(children)
+  const [prefersReduced, setPrefersReduced] = useState(false)
 
-  // Mark this path as visited after the component mounts.
-  // Runs after the first render so the animation style is determined
-  // before the Set is updated.
   useEffect(() => {
     visitedPages.add(pathname)
   }, [pathname])
+
+  useEffect(() => {
+    setPrefersReduced(
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    )
+  }, [])
+
+  // Reduced motion: render immediately without opacity:0 start state
+  if (prefersReduced) {
+    return <>{children}</>
+  }
 
   // Return visit: quick uniform fade-in, no stagger, no translateY
   if (hasVisited) {

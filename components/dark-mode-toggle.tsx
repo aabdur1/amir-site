@@ -26,13 +26,18 @@ export default function DarkModeToggle() {
 
   useEffect(() => {
     const stored = localStorage.getItem("theme");
-    let isDark: boolean;
     if (stored === "dark" || stored === "light") {
-      isDark = stored === "dark";
-    } else {
-      isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.classList.toggle("dark", stored === "dark");
+      return;
     }
-    document.documentElement.classList.toggle("dark", isDark);
+    // No stored preference — follow system and listen for changes
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    document.documentElement.classList.toggle("dark", mq.matches);
+    const listener = (e: MediaQueryListEvent) => {
+      document.documentElement.classList.toggle("dark", e.matches);
+    };
+    mq.addEventListener("change", listener);
+    return () => mq.removeEventListener("change", listener);
   }, []);
 
   const toggle = useCallback(() => {

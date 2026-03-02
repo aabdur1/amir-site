@@ -5,7 +5,7 @@ import { PageTransition } from '@/components/page-transition'
 import type { Photo } from '@/lib/types'
 
 export const metadata: Metadata = {
-  title: 'Photography | Amir Abdur-Rahim',
+  title: 'Photography',
   description:
     'Photography portfolio by Amir Abdur-Rahim. Landscape and street photography from Chicago and beyond.',
   openGraph: {

@@ -124,8 +124,14 @@ export function Hero() {
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    // Delay parallax until entrance animations complete (~2.2s for last badge)
+    // to avoid style.transform conflicting with fade-in-up animation forwards fill
+    const timer = setTimeout(() => {
+      window.addEventListener("scroll", handleScroll, { passive: true });
+      handleScroll(); // apply current scroll position immediately
+    }, 2500);
     return () => {
+      clearTimeout(timer);
       window.removeEventListener("scroll", handleScroll);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
@@ -181,7 +187,7 @@ export function Hero() {
             {/* Gold accent rule */}
             <div
               ref={ruleRef}
-              className="mt-6 sm:mt-8 h-0.5 w-16 bg-mauve dark:bg-mauve-dark origin-left will-change-transform"
+              className="mt-6 sm:mt-8 h-0.5 w-16 bg-mauve dark:bg-mauve-dark origin-left"
               style={{
                 opacity: 0,
                 transform: "scaleX(0)",
@@ -194,7 +200,7 @@ export function Hero() {
               ref={taglineRef}
               className="text-xl sm:text-2xl md:text-[1.7rem] mt-5 sm:mt-6 max-w-lg
                 font-[family-name:var(--font-badge)] italic
-                text-ink-muted dark:text-night-muted leading-relaxed will-change-transform"
+                text-ink-muted dark:text-night-muted leading-relaxed"
               style={{
                 opacity: 0,
                 ...(mounted ? { animation: "fade-in-up 0.6s ease-out 0.8s forwards" } : {}),
@@ -206,7 +212,7 @@ export function Hero() {
             </p>
 
             {/* Social links */}
-            <div ref={socialRef} className="flex gap-2 items-center mt-8 will-change-transform">
+            <div ref={socialRef} className="flex gap-2 items-center mt-8">
               <a
                 href="https://github.com/aabdur1"
                 target="_blank"
@@ -263,7 +269,7 @@ export function Hero() {
             </div>
 
             {/* Badges — multi-accent pills */}
-            <div ref={badgesRef} className="flex flex-wrap gap-2 sm:gap-2.5 mt-10 will-change-transform">
+            <div ref={badgesRef} className="flex flex-wrap gap-2 sm:gap-2.5 mt-10">
               {badges.map((badge, i) => {
                 const s = BADGE_STYLES[badge.accent];
                 return (

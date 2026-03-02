@@ -21,6 +21,7 @@ export function InteractiveHeadshot() {
   const currentRef = useRef({ rotateX: 0, rotateY: 0, shadowX: 0, shadowY: 0 });
   const rafRef = useRef<number>(0);
   const activeRef = useRef(false);
+  const leaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const animate = useCallback(() => {
     if (!activeRef.current) return;
@@ -72,6 +73,15 @@ export function InteractiveHeadshot() {
         `translate(${-c.shadowX * 0.3}px, ${-c.shadowY * 0.3}px)`;
     }
 
+    // Convergence check — stop RAF when values are close enough to target
+    const dr = Math.abs(t.rotateX - c.rotateX) + Math.abs(t.rotateY - c.rotateY);
+    const ds = Math.abs(t.shadowX - c.shadowX) + Math.abs(t.shadowY - c.shadowY);
+    if (dr < 0.01 && ds < 0.01) {
+      activeRef.current = false;
+      rafRef.current = 0;
+      return;
+    }
+
     rafRef.current = requestAnimationFrame(animate);
   }, []);
 
@@ -117,12 +127,14 @@ export function InteractiveHeadshot() {
     };
 
     const handleMouseLeave = () => {
-      // Ease back to neutral
+      // Ease back to neutral — convergence check in animate() will stop the loop
       targetRef.current = { rotateX: 0, rotateY: 0, shadowX: 0, shadowY: 0 };
-      // Keep animating so it smoothly returns
-      setTimeout(() => {
+      // Fallback timeout in case convergence takes too long
+      if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
+      leaveTimerRef.current = setTimeout(() => {
         activeRef.current = false;
         if (rafRef.current) cancelAnimationFrame(rafRef.current);
+        leaveTimerRef.current = null;
       }, 600);
     };
 
@@ -132,6 +144,7 @@ export function InteractiveHeadshot() {
     return () => {
       section.removeEventListener("mousemove", handleMouseMove);
       section.removeEventListener("mouseleave", handleMouseLeave);
+      if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
       activeRef.current = false;
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
@@ -163,7 +176,7 @@ export function InteractiveHeadshot() {
           src={HEADSHOT_URL}
           alt="Amir Abdur-Rahim"
           fill
-          preload
+          priority
           sizes="(max-width: 640px) 192px, (max-width: 1024px) 224px, 288px"
           className="object-cover"
         />

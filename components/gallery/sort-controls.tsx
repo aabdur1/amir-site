@@ -126,7 +126,7 @@ export function SortControls({ value, onChange }: SortControlsProps) {
         type="button"
         onClick={() => (isOpen ? closeDropdown() : openDropdown())}
         onKeyDown={handleTriggerKeyDown}
-        aria-haspopup="listbox"
+        aria-haspopup="menu"
         aria-expanded={isOpen}
         className="flex items-center gap-2 rounded-full px-5 py-2.5 bg-cream-dark dark:bg-night-card border border-cream-border dark:border-night-border text-sm font-[family-name:var(--font-mono)] text-ink dark:text-night-text cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
       >
@@ -149,7 +149,7 @@ export function SortControls({ value, onChange }: SortControlsProps) {
       {/* Dropdown menu */}
       {isOpen && (
         <div
-          role="listbox"
+          role="menu"
           aria-activedescendant={
             focusedIndex >= 0 ? `sort-option-${OPTIONS[focusedIndex].value}` : undefined
           }
@@ -163,8 +163,8 @@ export function SortControls({ value, onChange }: SortControlsProps) {
               ref={(el) => {
                 optionRefs.current[index] = el
               }}
-              role="option"
-              aria-selected={value === option.value}
+              role="menuitem"
+              aria-current={value === option.value || undefined}
               type="button"
               onClick={() => selectOption(option.value)}
               className={`w-full text-left px-4 py-3 text-sm font-[family-name:var(--font-mono)] text-ink dark:text-night-text cursor-pointer transition-colors duration-150 ${

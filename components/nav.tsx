@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import DarkModeToggle from "@/components/dark-mode-toggle";
@@ -12,19 +12,29 @@ export default function Nav() {
 
   // On the home page, name starts ghosted and fades in as hero scrolls away
   const [nameOpacity, setNameOpacity] = useState(0.35);
+  const rafRef = useRef<number>(0);
 
-  const handleScroll = useCallback(() => {
-    // Fade from 0.35 → 1.0 over 0–300px scroll range
+  const updateOpacity = useCallback(() => {
     const progress = Math.min(window.scrollY / 300, 1);
     setNameOpacity(0.35 + progress * 0.65);
+    rafRef.current = 0;
   }, []);
+
+  const handleScroll = useCallback(() => {
+    if (!rafRef.current) {
+      rafRef.current = requestAnimationFrame(updateOpacity);
+    }
+  }, [updateOpacity]);
 
   useEffect(() => {
     if (!isHome) return;
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [isHome, handleScroll]);
+    updateOpacity();
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [isHome, handleScroll, updateOpacity]);
 
   const resolvedOpacity = isHome ? nameOpacity : 1;
 
@@ -68,6 +78,8 @@ export default function Nav() {
               Gallery
               {/* Arrow slides in on hover */}
               <svg
+                aria-hidden="true"
+                focusable="false"
                 viewBox="0 0 12 12"
                 fill="none"
                 stroke="currentColor"
