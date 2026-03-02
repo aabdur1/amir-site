@@ -143,8 +143,9 @@ h1, h2 {
 }
 
 @keyframes sun-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(180deg); }
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(15deg) scale(1.1); }
+  75% { transform: rotate(-15deg) scale(1.05); }
 }
 
 @keyframes moon-rock {
