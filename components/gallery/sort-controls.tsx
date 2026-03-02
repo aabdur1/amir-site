@@ -132,6 +132,8 @@ export function SortControls({ value, onChange }: SortControlsProps) {
       >
         <span>Sort: {currentLabel}</span>
         <svg
+          aria-hidden="true"
+          focusable="false"
           width="12"
           height="12"
           viewBox="0 0 12 12"
@@ -150,6 +152,7 @@ export function SortControls({ value, onChange }: SortControlsProps) {
       {isOpen && (
         <div
           role="menu"
+          aria-label="Sort photos by"
           aria-activedescendant={
             focusedIndex >= 0 ? `sort-option-${OPTIONS[focusedIndex].value}` : undefined
           }

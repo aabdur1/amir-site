@@ -9,6 +9,7 @@
   --color-cream-border: #ccd0da;  /* Surface0 */
   --color-ink: #4c4f69;           /* Text */
   --color-ink-muted: #6c6f85;     /* Subtext0 */
+  --color-ink-subtle: #5c5f77;    /* Subtext1 — 5.57:1 on Base, AA pass */
   --color-ink-faint: #8c8fa1;     /* Overlay1 */
   --color-gold: #df8e1d;          /* Yellow — sun toggle only */
   --color-gold-muted: #dc8a78;    /* Rosewater */
@@ -300,6 +301,16 @@ html.theme-transitioning *::before,
 html.theme-transitioning *::after {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease,
     box-shadow 0.3s ease, opacity 0.3s ease !important;
+}
+
+/* Global focus ring — visible on keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--color-mauve);
+  outline-offset: 3px;
+}
+
+.dark :focus-visible {
+  outline-color: var(--color-mauve-dark);
 }
 
 /* Clean tap highlight on mobile */

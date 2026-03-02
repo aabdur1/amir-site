@@ -1,28 +1,14 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
-
-const emptySubscribe = () => () => {};
-
-function useHydrated() {
-  return useSyncExternalStore(
-    emptySubscribe,
-    () => true,
-    () => false,
-  );
-}
+import { useHydrated } from "@/lib/hooks";
+import { SectionDivider } from "@/components/section-divider";
 
 export function Footer() {
   const mounted = useHydrated();
 
   return (
     <footer className="relative py-14 sm:py-20 bg-cream-dark/40 dark:bg-night-card/30">
-      {/* Top ornamental divider */}
-      <div className="flex items-center justify-center gap-3 mb-12">
-        <div className="h-px w-12 bg-cream-border dark:bg-night-border" />
-        <span className="text-rosewater dark:text-rosewater-dark text-xs">&#9670;</span>
-        <div className="h-px w-12 bg-cream-border dark:bg-night-border" />
-      </div>
+      <SectionDivider color="rosewater" absolute={false} />
 
       <div
         className="max-w-6xl mx-auto px-6 sm:px-10 lg:px-12 text-center"
@@ -38,7 +24,7 @@ export function Footer() {
 
         {/* Tagline */}
         <p className="font-[family-name:var(--font-badge)] italic text-sm sm:text-base
-          text-ink-muted dark:text-night-muted mb-6">
+          text-ink-subtle dark:text-night-muted mb-6">
           Healthcare meets technology
         </p>
 
@@ -48,8 +34,9 @@ export function Footer() {
             href="https://github.com/aabdur1"
             target="_blank"
             rel="noopener noreferrer"
+            aria-label="GitHub (opens in new tab)"
             className="text-xs tracking-[0.15em] uppercase font-[family-name:var(--font-mono)]
-              text-ink-muted dark:text-night-muted hover:text-ink dark:hover:text-night-text
+              text-ink-subtle dark:text-night-muted hover:text-ink dark:hover:text-night-text
               hover:-translate-y-px hover:underline hover:decoration-sapphire dark:hover:decoration-sapphire-dark
               hover:underline-offset-4 hover:decoration-2
               py-3 px-1 transition-all duration-200"
@@ -61,8 +48,9 @@ export function Footer() {
             href="https://www.linkedin.com/in/amir-abdur-rahim/"
             target="_blank"
             rel="noopener noreferrer"
+            aria-label="LinkedIn (opens in new tab)"
             className="text-xs tracking-[0.15em] uppercase font-[family-name:var(--font-mono)]
-              text-ink-muted dark:text-night-muted hover:text-ink dark:hover:text-night-text
+              text-ink-subtle dark:text-night-muted hover:text-ink dark:hover:text-night-text
               hover:-translate-y-px hover:underline hover:decoration-sapphire dark:hover:decoration-sapphire-dark
               hover:underline-offset-4 hover:decoration-2
               py-3 px-1 transition-all duration-200"
@@ -73,7 +61,7 @@ export function Footer() {
           <a
             href="mailto:amirabdurrahim@gmail.com"
             className="text-xs tracking-[0.15em] uppercase font-[family-name:var(--font-mono)]
-              text-ink-muted dark:text-night-muted hover:text-ink dark:hover:text-night-text
+              text-ink-subtle dark:text-night-muted hover:text-ink dark:hover:text-night-text
               hover:-translate-y-px hover:underline hover:decoration-sapphire dark:hover:decoration-sapphire-dark
               hover:underline-offset-4 hover:decoration-2
               py-3 px-1 transition-all duration-200"
@@ -83,8 +71,8 @@ export function Footer() {
         </div>
 
         {/* Copyright */}
-        <p className="text-[11px] tracking-[0.2em] uppercase font-[family-name:var(--font-mono)]
-          text-ink-faint dark:text-night-muted/50">
+        <p className="text-xs tracking-[0.2em] uppercase font-[family-name:var(--font-mono)]
+          text-ink-subtle dark:text-night-muted">
           &copy; {new Date().getFullYear()} &middot; Chicago, IL
         </p>
       </div>

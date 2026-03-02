@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import DarkModeToggle from "@/components/dark-mode-toggle";
@@ -10,13 +10,17 @@ export default function Nav() {
   const isHome = pathname === "/";
   const isGallery = pathname === "/gallery";
 
-  // On the home page, name starts ghosted and fades in as hero scrolls away
-  const [nameOpacity, setNameOpacity] = useState(0.35);
+  // Direct ref mutation avoids re-rendering the nav tree on every scroll frame
+  const nameRef = useRef<HTMLAnchorElement>(null);
   const rafRef = useRef<number>(0);
 
   const updateOpacity = useCallback(() => {
     const progress = Math.min(window.scrollY / 300, 1);
-    setNameOpacity(0.35 + progress * 0.65);
+    const opacity = 0.35 + progress * 0.65;
+    if (nameRef.current) {
+      nameRef.current.style.opacity = String(opacity);
+      nameRef.current.style.transform = `translateY(${(1 - opacity) * 4}px)`;
+    }
     rafRef.current = 0;
   }, []);
 
@@ -36,8 +40,6 @@ export default function Nav() {
     };
   }, [isHome, handleScroll, updateOpacity]);
 
-  const resolvedOpacity = isHome ? nameOpacity : 1;
-
   return (
     <nav
       className="sticky top-0 z-40 bg-cream/70 dark:bg-night/70 backdrop-blur-lg
@@ -46,12 +48,13 @@ export default function Nav() {
       <div className="mx-auto flex h-[4.25rem] max-w-6xl items-center justify-between px-6 sm:px-10 lg:px-12">
         {/* Left: Name — ghosted at top, progressively fades in on scroll */}
         <Link
+          ref={nameRef}
           href="/"
           className="nav-wordmark min-w-0 font-[family-name:var(--font-display)] text-lg sm:text-2xl md:text-3xl text-ink dark:text-night-text
             tracking-tight leading-none"
           style={{
-            opacity: resolvedOpacity,
-            transform: `translateY(${(1 - resolvedOpacity) * 4}px)`,
+            opacity: isHome ? 0.35 : 1,
+            transform: isHome ? `translateY(${(1 - 0.35) * 4}px)` : "none",
             transition: isHome ? "none" : "opacity 0.5s, transform 0.5s",
           }}
         >
@@ -69,7 +72,7 @@ export default function Nav() {
               transition-all duration-300
               ${isGallery
                 ? "nav-gallery-active border-mauve dark:border-mauve-dark text-ink dark:text-night-text"
-                : "border-cream-border dark:border-night-border text-ink-muted dark:text-night-muted hover:border-sapphire/60 dark:hover:border-sapphire-dark/60 hover:text-ink dark:hover:text-night-text"
+                : "border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:border-sapphire/60 dark:hover:border-sapphire-dark/60 hover:text-ink dark:hover:text-night-text"
               }`}
           >
             <span className={`relative z-10 flex items-center transition-all duration-300 ${

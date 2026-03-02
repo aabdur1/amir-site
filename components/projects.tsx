@@ -1,32 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useScrollReveal } from "@/lib/hooks";
+import { ACCENT_STYLES } from "@/lib/styles";
+import { SectionDivider } from "@/components/section-divider";
+import { SectionHeader } from "@/components/section-header";
 
-const ACCENT_STYLES = {
-  sapphire: {
-    bg: "bg-sapphire/10 dark:bg-sapphire-dark/12",
-    border: "border-sapphire/25 dark:border-sapphire-dark/25",
-    hoverBorder: "hover:border-sapphire/50 dark:hover:border-sapphire-dark/50",
-    dot: "bg-sapphire dark:bg-sapphire-dark",
-    text: "text-ink/80 dark:text-night-text/80",
-    stripe: "border-t-sapphire dark:border-t-sapphire-dark",
-  },
-  mauve: {
-    bg: "bg-mauve/10 dark:bg-mauve-dark/12",
-    border: "border-mauve/25 dark:border-mauve-dark/25",
-    hoverBorder: "hover:border-mauve/50 dark:hover:border-mauve-dark/50",
-    dot: "bg-mauve dark:bg-mauve-dark",
-    text: "text-ink/80 dark:text-night-text/80",
-    stripe: "border-t-mauve dark:border-t-mauve-dark",
-  },
-  lavender: {
-    bg: "bg-lavender/10 dark:bg-lavender-dark/12",
-    border: "border-lavender/25 dark:border-lavender-dark/25",
-    hoverBorder: "hover:border-lavender/50 dark:hover:border-lavender-dark/50",
-    dot: "bg-lavender dark:bg-lavender-dark",
-    text: "text-ink/80 dark:text-night-text/80",
-    stripe: "border-t-lavender dark:border-t-lavender-dark",
-  },
+const STRIPE_STYLES = {
+  sapphire: "border-t-sapphire dark:border-t-sapphire-dark",
+  mauve: "border-t-mauve dark:border-t-mauve-dark",
+  lavender: "border-t-lavender dark:border-t-lavender-dark",
 } as const;
 
 const projects = [
@@ -69,70 +51,17 @@ const projects = [
 ];
 
 export function Projects() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+  const [sectionRef, visible] = useScrollReveal();
 
   return (
     <section
       ref={sectionRef}
       className="relative py-20 sm:py-28 bg-cream-dark/40 dark:bg-night-card/30"
     >
-      {/* Top ornamental divider */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 flex items-center gap-3 -translate-y-1/2">
-        <div className="h-px w-12 bg-cream-border dark:bg-night-border" />
-        <span className="text-peach dark:text-peach-dark text-xs leading-none">&#9670;</span>
-        <div className="h-px w-12 bg-cream-border dark:bg-night-border" />
-      </div>
+      <SectionDivider />
 
       <div className="max-w-5xl mx-auto px-6 sm:px-8">
-        {/* Section header */}
-        <div
-          className="text-center mb-14"
-          style={{
-            opacity: 0,
-            ...(visible ? { animation: "fade-in-up 0.6s ease-out forwards" } : {}),
-          }}
-        >
-          <p
-            className="text-[13px] tracking-[0.3em] uppercase font-[family-name:var(--font-mono)]
-              text-ink-muted dark:text-night-muted mb-3"
-          >
-            <span className="text-peach dark:text-peach-dark">02</span>
-            <span className="mx-2 text-cream-border dark:text-night-border">/</span>
-            Projects
-          </p>
-          <h2
-            className="text-3xl sm:text-4xl font-[family-name:var(--font-display)]
-              text-ink dark:text-night-text"
-          >
-            Things I&apos;ve Built
-          </h2>
-          <div
-            className="mt-4 mx-auto h-px w-12 bg-mauve dark:bg-mauve-dark origin-center"
-            style={{
-              transform: "scaleX(0)",
-              ...(visible ? { animation: "line-grow 0.8s ease-out 0.3s forwards" } : {}),
-            }}
-          />
-        </div>
+        <SectionHeader number="02" label="Projects" title="Things I've Built" visible={visible} />
 
         {/* Project grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -152,7 +81,7 @@ export function Projects() {
                 {/* Subtitle */}
                 <p
                   className="text-sm font-[family-name:var(--font-badge)] italic
-                    text-ink-muted dark:text-night-muted mb-3"
+                    text-ink-subtle dark:text-night-muted mb-3"
                 >
                   {project.subtitle}
                 </p>
@@ -160,7 +89,7 @@ export function Projects() {
                 {/* Description */}
                 <p
                   className="text-sm font-[family-name:var(--font-body)]
-                    text-ink/80 dark:text-night-text/70 leading-relaxed mb-4 flex-1"
+                    text-ink dark:text-night-text/70 leading-relaxed mb-4 flex-1"
                 >
                   {project.description}
                 </p>
@@ -172,7 +101,7 @@ export function Projects() {
                       key={pill}
                       className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1
                         ${s.bg} border ${s.border}
-                        text-[10px] sm:text-[11px] tracking-wide font-[family-name:var(--font-badge)]
+                        text-[12px] sm:text-[13px] tracking-wide font-[family-name:var(--font-badge)]
                         ${s.text}`}
                     >
                       <span className={`w-1 h-1 rounded-full ${s.dot} shrink-0`} />
@@ -186,7 +115,7 @@ export function Projects() {
                   <div className="absolute top-4 right-4 text-ink-faint/40 dark:text-night-muted/40
                     group-hover:text-ink-muted dark:group-hover:text-night-muted
                     transition-colors duration-200">
-                    <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                    <svg aria-hidden="true" focusable="false" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                       <path
                         fillRule="evenodd"
                         d="M5.22 14.78a.75.75 0 001.06 0l7.22-7.22v5.69a.75.75 0 001.5 0v-7.5a.75.75 0 00-.75-.75h-7.5a.75.75 0 000 1.5h5.69l-7.22 7.22a.75.75 0 000 1.06z"
@@ -199,7 +128,7 @@ export function Projects() {
             );
 
             const sharedClassName = `group relative flex flex-col p-5 sm:p-6 rounded-2xl
-              border-t-[3px] ${s.stripe}
+              border-t-[3px] ${STRIPE_STYLES[project.accent]}
               bg-cream/80 dark:bg-night/60
               border border-cream-border/60 dark:border-night-border/60
               ${s.hoverBorder}

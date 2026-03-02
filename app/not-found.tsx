@@ -8,7 +8,7 @@ export default function NotFound() {
         <div className="text-center max-w-lg">
           {/* Section label */}
           <p className="text-[13px] tracking-[0.3em] uppercase font-[family-name:var(--font-mono)]
-            text-ink-muted dark:text-night-muted mb-6">
+            text-ink-subtle dark:text-night-muted mb-6">
             <span className="text-peach dark:text-peach-dark">00</span>
             <span className="mx-2 text-cream-border dark:text-night-border">/</span>
             Lost
@@ -25,7 +25,7 @@ export default function NotFound() {
 
           {/* Witty message */}
           <p className="mt-6 text-xl sm:text-2xl font-[family-name:var(--font-badge)] italic
-            text-ink-muted dark:text-night-muted leading-relaxed">
+            text-ink-subtle dark:text-night-muted leading-relaxed">
             You&apos;ve wandered off the map.
           </p>
 
@@ -39,7 +39,7 @@ export default function NotFound() {
               font-[family-name:var(--font-mono)] text-[13px] tracking-[0.15em] uppercase
               px-6 py-3 rounded-full border
               border-cream-border dark:border-night-border
-              text-ink-muted dark:text-night-muted
+              text-ink-subtle dark:text-night-muted
               hover:border-sapphire/60 dark:hover:border-sapphire-dark/60
               hover:text-ink dark:hover:text-night-text
               hover:-translate-y-0.5 hover:shadow-card

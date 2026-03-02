@@ -1,16 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
-
-const emptySubscribe = () => () => {};
-
-function useHydrated() {
-  return useSyncExternalStore(
-    emptySubscribe,
-    () => true,
-    () => false,
-  );
-}
+import { useHydrated } from "@/lib/hooks";
 
 interface AnimatedTextProps {
   text: string;

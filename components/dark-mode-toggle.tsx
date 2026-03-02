@@ -63,7 +63,7 @@ export default function DarkModeToggle() {
       onClick={toggle}
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
       suppressHydrationWarning
-      className={`dark-toggle-btn flex h-10 w-10 items-center justify-center rounded-full
+      className={`dark-toggle-btn flex h-11 w-11 items-center justify-center rounded-full
         text-ink-muted dark:text-night-muted
         border border-transparent
         cursor-pointer transition-all duration-200
@@ -76,6 +76,8 @@ export default function DarkModeToggle() {
         {dark ? (
           /* Sun icon — amber, shown in dark mode */
           <svg
+            aria-hidden="true"
+            focusable="false"
             viewBox="0 0 20 20"
             fill="currentColor"
             className="h-4.5 w-4.5 text-gold-dark"
@@ -89,6 +91,8 @@ export default function DarkModeToggle() {
         ) : (
           /* Moon icon — blue, shown in light mode */
           <svg
+            aria-hidden="true"
+            focusable="false"
             viewBox="0 0 20 20"
             fill="currentColor"
             className="h-4.5 w-4.5 text-[#7287fd]"

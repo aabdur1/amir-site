@@ -96,14 +96,14 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
       <div className="px-6 pt-24 pb-12 max-w-7xl mx-auto">
         <div className="flex flex-col items-center">
           <p className="text-[13px] tracking-[0.3em] uppercase font-[family-name:var(--font-mono)]
-            text-ink-muted dark:text-night-muted mb-4">
+            text-ink-subtle dark:text-night-muted mb-4">
             Portfolio
           </p>
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-[family-name:var(--font-display)] text-ink dark:text-night-text text-center">
             Photography
           </h1>
           <div className="mt-4 h-px w-16 bg-mauve dark:bg-mauve-dark" />
-          <p className="mt-5 text-sm text-ink-muted dark:text-night-muted font-[family-name:var(--font-mono)]">
+          <p className="mt-5 text-sm text-ink-subtle dark:text-night-muted font-[family-name:var(--font-mono)]">
             <CountUp target={photos.length} /> images <span className="text-peach dark:text-peach-dark">&middot;</span> {deriveBrands(photos)}
           </p>
         </div>
