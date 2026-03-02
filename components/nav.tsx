@@ -10,37 +10,39 @@ export default function Nav() {
   const isHome = pathname === "/";
   const isGallery = pathname === "/gallery";
 
-  // On the home page, hide the nav name until the hero name scrolls away
-  const [scrolledPastHero, setScrolledPastHero] = useState(false);
+  // On the home page, name starts ghosted and fades in as hero scrolls away
+  const [nameOpacity, setNameOpacity] = useState(0.35);
 
   const handleScroll = useCallback(() => {
-    setScrolledPastHero(window.scrollY > 200);
+    // Fade from 0.35 → 1.0 over 0–300px scroll range
+    const progress = Math.min(window.scrollY / 300, 1);
+    setNameOpacity(0.35 + progress * 0.65);
   }, []);
 
   useEffect(() => {
     if (!isHome) return;
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll(); // check initial position
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isHome, handleScroll]);
 
-  const showName = !isHome || scrolledPastHero;
+  const resolvedOpacity = isHome ? nameOpacity : 1;
 
   return (
     <nav
-      className="sticky top-0 z-40 bg-cream/90 dark:bg-night/90 backdrop-blur-lg
+      className="sticky top-0 z-40 bg-cream/70 dark:bg-night/70 backdrop-blur-lg
         transition-colors duration-300"
     >
       <div className="mx-auto flex h-[4.25rem] max-w-6xl items-center justify-between px-6 sm:px-10 lg:px-12">
-        {/* Left: Name — fades in after scrolling past hero on home page */}
+        {/* Left: Name — ghosted at top, progressively fades in on scroll */}
         <Link
           href="/"
           className="nav-wordmark font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text
-            tracking-tight leading-none transition-all duration-500"
+            tracking-tight leading-none"
           style={{
-            opacity: showName ? 1 : 0,
-            transform: showName ? "translateY(0)" : "translateY(6px)",
-            pointerEvents: showName ? "auto" : "none",
+            opacity: resolvedOpacity,
+            transform: `translateY(${(1 - resolvedOpacity) * 4}px)`,
+            transition: isHome ? "none" : "opacity 0.5s, transform 0.5s",
           }}
         >
           Amir Abdur-Rahim

@@ -207,13 +207,13 @@ h1, h2 {
   box-shadow: var(--shadow-card-hover);
 }
 
-/* Hero decorative vertical line */
+/* Hero decorative vertical line — tighter gradient for more visible middle */
 .hero-line {
-  background: linear-gradient(to bottom, transparent 0%, var(--color-cream-border) 20%, var(--color-cream-border) 80%, transparent 100%);
+  background: linear-gradient(to bottom, transparent 0%, var(--color-ink-faint) 10%, var(--color-ink-faint) 90%, transparent 100%);
 }
 
 .dark .hero-line {
-  background: linear-gradient(to bottom, transparent 0%, var(--color-night-border) 20%, var(--color-night-border) 80%, transparent 100%);
+  background: linear-gradient(to bottom, transparent 0%, var(--color-night-muted) 10%, var(--color-night-muted) 90%, transparent 100%);
 }
 
 /* Nav wordmark — mauve underline sweep on hover */

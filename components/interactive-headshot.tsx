@@ -141,12 +141,12 @@ export function InteractiveHeadshot() {
       {/* Decorative offset border — outer */}
       <div
         ref={borderOuterRef}
-        className="absolute -inset-3 border border-cream-border dark:border-night-border rounded-2xl translate-x-3 translate-y-3 transition-transform duration-100"
+        className="absolute -inset-3 border border-ink-faint/30 dark:border-night-border rounded-2xl translate-x-3 translate-y-3 transition-transform duration-100"
       />
       {/* Decorative offset border — inner */}
       <div
         ref={borderInnerRef}
-        className="absolute -inset-1.5 border border-cream-border/50 dark:border-night-border/50 rounded-2xl translate-x-1 translate-y-1 transition-transform duration-100"
+        className="absolute -inset-1.5 border border-ink-faint/20 dark:border-night-border/50 rounded-2xl translate-x-1 translate-y-1 transition-transform duration-100"
       />
 
       {/* The headshot with 3D tilt */}
