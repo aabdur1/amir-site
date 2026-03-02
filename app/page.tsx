@@ -1,12 +1,16 @@
 import type { Metadata } from 'next'
 import { Hero } from "@/components/hero";
 import { Certifications } from "@/components/certifications";
+import { Experience } from "@/components/experience";
+import { Projects } from "@/components/projects";
+import { Skills } from "@/components/skills";
+import { Education } from "@/components/education";
 import { PageTransition } from '@/components/page-transition'
 import { getAllBadges } from "@/lib/badges";
 
 export const metadata: Metadata = {
   title: 'Amir Abdur-Rahim — Healthcare Meets Technology',
-  description: 'Personal site of Amir Abdur-Rahim. MS in MIS at UIC, 1st Place AWS National Cloud Quest, Zscaler Zero Trust Architect. Chicago.',
+  description: 'Personal site of Amir Abdur-Rahim. MS in MIS at UIC, 1st Place AWS National Cloud Quest, Zscaler Zero Trust Architect. Experience, projects, certifications, and photography. Chicago.',
   openGraph: {
     title: 'Amir Abdur-Rahim',
     description: 'Healthcare meets technology. Chicago.',
@@ -26,7 +30,11 @@ export default async function Home() {
   return (
     <PageTransition>
       <Hero />
+      <Experience />
+      <Projects />
       <Certifications badges={badges} />
+      <Skills />
+      <Education />
     </PageTransition>
   );
 }
