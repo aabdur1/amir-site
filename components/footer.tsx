@@ -16,7 +16,7 @@ export function Footer() {
   const mounted = useHydrated();
 
   return (
-    <footer className="relative py-14 sm:py-20">
+    <footer className="relative py-14 sm:py-20 bg-cream-dark/40 dark:bg-night-card/30">
       {/* Top ornamental divider */}
       <div className="flex items-center justify-center gap-3 mb-12">
         <div className="h-px w-12 bg-cream-border dark:bg-night-border" />
@@ -50,7 +50,9 @@ export function Footer() {
             rel="noopener noreferrer"
             className="text-xs tracking-[0.15em] uppercase font-[family-name:var(--font-mono)]
               text-ink-muted dark:text-night-muted hover:text-ink dark:hover:text-night-text
-              transition-colors duration-200"
+              hover:-translate-y-px hover:underline hover:decoration-mauve dark:hover:decoration-mauve-dark
+              hover:underline-offset-4 hover:decoration-2
+              transition-all duration-200"
           >
             GitHub
           </a>
@@ -61,7 +63,9 @@ export function Footer() {
             rel="noopener noreferrer"
             className="text-xs tracking-[0.15em] uppercase font-[family-name:var(--font-mono)]
               text-ink-muted dark:text-night-muted hover:text-ink dark:hover:text-night-text
-              transition-colors duration-200"
+              hover:-translate-y-px hover:underline hover:decoration-mauve dark:hover:decoration-mauve-dark
+              hover:underline-offset-4 hover:decoration-2
+              transition-all duration-200"
           >
             LinkedIn
           </a>
@@ -70,7 +74,9 @@ export function Footer() {
             href="mailto:amirabdurrahim@gmail.com"
             className="text-xs tracking-[0.15em] uppercase font-[family-name:var(--font-mono)]
               text-ink-muted dark:text-night-muted hover:text-ink dark:hover:text-night-text
-              transition-colors duration-200"
+              hover:-translate-y-px hover:underline hover:decoration-mauve dark:hover:decoration-mauve-dark
+              hover:underline-offset-4 hover:decoration-2
+              transition-all duration-200"
           >
             Email
           </a>

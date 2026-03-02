@@ -62,7 +62,9 @@ export default function Nav() {
                 : "border-cream-border dark:border-night-border text-ink-muted dark:text-night-muted hover:border-sapphire/60 dark:hover:border-sapphire-dark/60 hover:text-ink dark:hover:text-night-text"
               }`}
           >
-            <span className="relative z-10 flex items-center gap-0 group-hover:gap-1.5 transition-all duration-300">
+            <span className={`relative z-10 flex items-center transition-all duration-300 ${
+              isGallery ? 'gap-1.5' : 'gap-0 group-hover:gap-1.5'
+            }`}>
               Gallery
               {/* Arrow slides in on hover */}
               <svg
@@ -72,8 +74,9 @@ export default function Nav() {
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="h-3 w-0 opacity-0 group-hover:w-3 group-hover:opacity-100
-                  overflow-hidden transition-all duration-300"
+                className={`h-3 overflow-hidden transition-all duration-300 ${
+                  isGallery ? 'w-3 opacity-100' : 'w-0 opacity-0 group-hover:w-3 group-hover:opacity-100'
+                }`}
               >
                 <path d="M2 6h8M7 3l3 3-3 3" />
               </svg>
