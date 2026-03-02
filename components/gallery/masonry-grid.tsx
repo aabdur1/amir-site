@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import Lightbox from 'yet-another-react-lightbox'
 import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 import 'yet-another-react-lightbox/styles.css'
@@ -26,6 +26,56 @@ function deriveBrands(photos: Photo[]): string {
   }
   const arr = [...brands].sort()
   return arr.length > 0 ? arr.join(' + ') : 'Various'
+}
+
+function CountUp({ target }: { target: number }) {
+  const spanRef = useRef<HTMLSpanElement>(null)
+  const hasAnimated = useRef(false)
+
+  const animate = useCallback(() => {
+    if (!spanRef.current || hasAnimated.current) return
+    hasAnimated.current = true
+
+    // Respect reduced motion
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      spanRef.current.textContent = String(target)
+      return
+    }
+
+    const duration = 1200
+    const start = performance.now()
+    const easeOut = (t: number) => 1 - Math.pow(1 - t, 3)
+
+    function step(now: number) {
+      const elapsed = now - start
+      const progress = Math.min(elapsed / duration, 1)
+      const value = Math.round(easeOut(progress) * target)
+      if (spanRef.current) spanRef.current.textContent = String(value)
+      if (progress < 1) requestAnimationFrame(step)
+    }
+
+    requestAnimationFrame(step)
+  }, [target])
+
+  useEffect(() => {
+    const el = spanRef.current
+    if (!el) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          animate()
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.5 }
+    )
+
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [animate])
+
+  return <span ref={spanRef}>0</span>
 }
 
 export function MasonryGrid({ photos }: { photos: Photo[] }) {
@@ -56,7 +106,7 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
           </h1>
           <div className="mt-4 h-px w-16 bg-mauve dark:bg-mauve-dark" />
           <p className="mt-5 text-sm text-ink-muted dark:text-night-muted font-[family-name:var(--font-mono)]">
-            {photos.length} images <span className="text-peach dark:text-peach-dark">&middot;</span> {deriveBrands(photos)}
+            <CountUp target={photos.length} /> images <span className="text-peach dark:text-peach-dark">&middot;</span> {deriveBrands(photos)}
           </p>
         </div>
         {/* Sort controls */}

@@ -41,14 +41,18 @@ export default function DarkModeToggle() {
   }, []);
 
   const toggle = useCallback(() => {
-    const next = !document.documentElement.classList.contains("dark");
-    document.documentElement.classList.toggle("dark", next);
+    const html = document.documentElement;
+    // Enable smooth theme transition
+    html.classList.add("theme-transitioning");
+    const next = !html.classList.contains("dark");
+    html.classList.toggle("dark", next);
     localStorage.setItem("theme", next ? "dark" : "light");
+    // Remove transitioning class after animation completes
+    setTimeout(() => html.classList.remove("theme-transitioning"), 350);
     // Trigger the swap animation by bumping the key
     swapKeyRef.current += 1;
     if (iconRef.current) {
       iconRef.current.classList.remove("dark-toggle-swap-enter");
-      // Force reflow to restart animation
       void iconRef.current.offsetWidth;
       iconRef.current.classList.add("dark-toggle-swap-enter");
     }

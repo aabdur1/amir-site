@@ -287,6 +287,15 @@ h1, h2 {
   }
 }
 
+/* Smooth dark mode transition — only fires during manual toggle, not page load */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease, opacity 0.3s ease !important;
+}
+
 /* Clean tap highlight on mobile */
 a, button {
   -webkit-tap-highlight-color: transparent;

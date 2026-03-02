@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { DM_Serif_Display, DM_Sans, Share_Tech_Mono, Lora } from "next/font/google";
 import Nav from "@/components/nav";
 import { Footer } from "@/components/footer";
+import { ScrollProgress } from "@/components/scroll-progress";
 import "./globals.css";
 
 const dmSerif = DM_Serif_Display({
@@ -64,6 +65,7 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <ScrollProgress />
         <Nav />
         {children}
         <Footer />

@@ -50,7 +50,7 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
       role="button"
       tabIndex={0}
       aria-label={`Open photo taken on ${photo.date} with ${photo.camera}`}
-      className={`mb-4 break-inside-avoid cursor-pointer rounded-lg ${
+      className={`mb-4 break-inside-avoid cursor-zoom-in rounded-lg ${
         entryDone
           ? 'group transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] hover:scale-[1.02] hover:shadow-[0_8px_40px_rgba(0,0,0,0.12)]'
           : ''
