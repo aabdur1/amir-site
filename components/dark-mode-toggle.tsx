@@ -56,9 +56,11 @@ export default function DarkModeToggle() {
       suppressHydrationWarning
       className={`dark-toggle-btn flex h-10 w-10 items-center justify-center rounded-full
         text-ink-muted dark:text-night-muted
+        bg-cream-dark/50 dark:bg-night-card/50
+        border border-cream-border/40 dark:border-night-border/40
         cursor-pointer transition-all duration-200
         hover:text-ink dark:hover:text-night-text
-        hover:bg-cream-dark/60 dark:hover:bg-night-card/60
+        hover:bg-cream-dark dark:hover:bg-night-card
         ${dark ? "dark-toggle-sun" : "dark-toggle-moon"}`}
     >
       <span ref={iconRef} className="dark-toggle-icon relative h-5 w-5">
