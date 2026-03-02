@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import type { Badge } from "@/lib/badges";
 
 interface CertificationsProps {
@@ -93,11 +94,13 @@ export function Certifications({ badges }: CertificationsProps) {
               {/* Badge image */}
               <div className="relative w-20 h-20 sm:w-24 sm:h-24 mb-3
                 group-hover:scale-105 transition-transform duration-300">
-                <img
+                <Image
                   src={badge.img}
                   alt={badge.name}
+                  width={96}
+                  height={96}
+                  sizes="(max-width: 640px) 80px, 96px"
                   className="w-full h-full object-contain"
-                  loading="lazy"
                 />
               </div>
 

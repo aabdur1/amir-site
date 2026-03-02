@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import Image from 'next/image'
 import type { Photo } from '@/lib/types'
 
 interface PhotoCardProps {
@@ -64,12 +65,14 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
       }
     >
       <div className="overflow-hidden rounded-lg">
-        <img
+        <Image
           src={photo.url}
           alt={`Photo taken on ${photo.date}`}
-          loading="lazy"
+          width={800}
+          height={600}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
           onLoad={() => setIsLoaded(true)}
-          className="w-full transition-all duration-700 ease-out"
+          className="w-full h-auto transition-all duration-700 ease-out"
           style={{
             filter: isLoaded ? 'blur(0)' : 'blur(20px)',
             transform: isLoaded ? 'scale(1)' : 'scale(1.1)',

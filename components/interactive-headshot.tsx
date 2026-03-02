@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
+import Image from "next/image";
 
 const HEADSHOT_URL = "https://d36t8s1mzbufg5.cloudfront.net/_DSC4482.jpg";
 
@@ -158,10 +159,13 @@ export function InteractiveHeadshot() {
           boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
         }}
       >
-        <img
+        <Image
           src={HEADSHOT_URL}
           alt="Amir Abdur-Rahim"
-          className="w-full h-full object-cover"
+          fill
+          preload
+          sizes="(max-width: 640px) 192px, (max-width: 1024px) 224px, 288px"
+          className="object-cover"
         />
       </div>
 
