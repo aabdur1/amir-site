@@ -98,7 +98,6 @@ components/
   certifications.tsx      # Scroll-triggered Credly badge grid (8 certs)
   animated-text.tsx       # Staggered word-by-word text reveal
   hero-speckles.tsx       # Cursor-reactive color dot field (dark mode only)
-  cursor-gradient.tsx     # Cursor-reactive gradient (unused, kept for reference)
   scroll-progress.tsx     # Mauve scroll progress bar (auto-hides on short pages)
   page-transition.tsx     # Staggered fade-in-up page wrapper (reduced-motion safe)
   gallery/
@@ -148,4 +147,3 @@ npm run lint      # ESLint (flat config via eslint.config.mjs, not next lint)
 - Full implementation: `docs/plans/2026-03-01-personal-site-implementation.md`
 - Mobile responsiveness: `docs/plans/2026-03-01-mobile-responsiveness.md`
 - Design polish: `docs/plans/2026-03-02-design-polish.md`
-- Focused polish (speckles, spring easing, accents): `docs/plans/2026-03-02-focused-polish-design.md`
