@@ -1,9 +1,23 @@
 'use client'
 
+import React from 'react'
+
 export function PageTransition({ children }: { children: React.ReactNode }) {
+  const items = React.Children.toArray(children)
+
   return (
-    <div style={{ animation: 'fade-in 0.5s ease-out' }}>
-      {children}
-    </div>
+    <>
+      {items.map((child, i) => (
+        <div
+          key={i}
+          style={{
+            opacity: 0,
+            animation: `fade-in-up 600ms ease-out ${i * 120}ms forwards`,
+          }}
+        >
+          {child}
+        </div>
+      ))}
+    </>
   )
 }
