@@ -12,13 +12,11 @@ export const metadata: Metadata = {
     description: 'Healthcare meets technology. Chicago.',
     url: 'https://amirabdurrahim.com',
     type: 'website',
-    images: ['https://d36t8s1mzbufg5.cloudfront.net/_DSC4482.jpg'],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Amir Abdur-Rahim',
     description: 'Healthcare meets technology. Chicago.',
-    images: ['https://d36t8s1mzbufg5.cloudfront.net/_DSC4482.jpg'],
   },
 }
 
