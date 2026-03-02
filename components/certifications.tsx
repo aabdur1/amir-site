@@ -103,10 +103,14 @@ export function Certifications() {
   return (
     <section
       ref={sectionRef}
-      className="relative py-20 sm:py-28 bg-parchment-dark/40 dark:bg-night-card/30"
+      className="relative py-20 sm:py-28 bg-cream-dark/40 dark:bg-night-card/30"
     >
-      {/* Top divider line */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-px bg-parchment-border dark:bg-night-border" />
+      {/* Top ornamental divider */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 flex items-center gap-3 -translate-y-1/2">
+        <div className="h-px w-12 bg-cream-border dark:bg-night-border" />
+        <span className="text-gold dark:text-gold-dark text-xs leading-none">&#9670;</span>
+        <div className="h-px w-12 bg-cream-border dark:bg-night-border" />
+      </div>
 
       <div className="max-w-5xl mx-auto px-6 sm:px-8">
         {/* Section header */}
@@ -117,15 +121,17 @@ export function Certifications() {
             ...(visible ? { animation: "fade-in-up 0.6s ease-out forwards" } : {}),
           }}
         >
-          <p className="text-xs tracking-[0.3em] uppercase font-[family-name:var(--font-mono)]
-            text-forest/60 dark:text-green-light/60 mb-3">
+          <p className="text-[13px] tracking-[0.3em] uppercase font-[family-name:var(--font-mono)]
+            text-ink-muted dark:text-night-muted mb-3">
+            <span className="text-gold dark:text-gold-dark">01</span>
+            <span className="mx-2 text-cream-border dark:text-night-border">/</span>
             Certifications
           </p>
           <h2 className="text-3xl sm:text-4xl font-[family-name:var(--font-display)]
-            text-forest dark:text-night-text">
+            text-ink dark:text-night-text">
             Verified Credentials
           </h2>
-          <div className="mt-4 mx-auto h-px w-12 bg-forest dark:bg-green-light origin-center"
+          <div className="mt-4 mx-auto h-px w-12 bg-gold dark:bg-gold-dark origin-center"
             style={{
               transform: "scaleX(0)",
               ...(visible ? { animation: "line-grow 0.8s ease-out 0.3s forwards" } : {}),
@@ -142,16 +148,15 @@ export function Certifications() {
               target="_blank"
               rel="noopener noreferrer"
               className="group flex flex-col items-center text-center p-4 sm:p-5 rounded-2xl
-                bg-parchment/80 dark:bg-night/60
-                border border-parchment-border/60 dark:border-night-border/60
-                hover:-translate-y-1 hover:shadow-card hover:border-forest/20 dark:hover:border-green-light/20
+                bg-cream/80 dark:bg-night/60
+                border border-cream-border/60 dark:border-night-border/60
+                hover:-translate-y-1 hover:shadow-card hover:border-gold/30 dark:hover:border-gold-dark/30
                 transition-all duration-300"
               style={{
                 opacity: 0,
                 ...(visible
                   ? {
-                      animation: "fade-in-up 0.5s ease-out forwards",
-                      animationDelay: `${200 + i * 80}ms`,
+                      animation: `fade-in-up 0.5s ease-out ${200 + i * 80}ms forwards`,
                     }
                   : {}),
               }}
@@ -168,12 +173,12 @@ export function Certifications() {
               </div>
 
               {/* Badge info */}
-              <span className="text-xs sm:text-sm font-[family-name:var(--font-badge)]
-                text-forest/80 dark:text-night-text/80 leading-snug mb-1">
+              <span className="text-sm font-[family-name:var(--font-badge)]
+                text-ink/80 dark:text-night-text/80 leading-snug mb-1">
                 {badge.shortName}
               </span>
-              <span className="text-[10px] sm:text-xs font-[family-name:var(--font-mono)]
-                text-slate-muted/60 dark:text-night-muted/60 tracking-wide uppercase">
+              <span className="text-xs font-[family-name:var(--font-mono)]
+                text-ink-muted/60 dark:text-night-muted/60 tracking-wide uppercase">
                 {badge.org}
               </span>
             </a>
@@ -193,8 +198,8 @@ export function Certifications() {
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-sm font-[family-name:var(--font-body)]
-              text-forest/60 dark:text-green-light/60
-              hover:text-forest dark:hover:text-green-light
+              text-ink-muted dark:text-night-muted
+              hover:text-ink dark:hover:text-night-text
               transition-colors duration-200"
           >
             View all on Credly

@@ -22,17 +22,61 @@ const badges = [
   "AWS Cloud Security Builder",
 ];
 
+/*
+ * Per-element scroll speeds — higher = rushes upward faster.
+ * Top-of-composition elements have high rates, bottom ones are nearly static.
+ * This creates the "spread" effect: gaps between elements widen as you scroll.
+ */
+const SCROLL_RATES = {
+  scrollIndicator: 0.8,
+  label: 0.5,
+  headshot: 0.4,
+  name: 0.28,
+  rule: 0.2,
+  tagline: 0.12,
+  social: 0.06,
+  badges: 0.02,
+} as const;
+
 export function Hero() {
   const mounted = useHydrated();
   const sectionRef = useRef<HTMLElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
   const isInViewRef = useRef(true);
 
+  // Per-element refs for layered parallax
+  const labelRef = useRef<HTMLParagraphElement>(null);
+  const nameRef = useRef<HTMLHeadingElement>(null);
+  const ruleRef = useRef<HTMLDivElement>(null);
+  const taglineRef = useRef<HTMLParagraphElement>(null);
+  const socialRef = useRef<HTMLDivElement>(null);
+  const badgesRef = useRef<HTMLDivElement>(null);
+  const headshotRef = useRef<HTMLDivElement>(null);
+  const scrollIndRef = useRef<HTMLDivElement>(null);
+  const lineRef = useRef<HTMLDivElement>(null);
+
   const updateParallax = useCallback(() => {
-    if (!contentRef.current || !isInViewRef.current) return;
-    const offset = window.scrollY * 0.3;
-    contentRef.current.style.transform = `translateY(-${offset}px)`;
+    if (!isInViewRef.current) return;
+    const y = window.scrollY;
+
+    const move = (el: HTMLElement | null, rate: number) => {
+      if (el) el.style.transform = `translateY(${-y * rate}px)`;
+    };
+
+    move(scrollIndRef.current, SCROLL_RATES.scrollIndicator);
+    move(labelRef.current, SCROLL_RATES.label);
+    move(headshotRef.current, SCROLL_RATES.headshot);
+    move(nameRef.current, SCROLL_RATES.name);
+    move(ruleRef.current, SCROLL_RATES.rule);
+    move(taglineRef.current, SCROLL_RATES.tagline);
+    move(socialRef.current, SCROLL_RATES.social);
+    move(badgesRef.current, SCROLL_RATES.badges);
+
+    // Vertical line fades out on scroll (only after user starts scrolling)
+    if (lineRef.current && y > 5) {
+      lineRef.current.style.opacity = `${Math.max(0, 1 - y / 500)}`;
+    }
+
     rafRef.current = 0;
   }, []);
 
@@ -58,80 +102,54 @@ export function Hero() {
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-hidden min-h-[calc(100dvh-4.125rem)] flex items-center justify-center"
+      className="relative overflow-hidden min-h-[calc(100dvh-4.5rem)] flex items-center justify-center"
     >
       <CursorGradient />
 
-      {/* Decorative vertical line — left side accent */}
+      {/* Decorative vertical line — left accent, fades at edges */}
       <div
-        className="absolute left-8 sm:left-12 lg:left-20 top-0 bottom-0 w-px bg-parchment-border dark:bg-night-border"
+        ref={lineRef}
+        className="hero-line absolute left-8 sm:left-12 lg:left-20 top-0 bottom-0 w-px"
         style={{
           opacity: 0,
           ...(mounted ? { animation: "fade-in 1.2s ease-out 0.3s forwards" } : {}),
         }}
       />
 
-      {/* Decorative vertical line — right side, shorter */}
-      <div
-        className="hidden lg:block absolute right-20 top-1/4 h-1/3 w-px bg-parchment-border/50 dark:bg-night-border/50"
-        style={{
-          opacity: 0,
-          ...(mounted ? { animation: "fade-in 1.5s ease-out 1s forwards" } : {}),
-        }}
-      />
-
-      {/* Ambient gradient orb — top right */}
-      <div
-        className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-green-light/[0.04] dark:bg-green-light/[0.06] blur-[100px]"
-        style={{
-          opacity: 0,
-          ...(mounted ? { animation: "fade-in 2s ease-out 0.5s forwards" } : {}),
-        }}
-      />
-
-      {/* Ambient gradient orb — bottom left */}
-      <div
-        className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-forest/[0.03] dark:bg-green-light/[0.04] blur-[80px]"
-        style={{
-          opacity: 0,
-          ...(mounted ? { animation: "fade-in 2s ease-out 0.8s forwards" } : {}),
-        }}
-      />
-
-      <div
-        ref={contentRef}
-        className="relative w-full max-w-6xl mx-auto px-6 sm:px-12 lg:px-20 py-24 will-change-transform"
-      >
-        {/* Main content grid — asymmetric layout */}
+      <div className="relative w-full max-w-6xl mx-auto px-6 sm:px-12 lg:px-20 py-20">
+        {/* Main content grid — asymmetric editorial */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8 lg:gap-16 items-center">
 
           {/* Left column: text content */}
           <div className="order-2 lg:order-1">
-            {/* Small label above name */}
+            {/* Small label */}
             <p
-              className="text-xs tracking-[0.3em] uppercase font-[family-name:var(--font-mono)]
-                text-forest/60 dark:text-green-light/60 mb-4 sm:mb-6"
+              ref={labelRef}
+              className="text-xs tracking-[0.25em] uppercase font-[family-name:var(--font-mono)]
+                text-ink-muted dark:text-night-muted mb-5 will-change-transform"
               style={{
                 opacity: 0,
                 ...(mounted ? { animation: "fade-in-up 0.6s ease-out 0.1s forwards" } : {}),
               }}
             >
-              Software &middot; Healthcare &middot; Photography
+              Software <span className="text-gold dark:text-gold-dark">&middot;</span> Healthcare <span className="text-gold dark:text-gold-dark">&middot;</span> Photography
             </p>
 
-            {/* Name — two lines: first name / last name */}
+            {/* Name — editorial scale */}
             <h1
+              ref={nameRef}
               className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-[0.9] tracking-tight
-                text-forest dark:text-night-text font-[family-name:var(--font-display)]"
+                text-ink dark:text-night-text font-[family-name:var(--font-display)] will-change-transform"
             >
               <AnimatedText text="Amir" />
               <br />
               <AnimatedText text="Abdur-Rahim" delay={200} />
             </h1>
 
-            {/* Decorative horizontal rule — animated grow */}
+            {/* Gold accent rule */}
             <div
-              className="mt-6 sm:mt-8 h-px w-24 bg-forest dark:bg-green-light origin-left"
+              ref={ruleRef}
+              className="mt-6 sm:mt-8 h-0.5 w-16 bg-gold dark:bg-gold-dark origin-left will-change-transform"
               style={{
                 opacity: 0,
                 transform: "scaleX(0)",
@@ -139,29 +157,32 @@ export function Hero() {
               }}
             />
 
-            {/* Tagline */}
+            {/* Tagline — editorial italic serif */}
             <p
-              className="text-lg sm:text-xl md:text-2xl mt-5 sm:mt-6 max-w-md
-                text-slate-muted dark:text-night-muted leading-relaxed"
+              ref={taglineRef}
+              className="text-xl sm:text-2xl md:text-[1.7rem] mt-5 sm:mt-6 max-w-lg
+                font-[family-name:var(--font-badge)] italic
+                text-ink-muted dark:text-night-muted leading-relaxed will-change-transform"
               style={{
                 opacity: 0,
                 ...(mounted ? { animation: "fade-in-up 0.6s ease-out 0.8s forwards" } : {}),
               }}
             >
-              Healthcare meets technology.{" "}
-              <span className="text-forest dark:text-green-light">Chicago.</span>
+              Healthcare meets technology{" "}
+              <span className="text-gold dark:text-gold-dark not-italic">&#8212;</span>{" "}
+              <span className="text-ink dark:text-night-text not-italic font-[family-name:var(--font-body)] font-medium">Chicago.</span>
             </p>
 
             {/* Social links */}
-            <div className="flex gap-1 items-center mt-8">
+            <div ref={socialRef} className="flex gap-1 items-center mt-8 will-change-transform">
               <a
                 href="https://github.com/aabdur1"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="GitHub"
                 className="btn-lift flex items-center justify-center w-11 h-11 rounded-full
-                  text-slate-muted dark:text-night-muted
-                  hover:text-forest hover:bg-forest/5 dark:hover:text-green-light dark:hover:bg-green-light/5
+                  text-ink-muted dark:text-night-muted
+                  hover:text-ink hover:bg-ink/5 dark:hover:text-night-text dark:hover:bg-night-text/5
                   transition-all duration-200"
                 style={{
                   opacity: 0,
@@ -178,8 +199,8 @@ export function Hero() {
                 rel="noopener noreferrer"
                 aria-label="LinkedIn"
                 className="btn-lift flex items-center justify-center w-11 h-11 rounded-full
-                  text-slate-muted dark:text-night-muted
-                  hover:text-forest hover:bg-forest/5 dark:hover:text-green-light dark:hover:bg-green-light/5
+                  text-ink-muted dark:text-night-muted
+                  hover:text-ink hover:bg-ink/5 dark:hover:text-night-text dark:hover:bg-night-text/5
                   transition-all duration-200"
                 style={{
                   opacity: 0,
@@ -194,8 +215,8 @@ export function Hero() {
                 href="mailto:amirabdurrahim@gmail.com"
                 aria-label="Email"
                 className="btn-lift flex items-center justify-center w-11 h-11 rounded-full
-                  text-slate-muted dark:text-night-muted
-                  hover:text-forest hover:bg-forest/5 dark:hover:text-green-light dark:hover:bg-green-light/5
+                  text-ink-muted dark:text-night-muted
+                  hover:text-ink hover:bg-ink/5 dark:hover:text-night-text dark:hover:bg-night-text/5
                   transition-all duration-200"
                 style={{
                   opacity: 0,
@@ -209,24 +230,24 @@ export function Hero() {
               </a>
             </div>
 
-            {/* Badges — inside the hero, visible without scrolling */}
-            <div className="flex flex-wrap gap-2.5 mt-10">
+            {/* Badges — gold-accented pills */}
+            <div ref={badgesRef} className="flex flex-wrap gap-2.5 mt-10 will-change-transform">
               {badges.map((badge, i) => (
                 <span
                   key={badge}
                   className="rounded-full px-4 py-2
-                    bg-forest/8 dark:bg-green-light/8
-                    border border-parchment-border dark:border-night-border
-                    text-xs tracking-wide font-[family-name:var(--font-badge)]
-                    text-forest/80 dark:text-green-light/80
-                    hover:-translate-y-0.5 hover:shadow-card hover:text-forest dark:hover:text-green-light
+                    bg-gold/8 dark:bg-gold-dark/10
+                    border border-cream-border dark:border-night-border
+                    text-[13px] tracking-wide font-[family-name:var(--font-badge)]
+                    text-ink/70 dark:text-night-text/70
+                    hover:-translate-y-0.5 hover:shadow-card hover:border-gold/30 dark:hover:border-gold-dark/30
+                    hover:text-ink dark:hover:text-night-text
                     transition-all duration-300"
                   style={{
                     opacity: 0,
                     ...(mounted
                       ? {
-                          animation: "fade-in-up 0.5s ease-out forwards",
-                          animationDelay: `${1600 + i * 100}ms`,
+                          animation: `fade-in-up 0.5s ease-out ${1600 + i * 100}ms forwards`,
                         }
                       : {}),
                   }}
@@ -237,9 +258,10 @@ export function Hero() {
             </div>
           </div>
 
-          {/* Right column: headshot — cursor-reactive 3D tilt */}
+          {/* Right column: headshot */}
           <div
-            className="order-1 lg:order-2 flex justify-center lg:justify-end"
+            ref={headshotRef}
+            className="order-1 lg:order-2 flex justify-center lg:justify-end will-change-transform"
             style={{
               opacity: 0,
               ...(mounted ? { animation: "fade-in 1s ease-out 0.3s forwards" } : {}),
@@ -252,20 +274,21 @@ export function Hero() {
 
       {/* Bottom scroll indicator */}
       <div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        ref={scrollIndRef}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 will-change-transform"
         style={{
           opacity: 0,
           ...(mounted ? { animation: "fade-in 0.8s ease-out 2.2s forwards" } : {}),
         }}
       >
         <span
-          className="text-[10px] tracking-[0.2em] uppercase font-[family-name:var(--font-mono)] text-slate-muted/50 dark:text-night-muted/50"
-          style={{ animation: mounted ? "shimmer 3s ease-in-out infinite" : "none", animationDelay: "3s" }}
+          className="text-[11px] tracking-[0.2em] uppercase font-[family-name:var(--font-mono)] text-ink-faint dark:text-night-muted/50"
+          style={{ animation: mounted ? "shimmer 3s ease-in-out 3s infinite" : "none" }}
         >
           Scroll
         </span>
         <div
-          className="w-px h-8 bg-gradient-to-b from-slate-muted/40 to-transparent dark:from-night-muted/40"
+          className="w-px h-8 bg-gradient-to-b from-ink-faint/40 to-transparent dark:from-night-muted/40"
           style={{ animation: mounted ? "float 2s ease-in-out infinite" : "none" }}
         />
       </div>

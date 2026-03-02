@@ -54,13 +54,11 @@ export default function DarkModeToggle() {
       onClick={toggle}
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
       suppressHydrationWarning
-      className={`dark-toggle-btn flex h-11 w-11 items-center justify-center rounded-xl
-        bg-parchment-dark/80 dark:bg-night-card/80 backdrop-blur-sm
-        border border-parchment-border dark:border-night-border
+      className={`dark-toggle-btn flex h-10 w-10 items-center justify-center rounded-full
+        text-ink-muted dark:text-night-muted
         cursor-pointer transition-all duration-200
-        hover:bg-parchment-border dark:hover:bg-night-border
-        hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]
-        dark:hover:shadow-[0_4px_12px_rgba(0,0,0,0.3)]
+        hover:text-ink dark:hover:text-night-text
+        hover:bg-cream-dark/60 dark:hover:bg-night-card/60
         ${dark ? "dark-toggle-sun" : "dark-toggle-moon"}`}
     >
       <span ref={iconRef} className="dark-toggle-icon relative h-5 w-5">
@@ -69,7 +67,7 @@ export default function DarkModeToggle() {
           <svg
             viewBox="0 0 20 20"
             fill="currentColor"
-            className="h-5 w-5 text-amber-400"
+            className="h-4.5 w-4.5 text-gold"
           >
             <path
               fillRule="evenodd"
@@ -82,7 +80,7 @@ export default function DarkModeToggle() {
           <svg
             viewBox="0 0 20 20"
             fill="currentColor"
-            className="h-5 w-5 text-blue-500"
+            className="h-4.5 w-4.5 text-blue-400"
           >
             <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
           </svg>

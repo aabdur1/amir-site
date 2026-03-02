@@ -35,8 +35,7 @@ export function AnimatedText({ text, className = "", delay = 0 }: AnimatedTextPr
             marginRight: "0.3em",
             ...(hydrated
               ? {
-                  animation: "fade-in-up 0.6s ease-out forwards",
-                  animationDelay: `${delay + index * 100}ms`,
+                  animation: `fade-in-up 0.6s ease-out ${delay + index * 100}ms forwards`,
                 }
               : {}),
           }}

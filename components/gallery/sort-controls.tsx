@@ -128,7 +128,7 @@ export function SortControls({ value, onChange }: SortControlsProps) {
         onKeyDown={handleTriggerKeyDown}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className="flex items-center gap-2 rounded-full px-5 py-2.5 bg-parchment-dark dark:bg-night-card border border-parchment-border dark:border-night-border text-sm font-[family-name:var(--font-mono)] text-forest dark:text-green-light cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+        className="flex items-center gap-2 rounded-full px-5 py-2.5 bg-cream-dark dark:bg-night-card border border-cream-border dark:border-night-border text-sm font-[family-name:var(--font-mono)] text-ink dark:text-night-text cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
       >
         <span>Sort: {currentLabel}</span>
         <svg
@@ -154,7 +154,7 @@ export function SortControls({ value, onChange }: SortControlsProps) {
             focusedIndex >= 0 ? `sort-option-${OPTIONS[focusedIndex].value}` : undefined
           }
           onKeyDown={handleMenuKeyDown}
-          className="absolute right-0 mt-2 min-w-[160px] rounded-xl bg-parchment-dark dark:bg-night-card border border-parchment-border dark:border-night-border shadow-card py-1 z-50 animate-dropdown-in"
+          className="absolute right-0 mt-2 min-w-[160px] rounded-xl bg-cream-dark dark:bg-night-card border border-cream-border dark:border-night-border shadow-card py-1 z-50 animate-dropdown-in"
         >
           {OPTIONS.map((option, index) => (
             <button
@@ -167,11 +167,11 @@ export function SortControls({ value, onChange }: SortControlsProps) {
               aria-selected={value === option.value}
               type="button"
               onClick={() => selectOption(option.value)}
-              className={`w-full text-left px-4 py-2.5 text-sm font-[family-name:var(--font-mono)] text-forest dark:text-green-light cursor-pointer transition-colors duration-150 ${
+              className={`w-full text-left px-4 py-2.5 text-sm font-[family-name:var(--font-mono)] text-ink dark:text-night-text cursor-pointer transition-colors duration-150 ${
                 value === option.value
-                  ? 'bg-forest/10 dark:bg-green-light/10'
-                  : 'hover:bg-forest/5 dark:hover:bg-green-light/5'
-              } ${focusedIndex === index ? 'bg-forest/5 dark:bg-green-light/5' : ''}`}
+                  ? 'bg-gold/10 dark:bg-gold-dark/10'
+                  : 'hover:bg-ink/5 dark:hover:bg-night-text/5'
+              } ${focusedIndex === index ? 'bg-ink/5 dark:bg-night-text/5' : ''}`}
             >
               {option.label}
             </button>

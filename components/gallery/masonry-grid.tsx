@@ -27,16 +27,18 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
       {/* Header area */}
       <div className="px-6 pt-24 pb-12 max-w-7xl mx-auto">
         <div className="flex flex-col items-center">
-          <p className="text-xs tracking-[0.3em] uppercase font-[family-name:var(--font-mono)]
-            text-forest/60 dark:text-green-light/60 mb-4">
+          <p className="text-[13px] tracking-[0.3em] uppercase font-[family-name:var(--font-mono)]
+            text-ink-muted dark:text-night-muted mb-4">
+            <span className="text-gold dark:text-gold-dark">02</span>
+            <span className="mx-2 text-cream-border dark:text-night-border">/</span>
             Portfolio
           </p>
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-[family-name:var(--font-display)] text-forest dark:text-night-text text-center">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-[family-name:var(--font-display)] text-ink dark:text-night-text text-center">
             Photography
           </h1>
-          <div className="mt-4 h-px w-16 bg-forest dark:bg-green-light" />
-          <p className="mt-4 text-sm text-slate-muted dark:text-night-muted font-[family-name:var(--font-mono)]">
-            {photos.length} images &middot; Sony Alpha
+          <div className="mt-4 h-px w-16 bg-gold dark:bg-gold-dark" />
+          <p className="mt-5 text-sm text-ink-muted dark:text-night-muted font-[family-name:var(--font-mono)]">
+            {photos.length} images <span className="text-gold dark:text-gold-dark">&middot;</span> Sony Alpha
           </p>
         </div>
         {/* Sort controls */}

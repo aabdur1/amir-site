@@ -76,8 +76,8 @@ export function CursorGradient() {
     <div
       ref={gradientRef}
       className="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-300
-        [--cursor-gradient-color:rgba(82,183,136,0.04)]
-        dark:[--cursor-gradient-color:rgba(82,183,136,0.06)]"
+        [--cursor-gradient-color:rgba(212,168,83,0.04)]
+        dark:[--cursor-gradient-color:rgba(232,188,106,0.06)]"
       aria-hidden="true"
     />
   );

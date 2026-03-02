@@ -17,44 +17,48 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Two-page static sit
 - **Fonts via next/font/google.** DM Serif Display (headings), DM Sans (body), Share Tech Mono (mono/tags), Lora (credential badges). Loaded as CSS variables (`--font-display`, `--font-body`, `--font-mono`, `--font-badge`) in `app/layout.tsx`.
 - **Dark mode via class toggle.** Uses `.dark` class on `<html>`. Custom variant defined in globals.css: `@custom-variant dark (&:where(.dark, .dark *));`
 - **No icon libraries.** Icons are inline SVGs.
-- **Client components marked explicitly.** Components using `"use client"`: nav, dark-mode-toggle, hero, animated-text, cursor-gradient, interactive-headshot, certifications. Gallery components (masonry-grid, photo-card, sort-controls) are also client components.
+- **Client components marked explicitly.** Components using `"use client"`: nav, dark-mode-toggle, hero, animated-text, cursor-gradient, interactive-headshot, certifications, footer. Gallery components (masonry-grid, photo-card, sort-controls) are also client components.
+- **No shorthand/longhand mixing in inline styles.** Always fold `animationDelay` into the `animation` shorthand to avoid React warnings.
 
 ## Key Patterns
 
 - **Hydration safety via `useSyncExternalStore`.** Components that need to differ between server and client (dark-mode-toggle, hero, animated-text) use a `useHydrated()` hook built on `useSyncExternalStore(subscribe, () => true, () => false)` to safely detect client-side hydration without flicker.
 - **Scroll-triggered reveals via Intersection Observer.** Gallery photo cards use `IntersectionObserver` with `threshold` and `triggerOnce` patterns to animate elements into view on scroll.
 - **Blur-up image loading.** Gallery photo cards show a blurred placeholder and transition to the full image on load, using CSS opacity transitions.
-- **Parallax via refs + RAF.** Hero content parallax uses `requestAnimationFrame` with passive scroll listener and visibility gating — no state re-renders.
+- **Per-element parallax.** Hero elements each have their own scroll speed (label fastest, badges slowest), creating a spread/dispersal effect on scroll. Uses refs + RAF + passive scroll listener — no state re-renders.
 - **Cursor-reactive gradient.** `CursorGradient` tracks mouse with RAF + lerp smoothing, disabled on touch devices.
 - **Cursor-reactive headshot.** `InteractiveHeadshot` tilts image toward cursor (3deg max) with dynamic shadow — cursor acts as light source. Uses perspective 3D transform + RAF + lerp. Disabled on touch devices.
 
-## Design System
+## Design System — Cool Grey Editorial
 
-Full design doc: `docs/plans/2026-03-01-personal-site-redesign-design.md`
+**Aesthetic:** Magazine/editorial — cool grey bg + near-black ink + gold accents. Typography does the heavy lifting.
 
-**Color tokens (light):** parchment backgrounds (`#EDE6D3`, `#E4DBBF`), parchment border (`#C4B896`), forest green accent (`#1B4332`), slate text (`#1e293b`)
+**Color tokens (light):** cool grey bg (`#F0F1F3`, `#E5E6EA`), grey border (`#D2D3D8`), ink text (`#1a1a1a`), ink-muted (`#6b6b6b`), ink-faint (`#9a9a9a`), gold accent (`#D4A853`), gold-muted (`#C49A42`)
 
-**Color tokens (dark):** night backgrounds (`#0D0E12`, `#1A1D2E`), night border (`#252A3A`), light green accent (`#52B788`), light text (`#e8ecf2`)
+**Color tokens (dark):** night bg (`#0D0D0F`, `#161618`), night border (`#2a2a2e`), night text (`#e8e8e8`), night-muted (`#888888`), gold-dark (`#E8BC6A`)
 
-**Effects:** Grain texture overlay (SVG noise at 7% opacity), prescription-pad horizontal lines (3% opacity), multi-layer shadows, green text selection, ambient gradient orbs.
+**Effects:** Grain texture overlay (SVG noise at 4% opacity), sharp editorial shadows, gold text selection, gold-tinted cursor gradient.
 
-**Animations:** `fade-in`, `fade-in-up`, `scale-in`, `dropdown-in`, `line-grow` (accent rule), `shimmer` (scroll indicator), `float` (scroll line bob). Dark mode toggle: `icon-swap-in` (springy pop), `sun-spin`, `moon-rock`, `sun-glow`, `moon-glow`. Staggered delays throughout hero + certifications.
+**Animations:** `fade-in`, `fade-in-up`, `scale-in`, `dropdown-in`, `line-grow` (gold accent rule), `shimmer` (scroll indicator), `float` (scroll line bob). Dark mode toggle: `icon-swap-in` (springy pop), `sun-spin`, `moon-rock`, `sun-glow` (gold), `moon-glow` (blue). Staggered delays throughout hero + certifications.
 
-**Utility classes:** `btn-lift` (hover: translateY(-1px), active: snap back), `card-hover` (hover: translateY(-2px) + elevated shadow). Ported from DocDefend style guide.
+**Utility classes:** `btn-lift` (hover: translateY(-1px), active: snap back), `card-hover` (hover: translateY(-2px) + elevated shadow).
 
-**Bold aesthetic:** This is a personal portfolio, not clinical software. Hero has asymmetric editorial layout with cursor-reactive 3D headshot, double offset decorative borders, ambient gradient orbs, growing accent line. Gallery photos scale-in with rotation, hover states lift with shadow. Typography is large and confident (hero name at 5-8rem responsive). Navbar has green accent stripe + logo mark.
+**CSS-based nav animations:** `.nav-wordmark::after` (gold underline sweep), `.nav-gallery-pill::before` (gold fill sweep), `.hero-line` (gradient vertical line with dark mode support). These use real CSS `transform: scaleX()` for reliable transitions.
+
+**Bold aesthetic:** Personal portfolio with editorial energy. Hero has per-element layered parallax (elements spread apart on scroll at different rates), cursor-reactive 3D headshot, decorative offset borders, gold-tinted ambient glow. Gallery photos scale-in with rotation, hover states lift with shadow. Typography is large and confident (hero name at 5-8rem responsive). Navbar name hidden on home page while hero is visible, fades in on scroll.
 
 ## File Structure
 
 ```
 app/
-  layout.tsx              # Root layout, fonts (4 families), metadata, nav
+  layout.tsx              # Root layout, fonts (4 families), metadata, nav, footer
   page.tsx                # Landing: Hero + Certifications
   globals.css             # @theme tokens, keyframes, utility classes
   gallery/
     page.tsx              # Photography gallery page
 components/
-  nav.tsx                 # Sticky nav: accent stripe, logo mark, active route
+  nav.tsx                 # Sticky nav: wordmark hidden on home until scroll, gallery pill, thin rule
+  footer.tsx              # Editorial footer: name, tagline, links, diamond ornaments
   dark-mode-toggle.tsx    # Animated sun/moon toggle (DocDefend-style)
   hero.tsx                # Asymmetric hero: animated name, headshot, badges, parallax
   interactive-headshot.tsx# Cursor-reactive 3D tilt headshot (light-source shadow)

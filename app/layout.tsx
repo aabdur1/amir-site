@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Serif_Display, DM_Sans, Share_Tech_Mono, Lora } from "next/font/google";
 import Nav from "@/components/nav";
+import { Footer } from "@/components/footer";
 import "./globals.css";
 
 const dmSerif = DM_Serif_Display({
@@ -24,7 +25,8 @@ const shareTechMono = Share_Tech_Mono({
 });
 
 const lora = Lora({
-  weight: "500",
+  weight: ["400", "500"],
+  style: ["normal", "italic"],
   subsets: ["latin"],
   display: "swap",
   variable: "--font-badge",
@@ -56,6 +58,7 @@ export default function RootLayout({
       <body>
         <Nav />
         {children}
+        <Footer />
       </body>
     </html>
   );
