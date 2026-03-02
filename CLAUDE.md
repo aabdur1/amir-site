@@ -27,8 +27,8 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Two-page static sit
 - **`next/image` for optimized images.** Headshot uses `fill` + `preload`, badges use explicit `width/height`, gallery photos use `unoptimized` (direct CloudFront delivery — avoids `/_next/image` proxy overhead for ~50 large photos). Remote patterns configured in `next.config.ts` for CloudFront and Credly domains.
 - **Blur-up image loading.** Gallery photo cards show a blurred placeholder and transition to the full image on load, using CSS filter transitions. Custom implementation (not `placeholder="blur"`) to avoid needing `blurDataURL` per remote image.
 - **Branded OG images.** `app/opengraph-image.tsx` and `app/gallery/opengraph-image.tsx` generate 1200x630 PNGs at build time using `ImageResponse` from `next/og`. Catppuccin Mocha branding with DM Serif Display font loaded from Google Fonts gstatic. No hardcoded `images` in metadata — Next.js auto-injects from these routes.
-- **Staggered page transitions.** `PageTransition` wraps each direct child with `fade-in-up` animation, 120ms stagger between sections (Hero → Certifications on home, single child on gallery).
-- **Per-element parallax.** Hero elements each have their own scroll speed (label fastest, badges slowest), creating a spread/dispersal effect on scroll. Uses refs + RAF + passive scroll listener — no state re-renders.
+- **Staggered page transitions.** `PageTransition` wraps each direct child with `fade-in-up` animation, 120ms stagger between sections. Tracks visited pages via module-level `Set` — first visit gets full stagger, return visits get a quick 200ms fade-in.
+- **Per-element parallax.** Hero elements each have their own scroll speed (label fastest, badges slowest), creating a spread/dispersal effect on scroll. Uses refs + RAF + passive scroll listener — no state re-renders. Skipped entirely when `prefers-reduced-motion` is enabled.
 - **Multi-accent hero badges.** Each hero badge pill has a distinct Catppuccin accent (sapphire, mauve, peach, lavender) with tinted background, colored dot, and matching hover border.
 - **Cursor-reactive gradient.** `CursorGradient` tracks mouse with RAF + lerp smoothing, disabled on touch devices.
 - **Cursor-reactive headshot.** `InteractiveHeadshot` tilts image toward cursor (3deg max) with dynamic shadow — cursor acts as light source. Uses perspective 3D transform + RAF + lerp. Disabled on touch devices.
@@ -48,7 +48,7 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Two-page static sit
 - Lavender (`#7287fd` / `#b4befe`) — ambient: headshot glow, moon icon
 - Yellow (`#df8e1d` / `#f9e2af`) — kept only for dark mode toggle sun icon
 
-**Effects:** Grain texture overlay (SVG noise at 4% opacity), sharp editorial shadows, gold text selection, gold-tinted cursor gradient.
+**Effects:** Grain texture overlay (SVG noise at 12% light / 4% dark), sharp editorial shadows, gold text selection, gold-tinted cursor gradient.
 
 **Animations:** `fade-in`, `fade-in-up`, `scale-in`, `dropdown-in`, `line-grow` (gold accent rule), `shimmer` (scroll indicator), `float` (scroll line bob). Dark mode toggle: `icon-swap-in` (springy pop), `sun-spin`, `moon-rock`, `sun-glow` (gold), `moon-glow` (blue). Staggered delays throughout hero + certifications.
 
@@ -57,6 +57,15 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Two-page static sit
 **CSS-based nav animations:** `.nav-wordmark::after` (gold underline sweep), `.nav-gallery-pill::before` (gold fill sweep), `.hero-line` (gradient vertical line with dark mode support). These use real CSS `transform: scaleX()` for reliable transitions.
 
 **Bold aesthetic:** Personal portfolio with editorial energy. Hero has per-element layered parallax (elements spread apart on scroll at different rates), cursor-reactive 3D headshot, decorative offset borders, gold-tinted ambient glow. Gallery photos scale-in with rotation, hover states use gentle scale-up (1.02) + shadow bloom + slow inner image zoom (cinematic Ken Burns feel). Typography is large and confident (hero name at 5-8rem responsive). Navbar name hidden on home page while hero is visible, fades in on scroll.
+
+## Mobile & Accessibility
+
+- **320px (iPhone SE) safe.** Nav name scales `text-lg sm:text-2xl md:text-3xl` with `min-w-0`. Hero badges shrink `text-[11px] sm:text-[13px]` with `px-3 sm:px-4`. Cert grid goes single-column below 375px (`grid-cols-1 min-[375px]:grid-cols-2`).
+- **Touch targets ≥ 44px.** Footer links, Credly link, and sort dropdown options all have `py-3` padding. Social icon buttons are `w-11 h-11` (44px) with `gap-2` (8px) spacing.
+- **`prefers-reduced-motion` supported.** Global CSS media query kills all animation durations/iterations. Hero parallax scroll listener is skipped entirely. Cursor effects already gated behind `(pointer: fine)`.
+- **`-webkit-tap-highlight-color: transparent`** on all `a` and `button` elements for clean mobile taps.
+- **`100dvh` for hero.** Uses dynamic viewport height to account for mobile browser chrome.
+- **`overflow-x: hidden` on body.** Prevents accidental horizontal scroll.
 
 ## File Structure
 
@@ -121,6 +130,7 @@ npm run lint      # ESLint
 - To add a non-Credly badge: add entry to `manualBadges` in `lib/badges.ts`, put image in `public/badges/`
 - Credly profile: `https://www.credly.com/users/amir-abdur-rahim`
 
-## Implementation Plan
+## Plans
 
-Full task breakdown: `docs/plans/2026-03-01-personal-site-implementation.md`
+- Full implementation: `docs/plans/2026-03-01-personal-site-implementation.md`
+- Mobile responsiveness: `docs/plans/2026-03-01-mobile-responsiveness.md`
