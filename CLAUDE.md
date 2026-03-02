@@ -54,20 +54,16 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - Peach (`#fe640b` / `#fab387`) — decorative: section numbers, ornaments, separators
 - Sapphire (`#209fb5` / `#74c7ec`) — interactive: hover borders, footer link hovers
 - Lavender (`#7287fd` / `#b4befe`) — ambient: headshot glow, moon icon, scroll indicator
-- Rosewater (`#dc8a78` / `#f5e0dc`) — warm highlight: footer ornamental diamond. Note: `--color-gold-muted` in CSS is legacy name for this token.
+- Rosewater (`#dc8a78` / `#f5e0dc`) — warm highlight: footer ornamental diamond. Note: `--color-gold-muted` in CSS is a legacy alias for this token.
 - Yellow (`#df8e1d` / `#f9e2af`) — kept only for dark mode toggle sun icon
 
 **Effects:** Grain texture overlay (SVG noise at 12% light / 4% dark), sharp editorial shadows, mauve text selection, cursor-reactive color speckles (dark mode only).
 
 **Animations:** `fade-in`, `fade-in-up`, `scale-in`, `dropdown-in`, `line-grow` (mauve accent rule), `shimmer` (scroll indicator), `float` (scroll line bob). Dark mode toggle: `icon-swap-in` (springy pop), `sun-spin`, `moon-rock`, `sun-glow` (gold), `moon-glow` (lavender). Staggered delays throughout hero and all landing page sections (experience, projects, certifications, skills, education).
 
-**Utility classes:** `btn-lift` (hover: translateY(-1px) with spring overshoot, active: snap back), `card-hover` (hover: translateY(-2px) + elevated shadow with spring overshoot).
+**Utility classes:** `btn-lift` (hover lift with spring overshoot), `card-hover` (hover lift + elevated shadow). Spring easing: `cubic-bezier(0.34, 1.56, 0.64, 1)` for hover entry, `cubic-bezier(0.22, 1, 0.36, 1)` for settle-back.
 
-**CSS-based nav animations:** `.nav-wordmark::after` (mauve underline sweep), `.nav-gallery-pill::before` (sapphire fill sweep), `.hero-line` (gradient vertical line with dark mode support). These use real CSS `transform: scaleX()` for reliable transitions.
-
-**Spring easing:** Interactive elements use `cubic-bezier(0.34, 1.56, 0.64, 1)` for hover entry (slight overshoot bounce) and `cubic-bezier(0.22, 1, 0.36, 1)` for settle-back. Applied to `btn-lift`, `card-hover`, nav gallery pill fill, nav wordmark underline, hero badge pills, and certification cards.
-
-**Bold aesthetic:** Editorial energy with large confident typography (hero name at 5-8rem responsive). Gallery hover states use gentle scale-up (1.02) + shadow bloom + slow inner image zoom (cinematic Ken Burns feel). Decorative offset borders on headshot.
+**CSS-based nav animations:** `.nav-wordmark::after` (mauve underline sweep), `.nav-gallery-pill::before` (sapphire fill sweep), `.hero-line` (gradient vertical line). All use CSS `transform: scaleX()` transitions.
 
 ## Mobile & Accessibility
 
@@ -125,10 +121,11 @@ lib/
 public/
   photos.json             # Photo metadata (CloudFront URLs, EXIF data)
   badges/                 # Non-Credly badge images (e.g. Zscaler)
+next.config.ts            # Image remote patterns (CloudFront, Credly)
 docs/
   plans/                  # Design docs and implementation plans
 netlify.toml              # Netlify build config + security headers
-.nvmrc                    # Node version for Netlify
+.nvmrc                    # Node version (20) for Netlify
 ```
 
 ## Photos
@@ -147,6 +144,8 @@ npm run build     # Production build
 npm run start     # Serve production build locally
 npm run lint      # ESLint (flat config via eslint.config.mjs, not next lint)
 ```
+
+**Known lint errors (pre-existing, not regressions):** 2 errors in `interactive-headshot.tsx` (react-hooks/immutability — `animate` accessed before declaration) and `page-transition.tsx` (react-hooks/set-state-in-effect). These are safe to ignore.
 
 ## Certifications
 
