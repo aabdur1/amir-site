@@ -141,7 +141,7 @@ export function Hero() {
       {/* Decorative vertical line — left accent, fades at edges */}
       <div
         ref={lineRef}
-        className="hero-line absolute left-8 sm:left-12 lg:left-20 top-0 bottom-0 w-px"
+        className="hero-line absolute left-12 lg:left-20 top-0 bottom-0 w-px hidden sm:block"
         style={{
           opacity: 0,
           ...(mounted ? { animation: "fade-in 1.2s ease-out 0.3s forwards" } : {}),
