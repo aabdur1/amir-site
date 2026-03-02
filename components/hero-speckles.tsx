@@ -3,13 +3,6 @@
 import { useEffect, useRef, useMemo } from "react";
 
 const ACCENT_COLORS = [
-  "var(--color-mauve)",
-  "var(--color-sapphire)",
-  "var(--color-peach)",
-  "var(--color-lavender)",
-];
-
-const ACCENT_COLORS_DARK = [
   "var(--color-mauve-dark)",
   "var(--color-sapphire-dark)",
   "var(--color-peach-dark)",
@@ -43,24 +36,11 @@ function generateDots(count: number): DotConfig[] {
   const dots: DotConfig[] = [];
 
   for (let i = 0; i < count; i++) {
-    let x = rand() * 100;
-    let y = rand() * 100;
-
-    // Push dots away from center zone to avoid competing with hero text/headshot
-    const centerX = Math.abs(x - 50);
-    const centerY = Math.abs(y - 50);
-    if (centerX < 15 && centerY < 20 && rand() > 0.3) {
-      x = x < 50 ? x - 15 : x + 15;
-      y = y < 50 ? y - 10 : y + 10;
-      x = Math.max(2, Math.min(98, x));
-      y = Math.max(2, Math.min(98, y));
-    }
-
     dots.push({
-      x,
-      y,
-      size: 3 + rand() * 3,
-      baseOpacity: 0.15 + rand() * 0.15,
+      x: rand() * 100,
+      y: rand() * 100,
+      size: 1 + rand() * 2,
+      baseOpacity: 0.2 + rand() * 0.15,
       colorIndex: i % ACCENT_COLORS.length,
     });
   }
@@ -68,11 +48,11 @@ function generateDots(count: number): DotConfig[] {
   return dots;
 }
 
-const DOT_COUNT = 35;
-const INTERACTION_RADIUS = 200;
-const MAX_DRIFT = 12;
-const GLOW_OPACITY = 0.6;
-const LERP = 0.08;
+const DOT_COUNT = 150;
+const INTERACTION_RADIUS = 150;
+const MAX_DRIFT = 6;
+const GLOW_OPACITY = 0.55;
+const LERP = 0.06;
 
 export function HeroSpeckles() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -81,7 +61,6 @@ export function HeroSpeckles() {
   const mouseRef = useRef({ x: -1000, y: -1000 });
   const activeRef = useRef(false);
   const rafRef = useRef<number>(0);
-  const isDarkRef = useRef(false);
 
   const dotConfigs = useMemo(() => generateDots(DOT_COUNT), []);
 
@@ -102,25 +81,6 @@ export function HeroSpeckles() {
       currentDriftY: 0,
       currentOpacity: config.baseOpacity,
     }));
-
-    // Watch for dark mode changes
-    const observer = new MutationObserver(() => {
-      isDarkRef.current = document.documentElement.classList.contains("dark");
-      dotElsRef.current.forEach((el, i) => {
-        if (!el) return;
-        const colors = isDarkRef.current ? ACCENT_COLORS_DARK : ACCENT_COLORS;
-        el.style.backgroundColor = colors[dotConfigs[i].colorIndex];
-      });
-    });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-    isDarkRef.current = document.documentElement.classList.contains("dark");
-
-    // Set initial colors
-    dotElsRef.current.forEach((el, i) => {
-      if (!el) return;
-      const colors = isDarkRef.current ? ACCENT_COLORS_DARK : ACCENT_COLORS;
-      el.style.backgroundColor = colors[dotConfigs[i].colorIndex];
-    });
 
     function animate() {
       if (!activeRef.current || !containerRef.current) return;
@@ -204,7 +164,6 @@ export function HeroSpeckles() {
     return () => {
       parent.removeEventListener("mousemove", handleMouseMove);
       parent.removeEventListener("mouseleave", handleMouseLeave);
-      observer.disconnect();
       activeRef.current = false;
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
@@ -213,7 +172,7 @@ export function HeroSpeckles() {
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 pointer-events-none overflow-hidden"
+      className="absolute inset-0 pointer-events-none overflow-hidden hidden dark:block"
       aria-hidden="true"
       style={{
         opacity: 0,

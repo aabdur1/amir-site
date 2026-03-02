@@ -17,7 +17,7 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Two-page static sit
 - **Fonts via next/font/google.** DM Serif Display (headings), DM Sans (body), Share Tech Mono (mono/tags), Lora (credential badges). Loaded as CSS variables (`--font-display`, `--font-body`, `--font-mono`, `--font-badge`) in `app/layout.tsx`.
 - **Dark mode via class toggle.** Uses `.dark` class on `<html>`. Custom variant defined in globals.css: `@custom-variant dark (&:where(.dark, .dark *));`. Blocking inline `<script>` in `layout.tsx` prevents flash of wrong theme on load. Toggle adds `.theme-transitioning` class for smooth 300ms crossfade.
 - **No icon libraries.** Icons are inline SVGs.
-- **Client components marked explicitly.** Components using `"use client"`: nav, dark-mode-toggle, hero, animated-text, cursor-gradient, interactive-headshot, certifications, footer, scroll-progress, page-transition. Gallery components (masonry-grid, photo-card, sort-controls) are also client components.
+- **Client components marked explicitly.** Components using `"use client"`: nav, dark-mode-toggle, hero, animated-text, hero-speckles, interactive-headshot, certifications, footer, scroll-progress, page-transition. Gallery components (masonry-grid, photo-card, sort-controls) are also client components.
 - **No shorthand/longhand mixing in inline styles.** Always fold `animationDelay` into the `animation` shorthand to avoid React warnings.
 
 ## Key Patterns
@@ -30,9 +30,9 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Two-page static sit
 - **Staggered page transitions.** `PageTransition` wraps each direct child with `fade-in-up` animation, 120ms stagger between sections. Tracks visited pages via module-level `Set` — first visit gets full stagger, return visits get a quick 200ms fade-in.
 - **Per-element parallax.** Hero elements each have their own scroll speed (label fastest, badges slowest), creating a spread/dispersal effect on scroll. Uses refs + RAF + passive scroll listener — no state re-renders. Skipped entirely when `prefers-reduced-motion` is enabled.
 - **Multi-accent hero badges.** Each hero badge pill has a distinct Catppuccin accent (sapphire, mauve, peach, lavender) with tinted background, colored dot, and matching hover border.
-- **Cursor-reactive gradient.** `CursorGradient` tracks mouse with RAF + lerp smoothing, disabled on touch devices.
+- **Cursor-reactive hero speckles (dark mode only).** `HeroSpeckles` renders 150 small dots (1-3px) across the hero using Catppuccin Mocha accents (mauve, sapphire, peach, lavender). Dots drift away from cursor (6px max) and glow brighter on approach. Hidden in light mode via `hidden dark:block`. Uses seeded PRNG for deterministic placement, RAF + lerp (0.06) + convergence check. Disabled on touch devices and with `prefers-reduced-motion`.
 - **Cursor-reactive headshot.** `InteractiveHeadshot` tilts image toward cursor (3deg max) with dynamic shadow — cursor acts as light source. Uses perspective 3D transform + RAF + lerp. Disabled on touch devices.
-- **RAF convergence checks.** Both `CursorGradient` and `InteractiveHeadshot` RAF loops stop automatically when lerp values converge (within 0.1px / 0.01deg), preventing infinite 60fps loops while cursor is stationary.
+- **RAF convergence checks.** `HeroSpeckles` and `InteractiveHeadshot` RAF loops stop automatically when lerp values converge (within 0.1px / 0.01deg), preventing infinite 60fps loops while cursor is stationary.
 - **Parallax delayed start.** Hero parallax scroll listener attaches after 2.5s delay to avoid `style.transform` conflicting with CSS `fade-in-up` animation `forwards` fill during entrance animations.
 - **Scroll progress bar.** `ScrollProgress` component shows a 2px mauve bar at the top of the viewport. Only renders on pages >2x viewport height (via ResizeObserver). RAF-gated scroll, fades in after first scroll.
 - **Gallery count-up animation.** Photo count in gallery subtitle animates from 0 to target using RAF with cubic ease-out over 1.2s. Triggers on viewport entry via IntersectionObserver. Respects `prefers-reduced-motion`.
@@ -48,19 +48,22 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Two-page static sit
 **Multi-accent system (Latte / Mocha):**
 - Mauve (`#8839ef` / `#cba6f7`) — structural: rules, underlines, selection, active nav
 - Peach (`#fe640b` / `#fab387`) — decorative: section numbers, ornaments, separators
-- Sapphire (`#209fb5` / `#74c7ec`) — interactive: hover borders, cursor gradient
-- Lavender (`#7287fd` / `#b4befe`) — ambient: headshot glow, moon icon
+- Sapphire (`#209fb5` / `#74c7ec`) — interactive: hover borders, footer link hovers
+- Lavender (`#7287fd` / `#b4befe`) — ambient: headshot glow, moon icon, scroll indicator
+- Rosewater (`#dc8a78` / `#f5e0dc`) — warm highlight: footer ornamental diamond
 - Yellow (`#df8e1d` / `#f9e2af`) — kept only for dark mode toggle sun icon
 
-**Effects:** Grain texture overlay (SVG noise at 12% light / 4% dark), sharp editorial shadows, gold text selection, gold-tinted cursor gradient.
+**Effects:** Grain texture overlay (SVG noise at 12% light / 4% dark), sharp editorial shadows, gold text selection, cursor-reactive color speckles (dark mode only).
 
 **Animations:** `fade-in`, `fade-in-up`, `scale-in`, `dropdown-in`, `line-grow` (gold accent rule), `shimmer` (scroll indicator), `float` (scroll line bob). Dark mode toggle: `icon-swap-in` (springy pop), `sun-spin`, `moon-rock`, `sun-glow` (gold), `moon-glow` (blue). Staggered delays throughout hero + certifications.
 
-**Utility classes:** `btn-lift` (hover: translateY(-1px), active: snap back), `card-hover` (hover: translateY(-2px) + elevated shadow).
+**Utility classes:** `btn-lift` (hover: translateY(-1px) with spring overshoot, active: snap back), `card-hover` (hover: translateY(-2px) + elevated shadow with spring overshoot).
 
 **CSS-based nav animations:** `.nav-wordmark::after` (gold underline sweep), `.nav-gallery-pill::before` (gold fill sweep), `.hero-line` (gradient vertical line with dark mode support). These use real CSS `transform: scaleX()` for reliable transitions.
 
-**Bold aesthetic:** Personal portfolio with editorial energy. Hero has per-element layered parallax (elements spread apart on scroll at different rates), cursor-reactive 3D headshot, decorative offset borders, gold-tinted ambient glow. Gallery photos scale-in with rotation, hover states use gentle scale-up (1.02) + shadow bloom + slow inner image zoom (cinematic Ken Burns feel). Typography is large and confident (hero name at 5-8rem responsive). Navbar name hidden on home page while hero is visible, fades in on scroll.
+**Spring easing:** Interactive elements use `cubic-bezier(0.34, 1.56, 0.64, 1)` for hover entry (slight overshoot bounce) and `cubic-bezier(0.22, 1, 0.36, 1)` for settle-back. Applied to `btn-lift`, `card-hover`, nav gallery pill fill, nav wordmark underline, hero badge pills, and certification cards.
+
+**Bold aesthetic:** Personal portfolio with editorial energy. Hero has per-element layered parallax (elements spread apart on scroll at different rates), cursor-reactive 3D headshot, cursor-reactive color speckle field (dark mode), decorative offset borders. Gallery photos scale-in with rotation, hover states use gentle scale-up (1.02) + shadow bloom + slow inner image zoom (cinematic Ken Burns feel). Typography is large and confident (hero name at 5-8rem responsive). Navbar name hidden on home page while hero is visible, fades in on scroll.
 
 ## Mobile & Accessibility
 
@@ -68,7 +71,7 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Two-page static sit
 - **Touch targets ≥ 44px.** Footer links, Credly link, and sort dropdown options all have `py-3` padding. Social icon buttons are `w-11 h-11` (44px) with `gap-2` (8px) spacing.
 - **`prefers-reduced-motion` supported.** Global CSS media query kills all animation durations/iterations. Hero parallax scroll listener is skipped entirely. `PageTransition` renders without `opacity: 0` start state. Gallery count-up shows final number immediately. Cursor effects gated behind `(pointer: fine)`.
 - **Gallery keyboard accessible.** Photo cards have `role="button"`, `tabIndex={0}`, `onKeyDown` (Enter/Space), and `aria-label` with photo metadata. Sort dropdown uses `role="menu"`/`role="menuitem"`.
-- **Decorative elements hidden from screen readers.** Nav arrow SVG, scroll progress bar, and cursor gradient all use `aria-hidden="true"`.
+- **Decorative elements hidden from screen readers.** Nav arrow SVG, scroll progress bar, and hero speckles all use `aria-hidden="true"`.
 - **`-webkit-tap-highlight-color: transparent`** on all `a` and `button` elements for clean mobile taps.
 - **`100dvh` for hero.** Uses dynamic viewport height to account for mobile browser chrome.
 - **Hero decorative line hidden on mobile.** The vertical accent line (`hero-line`) is `hidden sm:block` — only visible at 640px+ where left margin clears content.
@@ -94,7 +97,8 @@ components/
   interactive-headshot.tsx# Cursor-reactive 3D tilt headshot (light-source shadow)
   certifications.tsx      # Scroll-triggered Credly badge grid (8 certs)
   animated-text.tsx       # Staggered word-by-word text reveal
-  cursor-gradient.tsx     # Cursor-reactive gradient on hero
+  hero-speckles.tsx       # Cursor-reactive color dot field (dark mode only)
+  cursor-gradient.tsx     # Cursor-reactive gradient (unused, kept for reference)
   scroll-progress.tsx     # Mauve scroll progress bar (auto-hides on short pages)
   page-transition.tsx     # Staggered fade-in-up page wrapper (reduced-motion safe)
   gallery/
@@ -144,3 +148,4 @@ npm run lint      # ESLint (flat config via eslint.config.mjs, not next lint)
 - Full implementation: `docs/plans/2026-03-01-personal-site-implementation.md`
 - Mobile responsiveness: `docs/plans/2026-03-01-mobile-responsiveness.md`
 - Design polish: `docs/plans/2026-03-02-design-polish.md`
+- Focused polish (speckles, spring easing, accents): `docs/plans/2026-03-02-focused-polish-design.md`

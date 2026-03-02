@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useCallback, useSyncExternalStore } from "react";
 import { AnimatedText } from "@/components/animated-text";
-import { CursorGradient } from "@/components/cursor-gradient";
 import { HeroSpeckles } from "@/components/hero-speckles";
 import { InteractiveHeadshot } from "@/components/interactive-headshot";
 
@@ -143,7 +142,6 @@ export function Hero() {
       ref={sectionRef}
       className="relative overflow-hidden min-h-[calc(100dvh-4.5rem)] flex items-center justify-center"
     >
-      <CursorGradient />
       <HeroSpeckles />
 
       {/* Decorative vertical line — left accent, fades at edges */}
