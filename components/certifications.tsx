@@ -40,7 +40,7 @@ export function Certifications({ badges }: CertificationsProps) {
   return (
     <section
       ref={sectionRef}
-      className="relative py-20 sm:py-28 bg-cream-dark/40 dark:bg-night-card/30"
+      className="relative py-20 sm:py-28"
     >
       {/* Top ornamental divider */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 flex items-center gap-3 -translate-y-1/2">
@@ -60,7 +60,7 @@ export function Certifications({ badges }: CertificationsProps) {
         >
           <p className="text-[13px] tracking-[0.3em] uppercase font-[family-name:var(--font-mono)]
             text-ink-muted dark:text-night-muted mb-3">
-            <span className="text-peach dark:text-peach-dark">01</span>
+            <span className="text-peach dark:text-peach-dark">03</span>
             <span className="mx-2 text-cream-border dark:text-night-border">/</span>
             Certifications
           </p>
