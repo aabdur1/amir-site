@@ -48,7 +48,7 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
       onClick={onClick}
       className={`mb-4 break-inside-avoid cursor-pointer rounded-lg ${
         entryDone
-          ? 'transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-2.5 hover:shadow-card-hover'
+          ? 'group transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] hover:scale-[1.02] hover:shadow-[0_8px_40px_rgba(0,0,0,0.12)]'
           : ''
       }`}
       style={
@@ -70,9 +70,9 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
           alt={`Photo taken on ${photo.date}`}
           width={800}
           height={600}
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+          unoptimized
           onLoad={() => setIsLoaded(true)}
-          className="w-full h-auto transition-all duration-700 ease-out"
+          className="w-full h-auto transition-all duration-700 ease-out group-hover:scale-[1.04] group-hover:duration-[2s]"
           style={{
             filter: isLoaded ? 'blur(0)' : 'blur(20px)',
             transform: isLoaded ? 'scale(1)' : 'scale(1.1)',

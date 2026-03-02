@@ -24,8 +24,12 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Two-page static sit
 
 - **Hydration safety via `useSyncExternalStore`.** Components that need to differ between server and client (dark-mode-toggle, hero, animated-text) use a `useHydrated()` hook built on `useSyncExternalStore(subscribe, () => true, () => false)` to safely detect client-side hydration without flicker.
 - **Scroll-triggered reveals via Intersection Observer.** Gallery photo cards use `IntersectionObserver` with `threshold` and `triggerOnce` patterns to animate elements into view on scroll.
-- **Blur-up image loading.** Gallery photo cards show a blurred placeholder and transition to the full image on load, using CSS opacity transitions.
+- **`next/image` for optimized images.** Headshot uses `fill` + `preload`, badges use explicit `width/height`, gallery photos use `unoptimized` (direct CloudFront delivery — avoids `/_next/image` proxy overhead for ~50 large photos). Remote patterns configured in `next.config.ts` for CloudFront and Credly domains.
+- **Blur-up image loading.** Gallery photo cards show a blurred placeholder and transition to the full image on load, using CSS filter transitions. Custom implementation (not `placeholder="blur"`) to avoid needing `blurDataURL` per remote image.
+- **Branded OG images.** `app/opengraph-image.tsx` and `app/gallery/opengraph-image.tsx` generate 1200x630 PNGs at build time using `ImageResponse` from `next/og`. Catppuccin Mocha branding with DM Serif Display font loaded from Google Fonts gstatic. No hardcoded `images` in metadata — Next.js auto-injects from these routes.
+- **Staggered page transitions.** `PageTransition` wraps each direct child with `fade-in-up` animation, 120ms stagger between sections (Hero → Certifications on home, single child on gallery).
 - **Per-element parallax.** Hero elements each have their own scroll speed (label fastest, badges slowest), creating a spread/dispersal effect on scroll. Uses refs + RAF + passive scroll listener — no state re-renders.
+- **Multi-accent hero badges.** Each hero badge pill has a distinct Catppuccin accent (sapphire, mauve, peach, lavender) with tinted background, colored dot, and matching hover border.
 - **Cursor-reactive gradient.** `CursorGradient` tracks mouse with RAF + lerp smoothing, disabled on touch devices.
 - **Cursor-reactive headshot.** `InteractiveHeadshot` tilts image toward cursor (3deg max) with dynamic shadow — cursor acts as light source. Uses perspective 3D transform + RAF + lerp. Disabled on touch devices.
 
@@ -40,7 +44,7 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Two-page static sit
 **Multi-accent system (Latte / Mocha):**
 - Mauve (`#8839ef` / `#cba6f7`) — structural: rules, underlines, selection, active nav
 - Peach (`#fe640b` / `#fab387`) — decorative: section numbers, ornaments, separators
-- Sapphire (`#209fb5` / `#74c7ec`) — interactive: badge pills, hover borders, cursor gradient
+- Sapphire (`#209fb5` / `#74c7ec`) — interactive: hover borders, cursor gradient
 - Lavender (`#7287fd` / `#b4befe`) — ambient: headshot glow, moon icon
 - Yellow (`#df8e1d` / `#f9e2af`) — kept only for dark mode toggle sun icon
 
@@ -52,16 +56,18 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Two-page static sit
 
 **CSS-based nav animations:** `.nav-wordmark::after` (gold underline sweep), `.nav-gallery-pill::before` (gold fill sweep), `.hero-line` (gradient vertical line with dark mode support). These use real CSS `transform: scaleX()` for reliable transitions.
 
-**Bold aesthetic:** Personal portfolio with editorial energy. Hero has per-element layered parallax (elements spread apart on scroll at different rates), cursor-reactive 3D headshot, decorative offset borders, gold-tinted ambient glow. Gallery photos scale-in with rotation, hover states lift with shadow. Typography is large and confident (hero name at 5-8rem responsive). Navbar name hidden on home page while hero is visible, fades in on scroll.
+**Bold aesthetic:** Personal portfolio with editorial energy. Hero has per-element layered parallax (elements spread apart on scroll at different rates), cursor-reactive 3D headshot, decorative offset borders, gold-tinted ambient glow. Gallery photos scale-in with rotation, hover states use gentle scale-up (1.02) + shadow bloom + slow inner image zoom (cinematic Ken Burns feel). Typography is large and confident (hero name at 5-8rem responsive). Navbar name hidden on home page while hero is visible, fades in on scroll.
 
 ## File Structure
 
 ```
 app/
   layout.tsx              # Root layout, fonts (4 families), metadata, nav, footer
+  opengraph-image.tsx     # Branded OG image (Catppuccin Mocha, 1200x630)
   page.tsx                # Landing: Hero + Certifications
   globals.css             # @theme tokens, keyframes, utility classes
   gallery/
+    opengraph-image.tsx   # Gallery OG image (Catppuccin Mocha, 1200x630)
     page.tsx              # Photography gallery page
 components/
   nav.tsx                 # Sticky nav: wordmark hidden on home until scroll, gallery pill, thin rule
@@ -72,7 +78,7 @@ components/
   certifications.tsx      # Scroll-triggered Credly badge grid (8 certs)
   animated-text.tsx       # Staggered word-by-word text reveal
   cursor-gradient.tsx     # Cursor-reactive gradient on hero
-  page-transition.tsx     # Fade-in page wrapper
+  page-transition.tsx     # Staggered fade-in-up page wrapper
   gallery/
     masonry-grid.tsx      # Masonry layout with sort + lightbox
     photo-card.tsx        # Blur-up loading + scroll reveal + hover
@@ -91,7 +97,7 @@ netlify.toml              # Netlify build config
 
 - Hosted on S3 via CloudFront: `https://d36t8s1mzbufg5.cloudfront.net/`
 - Metadata in `public/photos.json` (URL, date, camera, lens)
-- ~50 photos, Sony Alpha cameras (ILCE-6300, ILCE-6700)
+- ~50 photos currently, multi-camera (Sony, Fujifilm, Nikon) — brands derived dynamically from EXIF `camera` field in `masonry-grid.tsx`
 - Right-click disabled on gallery images
 - To add photos: append entries to `photos.json` with S3 URL and EXIF metadata
 
