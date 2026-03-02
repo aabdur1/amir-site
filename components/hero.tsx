@@ -132,7 +132,7 @@ export function Hero() {
                 ...(mounted ? { animation: "fade-in-up 0.6s ease-out 0.1s forwards" } : {}),
               }}
             >
-              Software <span className="text-gold dark:text-gold-dark">&middot;</span> Healthcare <span className="text-gold dark:text-gold-dark">&middot;</span> Photography
+              Software <span className="text-peach dark:text-peach-dark">&middot;</span> Healthcare <span className="text-peach dark:text-peach-dark">&middot;</span> Photography
             </p>
 
             {/* Name — editorial scale */}
@@ -149,7 +149,7 @@ export function Hero() {
             {/* Gold accent rule */}
             <div
               ref={ruleRef}
-              className="mt-6 sm:mt-8 h-0.5 w-16 bg-gold dark:bg-gold-dark origin-left will-change-transform"
+              className="mt-6 sm:mt-8 h-0.5 w-16 bg-mauve dark:bg-mauve-dark origin-left will-change-transform"
               style={{
                 opacity: 0,
                 transform: "scaleX(0)",
@@ -169,7 +169,7 @@ export function Hero() {
               }}
             >
               Healthcare meets technology{" "}
-              <span className="text-gold dark:text-gold-dark not-italic">&#8212;</span>{" "}
+              <span className="text-peach dark:text-peach-dark not-italic">&#8212;</span>{" "}
               <span className="text-ink dark:text-night-text not-italic font-[family-name:var(--font-body)] font-medium">Chicago.</span>
             </p>
 
@@ -230,17 +230,17 @@ export function Hero() {
               </a>
             </div>
 
-            {/* Badges — gold-accented pills */}
+            {/* Badges — sapphire-accented pills */}
             <div ref={badgesRef} className="flex flex-wrap gap-2.5 mt-10 will-change-transform">
               {badges.map((badge, i) => (
                 <span
                   key={badge}
                   className="rounded-full px-4 py-2
-                    bg-gold/8 dark:bg-gold-dark/10
+                    bg-sapphire/8 dark:bg-sapphire-dark/10
                     border border-cream-border dark:border-night-border
                     text-[13px] tracking-wide font-[family-name:var(--font-badge)]
                     text-ink/70 dark:text-night-text/70
-                    hover:-translate-y-0.5 hover:shadow-card hover:border-gold/30 dark:hover:border-gold-dark/30
+                    hover:-translate-y-0.5 hover:shadow-card hover:border-sapphire/30 dark:hover:border-sapphire-dark/30
                     hover:text-ink dark:hover:text-night-text
                     transition-all duration-300"
                   style={{

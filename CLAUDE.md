@@ -29,13 +29,20 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Two-page static sit
 - **Cursor-reactive gradient.** `CursorGradient` tracks mouse with RAF + lerp smoothing, disabled on touch devices.
 - **Cursor-reactive headshot.** `InteractiveHeadshot` tilts image toward cursor (3deg max) with dynamic shadow — cursor acts as light source. Uses perspective 3D transform + RAF + lerp. Disabled on touch devices.
 
-## Design System — Cool Grey Editorial
+## Design System — Catppuccin Editorial
 
-**Aesthetic:** Magazine/editorial — cool grey bg + near-black ink + gold accents. Typography does the heavy lifting.
+**Aesthetic:** Magazine/editorial typography on Catppuccin color palette. Both modes are dark — Frappé (blue-grey) for "light" and Mocha (deep purple) for dark.
 
-**Color tokens (light):** cool grey bg (`#F0F1F3`, `#E5E6EA`), grey border (`#D2D3D8`), ink text (`#1a1a1a`), ink-muted (`#6b6b6b`), ink-faint (`#9a9a9a`), gold accent (`#D4A853`), gold-muted (`#C49A42`)
+**Color tokens (light — Catppuccin Latte):** Base (`#eff1f5`), Mantle (`#e6e9ef`), Surface0 (`#ccd0da`), Text (`#4c4f69`), Subtext0 (`#6c6f85`), Overlay1 (`#8c8fa1`)
 
-**Color tokens (dark):** night bg (`#0D0D0F`, `#161618`), night border (`#2a2a2e`), night text (`#e8e8e8`), night-muted (`#888888`), gold-dark (`#E8BC6A`)
+**Color tokens (dark — Catppuccin Mocha):** Base (`#1e1e2e`), Mantle (`#181825`), Surface0 (`#313244`), Text (`#cdd6f4`), Subtext0 (`#a6adc8`)
+
+**Multi-accent system (Latte / Mocha):**
+- Mauve (`#8839ef` / `#cba6f7`) — structural: rules, underlines, selection, active nav
+- Peach (`#fe640b` / `#fab387`) — decorative: section numbers, ornaments, separators
+- Sapphire (`#209fb5` / `#74c7ec`) — interactive: badge pills, hover borders, cursor gradient
+- Lavender (`#7287fd` / `#b4befe`) — ambient: headshot glow, moon icon
+- Yellow (`#df8e1d` / `#f9e2af`) — kept only for dark mode toggle sun icon
 
 **Effects:** Grain texture overlay (SVG noise at 4% opacity), sharp editorial shadows, gold text selection, gold-tinted cursor gradient.
 

@@ -20,7 +20,7 @@ export function Footer() {
       {/* Top ornamental divider */}
       <div className="flex items-center justify-center gap-3 mb-12">
         <div className="h-px w-12 bg-cream-border dark:bg-night-border" />
-        <span className="text-gold dark:text-gold-dark text-xs">&#9670;</span>
+        <span className="text-peach dark:text-peach-dark text-xs">&#9670;</span>
         <div className="h-px w-12 bg-cream-border dark:bg-night-border" />
       </div>
 

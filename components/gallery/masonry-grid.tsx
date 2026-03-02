@@ -29,16 +29,16 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
         <div className="flex flex-col items-center">
           <p className="text-[13px] tracking-[0.3em] uppercase font-[family-name:var(--font-mono)]
             text-ink-muted dark:text-night-muted mb-4">
-            <span className="text-gold dark:text-gold-dark">02</span>
+            <span className="text-peach dark:text-peach-dark">02</span>
             <span className="mx-2 text-cream-border dark:text-night-border">/</span>
             Portfolio
           </p>
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-[family-name:var(--font-display)] text-ink dark:text-night-text text-center">
             Photography
           </h1>
-          <div className="mt-4 h-px w-16 bg-gold dark:bg-gold-dark" />
+          <div className="mt-4 h-px w-16 bg-mauve dark:bg-mauve-dark" />
           <p className="mt-5 text-sm text-ink-muted dark:text-night-muted font-[family-name:var(--font-mono)]">
-            {photos.length} images <span className="text-gold dark:text-gold-dark">&middot;</span> Sony Alpha
+            {photos.length} images <span className="text-peach dark:text-peach-dark">&middot;</span> Sony Alpha
           </p>
         </div>
         {/* Sort controls */}

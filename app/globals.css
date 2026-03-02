@@ -3,24 +3,40 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* Colors - Light: Cool Grey Editorial */
-  --color-cream: #F0F1F3;
-  --color-cream-dark: #E5E6EA;
-  --color-cream-border: #D2D3D8;
-  --color-ink: #1a1a1a;
-  --color-ink-muted: #6b6b6b;
-  --color-ink-faint: #9a9a9a;
-  --color-gold: #D4A853;
-  --color-gold-muted: #C49A42;
-  --color-white: #FFFFFF;
+  /* Colors - Light: Catppuccin Latte */
+  --color-cream: #eff1f5;         /* Base */
+  --color-cream-dark: #e6e9ef;    /* Mantle */
+  --color-cream-border: #ccd0da;  /* Surface0 */
+  --color-ink: #4c4f69;           /* Text */
+  --color-ink-muted: #6c6f85;     /* Subtext0 */
+  --color-ink-faint: #8c8fa1;     /* Overlay1 */
+  --color-gold: #df8e1d;          /* Yellow — sun toggle only */
+  --color-gold-muted: #dc8a78;    /* Rosewater */
+  --color-white: #ffffff;         /* White */
 
-  /* Colors - Dark mode: Deep editorial */
-  --color-night: #0D0D0F;
-  --color-night-card: #161618;
-  --color-night-border: #2a2a2e;
-  --color-night-text: #e8e8e8;
-  --color-night-muted: #888888;
-  --color-gold-dark: #E8BC6A;
+  /* Accent: Mauve — structural (rules, underlines, selection) */
+  --color-mauve: #8839ef;
+  --color-mauve-dark: #cba6f7;
+
+  /* Accent: Peach — decorative (numbers, ornaments, separators) */
+  --color-peach: #fe640b;
+  --color-peach-dark: #fab387;
+
+  /* Accent: Sapphire — interactive (badges, hovers, cursor) */
+  --color-sapphire: #209fb5;
+  --color-sapphire-dark: #74c7ec;
+
+  /* Accent: Lavender — ambient (glows) */
+  --color-lavender: #7287fd;
+  --color-lavender-dark: #b4befe;
+
+  /* Colors - Dark: Catppuccin Mocha */
+  --color-night: #1e1e2e;         /* Base */
+  --color-night-card: #181825;    /* Mantle */
+  --color-night-border: #313244;  /* Surface0 */
+  --color-night-text: #cdd6f4;    /* Text */
+  --color-night-muted: #a6adc8;   /* Subtext0 */
+  --color-gold-dark: #f9e2af;     /* Yellow — sun toggle only */
 
   /* Typography */
   --font-display: var(--font-display);
@@ -28,9 +44,9 @@
   --font-mono: var(--font-mono);
   --font-badge: var(--font-badge);
 
-  /* Shadows - editorial, sharp */
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 6px 16px rgba(0,0,0,0.06);
-  --shadow-card-hover: 0 2px 8px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.10);
+  /* Shadows - moderate, works on both light and dark */
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 6px 16px rgba(0,0,0,0.08);
+  --shadow-card-hover: 0 2px 8px rgba(0,0,0,0.08), 0 12px 32px rgba(0,0,0,0.14);
 
   /* Animations */
   --animate-fade-in: fade-in 0.6s ease-out forwards;
@@ -90,6 +106,11 @@ body {
   color: var(--color-night-text);
 }
 
+/* Grain: subtler on dark backgrounds */
+.dark body::after {
+  opacity: 0.04;
+}
+
 /* Grain texture — subtle film grain, editorial feel */
 body::after {
   content: "";
@@ -97,11 +118,11 @@ body::after {
   inset: 0;
   pointer-events: none;
   z-index: 9999;
-  opacity: 0.04;
+  opacity: 0.07;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 }
 
-/* Heading text-shadow — barely perceptible weight */
+/* Heading text-shadow — subtle on light, deeper on dark */
 h1, h2 {
   text-shadow:
     0 1px 2px rgba(0,0,0,0.06),
@@ -110,8 +131,8 @@ h1, h2 {
 
 .dark h1, .dark h2 {
   text-shadow:
-    0 1px 3px rgba(0,0,0,0.2),
-    0 2px 8px rgba(0,0,0,0.1);
+    0 1px 3px rgba(0,0,0,0.3),
+    0 2px 8px rgba(0,0,0,0.15);
 }
 
 /* Dark mode toggle — animated */
@@ -134,12 +155,12 @@ h1, h2 {
 
 @keyframes sun-glow {
   0%, 100% { filter: drop-shadow(0 0 0px transparent); }
-  50% { filter: drop-shadow(0 0 6px rgba(212, 168, 83, 0.5)); }
+  50% { filter: drop-shadow(0 0 6px rgba(249, 226, 175, 0.5)); }
 }
 
 @keyframes moon-glow {
   0%, 100% { filter: drop-shadow(0 0 0px transparent); }
-  50% { filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.45)); }
+  50% { filter: drop-shadow(0 0 8px rgba(114, 135, 253, 0.4)); }
 }
 
 .dark-toggle-icon {
@@ -195,7 +216,7 @@ h1, h2 {
   background: linear-gradient(to bottom, transparent 0%, var(--color-night-border) 20%, var(--color-night-border) 80%, transparent 100%);
 }
 
-/* Nav wordmark — gold underline sweep on hover */
+/* Nav wordmark — mauve underline sweep on hover */
 .nav-wordmark {
   position: relative;
 }
@@ -207,14 +228,14 @@ h1, h2 {
   left: 0;
   right: 0;
   height: 2px;
-  background: var(--color-gold);
+  background: var(--color-mauve);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.5s ease-out;
 }
 
 .dark .nav-wordmark::after {
-  background: var(--color-gold-dark);
+  background: var(--color-mauve-dark);
 }
 
 .nav-wordmark:hover::after {
@@ -227,14 +248,14 @@ h1, h2 {
   position: absolute;
   inset: 0;
   border-radius: 9999px;
-  background: rgba(212, 168, 83, 0.08);
+  background: rgba(32, 159, 181, 0.08);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.3s ease-out;
 }
 
 .dark .nav-gallery-pill::before {
-  background: rgba(232, 188, 106, 0.1);
+  background: rgba(116, 199, 236, 0.1);
 }
 
 .nav-gallery-pill:hover::before {
@@ -245,8 +266,12 @@ h1, h2 {
   transform: scaleX(1);
 }
 
-/* Selection — gold tint */
+/* Selection — Catppuccin Mauve tint */
 ::selection {
-  background-color: rgba(212, 168, 83, 0.25);
+  background-color: rgba(136, 57, 239, 0.2);
   color: inherit;
+}
+
+.dark ::selection {
+  background-color: rgba(203, 166, 247, 0.25);
 }

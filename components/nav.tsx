@@ -56,8 +56,8 @@ export default function Nav() {
               px-4 py-2 rounded-full border overflow-hidden
               transition-all duration-300
               ${isGallery
-                ? "nav-gallery-active border-gold dark:border-gold-dark text-ink dark:text-night-text"
-                : "border-cream-border dark:border-night-border text-ink-muted dark:text-night-muted hover:border-gold/60 dark:hover:border-gold-dark/60 hover:text-ink dark:hover:text-night-text"
+                ? "nav-gallery-active border-mauve dark:border-mauve-dark text-ink dark:text-night-text"
+                : "border-cream-border dark:border-night-border text-ink-muted dark:text-night-muted hover:border-sapphire/60 dark:hover:border-sapphire-dark/60 hover:text-ink dark:hover:text-night-text"
               }`}
           >
             <span className="relative z-10 flex items-center gap-0 group-hover:gap-1.5 transition-all duration-300">

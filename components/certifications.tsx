@@ -108,7 +108,7 @@ export function Certifications() {
       {/* Top ornamental divider */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 flex items-center gap-3 -translate-y-1/2">
         <div className="h-px w-12 bg-cream-border dark:bg-night-border" />
-        <span className="text-gold dark:text-gold-dark text-xs leading-none">&#9670;</span>
+        <span className="text-peach dark:text-peach-dark text-xs leading-none">&#9670;</span>
         <div className="h-px w-12 bg-cream-border dark:bg-night-border" />
       </div>
 
@@ -123,7 +123,7 @@ export function Certifications() {
         >
           <p className="text-[13px] tracking-[0.3em] uppercase font-[family-name:var(--font-mono)]
             text-ink-muted dark:text-night-muted mb-3">
-            <span className="text-gold dark:text-gold-dark">01</span>
+            <span className="text-peach dark:text-peach-dark">01</span>
             <span className="mx-2 text-cream-border dark:text-night-border">/</span>
             Certifications
           </p>
@@ -131,7 +131,7 @@ export function Certifications() {
             text-ink dark:text-night-text">
             Verified Credentials
           </h2>
-          <div className="mt-4 mx-auto h-px w-12 bg-gold dark:bg-gold-dark origin-center"
+          <div className="mt-4 mx-auto h-px w-12 bg-mauve dark:bg-mauve-dark origin-center"
             style={{
               transform: "scaleX(0)",
               ...(visible ? { animation: "line-grow 0.8s ease-out 0.3s forwards" } : {}),
@@ -150,7 +150,7 @@ export function Certifications() {
               className="group flex flex-col items-center text-center p-4 sm:p-5 rounded-2xl
                 bg-cream/80 dark:bg-night/60
                 border border-cream-border/60 dark:border-night-border/60
-                hover:-translate-y-1 hover:shadow-card hover:border-gold/30 dark:hover:border-gold-dark/30
+                hover:-translate-y-1 hover:shadow-card hover:border-sapphire/30 dark:hover:border-sapphire-dark/30
                 transition-all duration-300"
               style={{
                 opacity: 0,

@@ -168,7 +168,7 @@ export function InteractiveHeadshot() {
       {/* Glow that shifts toward cursor */}
       <div
         ref={glowRef}
-        className="absolute -inset-10 bg-gold/6 dark:bg-gold-dark/10 rounded-full blur-3xl -z-10 will-change-transform"
+        className="absolute -inset-10 bg-lavender/8 dark:bg-lavender-dark/10 rounded-full blur-3xl -z-10 will-change-transform"
       />
     </div>
   );

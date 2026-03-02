@@ -67,7 +67,7 @@ export default function DarkModeToggle() {
           <svg
             viewBox="0 0 20 20"
             fill="currentColor"
-            className="h-4.5 w-4.5 text-gold"
+            className="h-4.5 w-4.5 text-gold-dark"
           >
             <path
               fillRule="evenodd"
@@ -80,7 +80,7 @@ export default function DarkModeToggle() {
           <svg
             viewBox="0 0 20 20"
             fill="currentColor"
-            className="h-4.5 w-4.5 text-blue-400"
+            className="h-4.5 w-4.5 text-[#7287fd]"
           >
             <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
           </svg>
