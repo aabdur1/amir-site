@@ -280,10 +280,10 @@ export function Hero() {
                       text-[11px] sm:text-[13px] tracking-wide font-[family-name:var(--font-badge)]
                       ${s.text}
                       hover:-translate-y-0.5 hover:shadow-card
-                      hover:text-ink dark:hover:text-night-text
-                      transition-all duration-300`}
+                      hover:text-ink dark:hover:text-night-text`}
                     style={{
                       opacity: 0,
+                      transition: "transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 250ms cubic-bezier(0.34, 1.56, 0.64, 1), border-color 300ms ease, color 200ms ease",
                       ...(mounted
                         ? {
                             animation: `fade-in-up 0.5s ease-out ${1600 + i * 100}ms forwards`,
@@ -323,7 +323,7 @@ export function Hero() {
         }}
       >
         <span
-          className="text-[11px] tracking-[0.2em] uppercase font-[family-name:var(--font-mono)] text-ink-faint dark:text-night-muted/50"
+          className="text-[11px] tracking-[0.2em] uppercase font-[family-name:var(--font-mono)] text-lavender/50 dark:text-lavender-dark/50"
           style={{ animation: mounted ? "shimmer 3s ease-in-out 3s infinite" : "none" }}
         >
           Scroll

@@ -20,7 +20,7 @@ export function Footer() {
       {/* Top ornamental divider */}
       <div className="flex items-center justify-center gap-3 mb-12">
         <div className="h-px w-12 bg-cream-border dark:bg-night-border" />
-        <span className="text-peach dark:text-peach-dark text-xs">&#9670;</span>
+        <span className="text-rosewater dark:text-rosewater-dark text-xs">&#9670;</span>
         <div className="h-px w-12 bg-cream-border dark:bg-night-border" />
       </div>
 
@@ -50,7 +50,7 @@ export function Footer() {
             rel="noopener noreferrer"
             className="text-xs tracking-[0.15em] uppercase font-[family-name:var(--font-mono)]
               text-ink-muted dark:text-night-muted hover:text-ink dark:hover:text-night-text
-              hover:-translate-y-px hover:underline hover:decoration-mauve dark:hover:decoration-mauve-dark
+              hover:-translate-y-px hover:underline hover:decoration-sapphire dark:hover:decoration-sapphire-dark
               hover:underline-offset-4 hover:decoration-2
               py-3 px-1 transition-all duration-200"
           >
@@ -63,7 +63,7 @@ export function Footer() {
             rel="noopener noreferrer"
             className="text-xs tracking-[0.15em] uppercase font-[family-name:var(--font-mono)]
               text-ink-muted dark:text-night-muted hover:text-ink dark:hover:text-night-text
-              hover:-translate-y-px hover:underline hover:decoration-mauve dark:hover:decoration-mauve-dark
+              hover:-translate-y-px hover:underline hover:decoration-sapphire dark:hover:decoration-sapphire-dark
               hover:underline-offset-4 hover:decoration-2
               py-3 px-1 transition-all duration-200"
           >
@@ -74,7 +74,7 @@ export function Footer() {
             href="mailto:amirabdurrahim@gmail.com"
             className="text-xs tracking-[0.15em] uppercase font-[family-name:var(--font-mono)]
               text-ink-muted dark:text-night-muted hover:text-ink dark:hover:text-night-text
-              hover:-translate-y-px hover:underline hover:decoration-mauve dark:hover:decoration-mauve-dark
+              hover:-translate-y-px hover:underline hover:decoration-sapphire dark:hover:decoration-sapphire-dark
               hover:underline-offset-4 hover:decoration-2
               py-3 px-1 transition-all duration-200"
           >

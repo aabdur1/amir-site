@@ -88,10 +88,10 @@ export function Certifications({ badges }: CertificationsProps) {
               className={`group flex flex-col items-center text-center p-4 sm:p-5 rounded-2xl
                 bg-cream/80 dark:bg-night/60
                 border border-cream-border/60 dark:border-night-border/60
-                hover:-translate-y-1 hover:shadow-card ${accentHoverBorders[i % 4]}
-                transition-all duration-300`}
+                hover:-translate-y-1 hover:shadow-card ${accentHoverBorders[i % 4]}`}
               style={{
                 opacity: 0,
+                transition: "transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 300ms cubic-bezier(0.34, 1.56, 0.64, 1), border-color 300ms ease",
                 ...(visible
                   ? {
                       animation: `fade-in-up 0.5s ease-out ${200 + i * 80}ms forwards`,
