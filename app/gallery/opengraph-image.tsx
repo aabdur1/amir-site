@@ -1,0 +1,102 @@
+import { ImageResponse } from 'next/og'
+
+export const alt = 'Photography — Amir Abdur-Rahim'
+export const size = { width: 1200, height: 630 }
+export const contentType = 'image/png'
+
+export default async function Image() {
+  const dmSerifDisplay = await fetch(
+    'https://fonts.gstatic.com/s/dmseriftext/v12/rnCu-xZa_krGokauCeNq1wWyafOPXHIJErY.ttf'
+  ).then((res) => res.arrayBuffer())
+
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#1e1e2e',
+          fontFamily: 'DM Serif',
+        }}
+      >
+        {/* Section label */}
+        <div
+          style={{
+            fontSize: 14,
+            color: '#a6adc8',
+            letterSpacing: '0.3em',
+            textTransform: 'uppercase' as const,
+            marginBottom: 24,
+            fontFamily: 'sans-serif',
+            display: 'flex',
+            gap: 8,
+          }}
+        >
+          <span style={{ color: '#fab387' }}>02</span>
+          <span style={{ color: '#45475a' }}>/</span>
+          <span>Portfolio</span>
+        </div>
+
+        {/* Mauve accent line */}
+        <div
+          style={{
+            width: 80,
+            height: 3,
+            backgroundColor: '#cba6f7',
+            marginBottom: 40,
+          }}
+        />
+
+        {/* Title */}
+        <div
+          style={{
+            fontSize: 72,
+            color: '#cdd6f4',
+            lineHeight: 1.1,
+            textAlign: 'center',
+          }}
+        >
+          Photography
+        </div>
+
+        {/* Subtitle */}
+        <div
+          style={{
+            fontSize: 28,
+            color: '#a6adc8',
+            marginTop: 20,
+            fontFamily: 'sans-serif',
+          }}
+        >
+          Amir Abdur-Rahim
+        </div>
+
+        {/* Diamond ornament */}
+        <div
+          style={{
+            marginTop: 48,
+            fontSize: 18,
+            color: '#fab387',
+          }}
+        >
+          ◆
+        </div>
+      </div>
+    ),
+    {
+      ...size,
+      fonts: [
+        {
+          name: 'DM Serif',
+          data: dmSerifDisplay,
+          style: 'normal',
+          weight: 400,
+        },
+      ],
+    }
+  )
+}

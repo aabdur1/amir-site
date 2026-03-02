@@ -118,7 +118,7 @@ body::after {
   inset: 0;
   pointer-events: none;
   z-index: 9999;
-  opacity: 0.07;
+  opacity: 0.12;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 }
 
@@ -137,14 +137,15 @@ h1, h2 {
 
 /* Dark mode toggle — animated */
 @keyframes icon-swap-in {
-  0% { transform: scale(0.5) rotate(-90deg); opacity: 0; }
-  60% { transform: scale(1.1) rotate(10deg); opacity: 1; }
-  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  0% { transform: scale(0) translateY(4px); opacity: 0; }
+  60% { transform: scale(1.15) translateY(0); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
 }
 
 @keyframes sun-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(180deg); }
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(15deg) scale(1.1); }
+  75% { transform: rotate(-15deg) scale(1.05); }
 }
 
 @keyframes moon-rock {
@@ -165,7 +166,8 @@ h1, h2 {
 
 .dark-toggle-icon {
   display: inline-flex;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  align-items: center;
+  justify-content: center;
 }
 
 .dark-toggle-swap-enter {

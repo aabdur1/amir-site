@@ -1,7 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import type { Badge } from "@/lib/badges";
+
+const accentHoverBorders = [
+  "hover:border-sapphire/40 dark:hover:border-sapphire-dark/40",
+  "hover:border-mauve/40 dark:hover:border-mauve-dark/40",
+  "hover:border-peach/40 dark:hover:border-peach-dark/40",
+  "hover:border-lavender/40 dark:hover:border-lavender-dark/40",
+] as const;
 
 interface CertificationsProps {
   badges: Badge[];
@@ -76,11 +84,11 @@ export function Certifications({ badges }: CertificationsProps) {
               href={badge.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex flex-col items-center text-center p-4 sm:p-5 rounded-2xl
+              className={`group flex flex-col items-center text-center p-4 sm:p-5 rounded-2xl
                 bg-cream/80 dark:bg-night/60
                 border border-cream-border/60 dark:border-night-border/60
-                hover:-translate-y-1 hover:shadow-card hover:border-sapphire/30 dark:hover:border-sapphire-dark/30
-                transition-all duration-300"
+                hover:-translate-y-1 hover:shadow-card ${accentHoverBorders[i % 4]}
+                transition-all duration-300`}
               style={{
                 opacity: 0,
                 ...(visible
@@ -93,11 +101,13 @@ export function Certifications({ badges }: CertificationsProps) {
               {/* Badge image */}
               <div className="relative w-20 h-20 sm:w-24 sm:h-24 mb-3
                 group-hover:scale-105 transition-transform duration-300">
-                <img
+                <Image
                   src={badge.img}
                   alt={badge.name}
+                  width={96}
+                  height={96}
+                  sizes="(max-width: 640px) 80px, 96px"
                   className="w-full h-full object-contain"
-                  loading="lazy"
                 />
               </div>
 

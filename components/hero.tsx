@@ -16,11 +16,42 @@ function useHydrated() {
 }
 
 const badges = [
-  "1st Place — AWS National Cloud Quest",
-  "Zscaler Zero Trust Architect",
-  "MS in MIS — UIC '26",
-  "AWS Cloud Security Builder",
-];
+  { text: "1st Place — AWS National Cloud Quest", accent: "sapphire" },
+  { text: "Zscaler Zero Trust Architect", accent: "mauve" },
+  { text: "MS in MIS — UIC '26", accent: "peach" },
+  { text: "AWS Cloud Security Builder", accent: "lavender" },
+] as const;
+
+const BADGE_STYLES = {
+  sapphire: {
+    bg: "bg-sapphire/10 dark:bg-sapphire-dark/12",
+    border: "border-sapphire/25 dark:border-sapphire-dark/25",
+    hoverBorder: "hover:border-sapphire/50 dark:hover:border-sapphire-dark/50",
+    dot: "bg-sapphire dark:bg-sapphire-dark",
+    text: "text-ink/80 dark:text-night-text/80",
+  },
+  mauve: {
+    bg: "bg-mauve/10 dark:bg-mauve-dark/12",
+    border: "border-mauve/25 dark:border-mauve-dark/25",
+    hoverBorder: "hover:border-mauve/50 dark:hover:border-mauve-dark/50",
+    dot: "bg-mauve dark:bg-mauve-dark",
+    text: "text-ink/80 dark:text-night-text/80",
+  },
+  peach: {
+    bg: "bg-peach/10 dark:bg-peach-dark/12",
+    border: "border-peach/25 dark:border-peach-dark/25",
+    hoverBorder: "hover:border-peach/50 dark:hover:border-peach-dark/50",
+    dot: "bg-peach dark:bg-peach-dark",
+    text: "text-ink/80 dark:text-night-text/80",
+  },
+  lavender: {
+    bg: "bg-lavender/10 dark:bg-lavender-dark/12",
+    border: "border-lavender/25 dark:border-lavender-dark/25",
+    hoverBorder: "hover:border-lavender/50 dark:hover:border-lavender-dark/50",
+    dot: "bg-lavender dark:bg-lavender-dark",
+    text: "text-ink/80 dark:text-night-text/80",
+  },
+} as const;
 
 /*
  * Per-element scroll speeds — higher = rushes upward faster.
@@ -230,31 +261,34 @@ export function Hero() {
               </a>
             </div>
 
-            {/* Badges — sapphire-accented pills */}
+            {/* Badges — multi-accent pills */}
             <div ref={badgesRef} className="flex flex-wrap gap-2.5 mt-10 will-change-transform">
-              {badges.map((badge, i) => (
-                <span
-                  key={badge}
-                  className="rounded-full px-4 py-2
-                    bg-sapphire/8 dark:bg-sapphire-dark/10
-                    border border-cream-border dark:border-night-border
-                    text-[13px] tracking-wide font-[family-name:var(--font-badge)]
-                    text-ink/70 dark:text-night-text/70
-                    hover:-translate-y-0.5 hover:shadow-card hover:border-sapphire/30 dark:hover:border-sapphire-dark/30
-                    hover:text-ink dark:hover:text-night-text
-                    transition-all duration-300"
-                  style={{
-                    opacity: 0,
-                    ...(mounted
-                      ? {
-                          animation: `fade-in-up 0.5s ease-out ${1600 + i * 100}ms forwards`,
-                        }
-                      : {}),
-                  }}
-                >
-                  {badge}
-                </span>
-              ))}
+              {badges.map((badge, i) => {
+                const s = BADGE_STYLES[badge.accent];
+                return (
+                  <span
+                    key={badge.text}
+                    className={`inline-flex items-center gap-2 rounded-full px-4 py-2
+                      ${s.bg} border ${s.border} ${s.hoverBorder}
+                      text-[13px] tracking-wide font-[family-name:var(--font-badge)]
+                      ${s.text}
+                      hover:-translate-y-0.5 hover:shadow-card
+                      hover:text-ink dark:hover:text-night-text
+                      transition-all duration-300`}
+                    style={{
+                      opacity: 0,
+                      ...(mounted
+                        ? {
+                            animation: `fade-in-up 0.5s ease-out ${1600 + i * 100}ms forwards`,
+                          }
+                        : {}),
+                    }}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${s.dot} shrink-0`} />
+                    {badge.text}
+                  </span>
+                );
+              })}
             </div>
           </div>
 

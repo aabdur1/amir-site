@@ -10,6 +10,24 @@ import { SortControls } from './sort-controls'
 
 type SortBy = 'date' | 'camera' | 'lens'
 
+const CAMERA_BRANDS: Record<string, string> = {
+  ILCE: 'Sony',
+  NIKON: 'Nikon',
+  'FUJIFILM': 'Fujifilm',
+}
+
+function deriveBrands(photos: Photo[]): string {
+  const brands = new Set<string>()
+  for (const p of photos) {
+    const model = p.camera.toUpperCase()
+    for (const [prefix, brand] of Object.entries(CAMERA_BRANDS)) {
+      if (model.startsWith(prefix)) { brands.add(brand); break }
+    }
+  }
+  const arr = [...brands].sort()
+  return arr.length > 0 ? arr.join(' + ') : 'Various'
+}
+
 export function MasonryGrid({ photos }: { photos: Photo[] }) {
   const [sortBy, setSortBy] = useState<SortBy>('date')
   const [lightboxOpen, setLightboxOpen] = useState(false)
@@ -38,7 +56,7 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
           </h1>
           <div className="mt-4 h-px w-16 bg-mauve dark:bg-mauve-dark" />
           <p className="mt-5 text-sm text-ink-muted dark:text-night-muted font-[family-name:var(--font-mono)]">
-            {photos.length} images <span className="text-peach dark:text-peach-dark">&middot;</span> Sony Alpha
+            {photos.length} images <span className="text-peach dark:text-peach-dark">&middot;</span> {deriveBrands(photos)}
           </p>
         </div>
         {/* Sort controls */}

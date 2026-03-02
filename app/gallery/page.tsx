@@ -7,7 +7,7 @@ import type { Photo } from '@/lib/types'
 export const metadata: Metadata = {
   title: 'Photography | Amir Abdur-Rahim',
   description:
-    'Photography portfolio by Amir Abdur-Rahim. Landscape and street photography shot on Sony Alpha cameras.',
+    'Photography portfolio by Amir Abdur-Rahim. Landscape and street photography from Chicago and beyond.',
   openGraph: {
     title: 'Photography — Amir Abdur-Rahim',
     description:
