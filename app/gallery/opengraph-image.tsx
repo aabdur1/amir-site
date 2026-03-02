@@ -46,8 +46,6 @@ export default async function Image() {
             gap: 8,
           }}
         >
-          <span style={{ color: '#fab387' }}>02</span>
-          <span style={{ color: '#45475a' }}>/</span>
           <span>Portfolio</span>
         </div>
 
