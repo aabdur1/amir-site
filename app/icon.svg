@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <style>
+    rect { fill: #eff1f5; }
+    text { fill: #8839ef; }
+    @media (prefers-color-scheme: dark) {
+      rect { fill: #1e1e2e; }
+      text { fill: #cba6f7; }
+    }
+  </style>
+  <rect width="32" height="32" rx="6" />
+  <text x="16" y="24" font-family="Georgia, 'Times New Roman', serif" font-size="22" font-weight="700" text-anchor="middle">A</text>
+</svg>
