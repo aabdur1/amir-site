@@ -52,7 +52,7 @@ export function Footer() {
               text-ink-muted dark:text-night-muted hover:text-ink dark:hover:text-night-text
               hover:-translate-y-px hover:underline hover:decoration-mauve dark:hover:decoration-mauve-dark
               hover:underline-offset-4 hover:decoration-2
-              transition-all duration-200"
+              py-3 px-1 transition-all duration-200"
           >
             GitHub
           </a>
@@ -65,7 +65,7 @@ export function Footer() {
               text-ink-muted dark:text-night-muted hover:text-ink dark:hover:text-night-text
               hover:-translate-y-px hover:underline hover:decoration-mauve dark:hover:decoration-mauve-dark
               hover:underline-offset-4 hover:decoration-2
-              transition-all duration-200"
+              py-3 px-1 transition-all duration-200"
           >
             LinkedIn
           </a>
@@ -76,7 +76,7 @@ export function Footer() {
               text-ink-muted dark:text-night-muted hover:text-ink dark:hover:text-night-text
               hover:-translate-y-px hover:underline hover:decoration-mauve dark:hover:decoration-mauve-dark
               hover:underline-offset-4 hover:decoration-2
-              transition-all duration-200"
+              py-3 px-1 transition-all duration-200"
           >
             Email
           </a>

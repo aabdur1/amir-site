@@ -37,7 +37,7 @@ export default function Nav() {
         {/* Left: Name — ghosted at top, progressively fades in on scroll */}
         <Link
           href="/"
-          className="nav-wordmark font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text
+          className="nav-wordmark min-w-0 font-[family-name:var(--font-display)] text-lg sm:text-2xl md:text-3xl text-ink dark:text-night-text
             tracking-tight leading-none"
           style={{
             opacity: resolvedOpacity,

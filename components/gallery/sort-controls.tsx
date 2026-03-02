@@ -167,7 +167,7 @@ export function SortControls({ value, onChange }: SortControlsProps) {
               aria-selected={value === option.value}
               type="button"
               onClick={() => selectOption(option.value)}
-              className={`w-full text-left px-4 py-2.5 text-sm font-[family-name:var(--font-mono)] text-ink dark:text-night-text cursor-pointer transition-colors duration-150 ${
+              className={`w-full text-left px-4 py-3 text-sm font-[family-name:var(--font-mono)] text-ink dark:text-night-text cursor-pointer transition-colors duration-150 ${
                 value === option.value
                   ? 'bg-sapphire/10 dark:bg-sapphire-dark/10'
                   : 'hover:bg-ink/5 dark:hover:bg-night-text/5'

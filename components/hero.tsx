@@ -123,6 +123,7 @@ export function Hero() {
   }, [updateParallax]);
 
   useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
       window.removeEventListener("scroll", handleScroll);
@@ -205,7 +206,7 @@ export function Hero() {
             </p>
 
             {/* Social links */}
-            <div ref={socialRef} className="flex gap-1 items-center mt-8 will-change-transform">
+            <div ref={socialRef} className="flex gap-2 items-center mt-8 will-change-transform">
               <a
                 href="https://github.com/aabdur1"
                 target="_blank"
@@ -262,15 +263,15 @@ export function Hero() {
             </div>
 
             {/* Badges — multi-accent pills */}
-            <div ref={badgesRef} className="flex flex-wrap gap-2.5 mt-10 will-change-transform">
+            <div ref={badgesRef} className="flex flex-wrap gap-2 sm:gap-2.5 mt-10 will-change-transform">
               {badges.map((badge, i) => {
                 const s = BADGE_STYLES[badge.accent];
                 return (
                   <span
                     key={badge.text}
-                    className={`inline-flex items-center gap-2 rounded-full px-4 py-2
+                    className={`inline-flex items-center gap-1.5 sm:gap-2 rounded-full px-3 sm:px-4 py-1.5 sm:py-2
                       ${s.bg} border ${s.border} ${s.hoverBorder}
-                      text-[13px] tracking-wide font-[family-name:var(--font-badge)]
+                      text-[11px] sm:text-[13px] tracking-wide font-[family-name:var(--font-badge)]
                       ${s.text}
                       hover:-translate-y-0.5 hover:shadow-card
                       hover:text-ink dark:hover:text-night-text
