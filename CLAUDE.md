@@ -79,8 +79,10 @@ components/
     sort-controls.tsx     # Styled sort dropdown
 lib/
   types.ts                # Photo type definition
+  badges.ts               # Credly API fetcher + manual badges, exports getAllBadges()
 public/
   photos.json             # Photo metadata (CloudFront URLs, EXIF data)
+  badges/                 # Non-Credly badge images (e.g. Zscaler)
 netlify.toml              # Netlify build config
 .nvmrc                    # Node version for Netlify
 ```
@@ -104,9 +106,13 @@ npm run lint      # ESLint
 
 ## Certifications
 
-- 8 Credly badges displayed in `certifications.tsx` with hardcoded data
-- Badge images hosted on `images.credly.com` (external, not on our CDN)
-- To add a badge: append to the `badges` array in `certifications.tsx` with name, shortName, img URL, org, date, and Credly badge URL
+- Badges fetched dynamically from Credly API at build time via `lib/badges.ts`
+- `getAllBadges()` merges Credly badges + manual badges (e.g. Zscaler), sorts newest first
+- Credly API: `https://www.credly.com/users/amir-abdur-rahim/badges.json` (revalidates daily)
+- Manual badges defined in `lib/badges.ts` `manualBadges` array — for non-Credly certs
+- Zscaler badge image stored in `public/badges/zscaler-ztca.jpeg`
+- New Credly badges appear automatically on next build/revalidation
+- To add a non-Credly badge: add entry to `manualBadges` in `lib/badges.ts`, put image in `public/badges/`
 - Credly profile: `https://www.credly.com/users/amir-abdur-rahim`
 
 ## Implementation Plan

@@ -1,84 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { Badge } from "@/lib/badges";
 
-interface Badge {
-  name: string;
-  shortName: string;
-  img: string;
-  org: string;
-  date: string;
-  url: string;
+interface CertificationsProps {
+  badges: Badge[];
 }
 
-const badges: Badge[] = [
-  {
-    name: "AWS Academy Graduate - Cloud Security Builder",
-    shortName: "Cloud Security Builder",
-    img: "https://images.credly.com/images/cceb6e0f-55f4-45d5-aec6-0e4435f488c6/blob",
-    org: "AWS",
-    date: "2025-11",
-    url: "https://www.credly.com/badges/4b818a67-2257-431b-8519-68eb47658e3b",
-  },
-  {
-    name: "AWS Cloud Quest: Generative AI Practitioner",
-    shortName: "GenAI Practitioner",
-    img: "https://images.credly.com/images/15fa08e6-ca73-4fa3-94ed-c36f7f157313/blob",
-    org: "AWS",
-    date: "2025-11",
-    url: "https://www.credly.com/badges/ae18e6c2-1cd2-4a0d-a5cc-30f1ab6ef77c",
-  },
-  {
-    name: "AWS Cloud Quest: Cloud Practitioner",
-    shortName: "Cloud Practitioner",
-    img: "https://images.credly.com/images/30816e43-2550-4e1c-be22-3f03c5573bb9/blob",
-    org: "AWS",
-    date: "2025-10",
-    url: "https://www.credly.com/badges/c1234567-placeholder",
-  },
-  {
-    name: "Derive Insights from BigQuery Data",
-    shortName: "BigQuery Data",
-    img: "https://images.credly.com/images/11088b22-7be5-4fe3-995d-c014514c8dc3/image.png",
-    org: "Google Cloud",
-    date: "2025-07",
-    url: "https://www.credly.com/badges/d1234567-placeholder",
-  },
-  {
-    name: "Build LookML Objects in Looker",
-    shortName: "LookML Objects",
-    img: "https://images.credly.com/images/2607a61b-7f94-43d7-bb97-3e811312c53e/image.png",
-    org: "Google Cloud",
-    date: "2025-07",
-    url: "https://www.credly.com/badges/e1234567-placeholder",
-  },
-  {
-    name: "Analyze and Visualize Looker Data",
-    shortName: "Looker Visualization",
-    img: "https://images.credly.com/images/17bffe41-23fb-4004-a5c3-ea46b6c6ed76/image.png",
-    org: "Google Cloud",
-    date: "2025-07",
-    url: "https://www.credly.com/badges/f1234567-placeholder",
-  },
-  {
-    name: "Get Started with Looker",
-    shortName: "Looker Basics",
-    img: "https://images.credly.com/images/6f45928f-206d-4340-98fd-ef9605fd8606/image.png",
-    org: "Google Cloud",
-    date: "2025-07",
-    url: "https://www.credly.com/badges/g1234567-placeholder",
-  },
-  {
-    name: "AWS Academy Graduate - Data Engineering",
-    shortName: "Data Engineering",
-    img: "https://images.credly.com/images/8a28a66c-151d-4f2d-b021-ca7d3e146437/blob",
-    org: "AWS",
-    date: "2025-05",
-    url: "https://www.credly.com/badges/h1234567-placeholder",
-  },
-];
-
-export function Certifications() {
+export function Certifications({ badges }: CertificationsProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const [visible, setVisible] = useState(false);
 
