@@ -277,7 +277,7 @@ export function Hero() {
       {/* Bottom scroll indicator */}
       <div
         ref={scrollIndRef}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 will-change-transform"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden sm:flex flex-col items-center gap-2 will-change-transform"
         style={{
           opacity: 0,
           ...(mounted ? { animation: "fade-in 0.8s ease-out 2.2s forwards" } : {}),
