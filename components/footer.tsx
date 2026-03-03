@@ -7,7 +7,7 @@ export function Footer() {
   const mounted = useHydrated();
 
   return (
-    <footer className="relative py-14 sm:py-20 bg-cream-dark/40 dark:bg-night-card/30">
+    <footer className="relative py-14 sm:py-20 bg-cream-dark/50 dark:bg-night-card/40">
       <SectionDivider color="rosewater" absolute={false} />
 
       <div

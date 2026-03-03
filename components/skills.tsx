@@ -37,7 +37,7 @@ export function Skills() {
   const [sectionRef, visible] = useScrollReveal();
 
   return (
-    <section ref={sectionRef} className="relative py-20 sm:py-28 bg-cream-dark/40 dark:bg-night-card/30">
+    <section ref={sectionRef} className="relative py-20 sm:py-28 bg-cream-dark/50 dark:bg-night-card/40">
       <SectionDivider />
 
       <div className="max-w-5xl mx-auto px-6 sm:px-8">

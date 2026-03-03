@@ -56,7 +56,7 @@ export function Projects() {
   return (
     <section
       ref={sectionRef}
-      className="relative py-20 sm:py-28 bg-cream-dark/40 dark:bg-night-card/30"
+      className="relative py-20 sm:py-28 bg-cream-dark/50 dark:bg-night-card/40"
     >
       <SectionDivider />
 
