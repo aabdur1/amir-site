@@ -32,8 +32,8 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - **Per-element parallax.** Hero elements each have their own scroll speed (label fastest, badges slowest), creating a spread/dispersal effect on scroll. Uses refs + RAF + passive scroll listener — no state re-renders. Skipped entirely when `prefers-reduced-motion` is enabled.
 - **Scroll-driven ref mutations (no re-renders).** Nav wordmark opacity and hero parallax both use direct `ref.style` mutations inside RAF callbacks instead of `setState`, avoiding React re-renders on every scroll frame.
 - **Multi-accent hero badges.** Each hero badge pill has a distinct Catppuccin accent (sapphire, mauve, peach, lavender) with tinted background, colored dot, and matching hover border.
-- **Cursor-reactive hero speckles (dark mode only).** `HeroSpeckles` renders viewport-proportional dots (40–250, reference 150 at 1920px) across the hero using Catppuccin Mocha accents (mauve, sapphire, peach, lavender). Count scales linearly with `window.innerWidth`, computed once on mount. Dots drift away from cursor (6px max) and glow brighter on approach. Hidden in light mode via `hidden dark:block`. Uses seeded PRNG for deterministic placement (smaller viewports render a subset of the same positions), RAF + lerp (0.06) + convergence check. Disabled on touch devices and with `prefers-reduced-motion`.
-- **Cursor-reactive headshot.** `InteractiveHeadshot` tilts image toward cursor (3deg max) with dynamic shadow — cursor acts as light source. Uses perspective 3D transform + RAF + lerp. Disabled on touch devices.
+- **Cursor-reactive hero speckles (dark mode only).** `HeroSpeckles` renders viewport-proportional dots (40–250, reference 150 at 1920px) across the hero using Catppuccin Mocha accents (mauve, sapphire, peach, lavender). Count scales linearly with `window.innerWidth` via `useSyncExternalStore` (0 on server, measured on client). Dots drift away from cursor (6px max) and glow brighter on approach. Hidden in light mode via `hidden dark:block`. Uses seeded PRNG for deterministic placement (smaller viewports render a subset of the same positions), RAF + lerp (0.06) + convergence check. Disabled on touch devices and with `prefers-reduced-motion`.
+- **Cursor-reactive headshot.** `InteractiveHeadshot` tilts image toward cursor (3deg max) with dynamic shadow — cursor acts as light source. Uses perspective 3D transform + RAF + lerp. `getBoundingClientRect` cached via ResizeObserver + passive scroll listener (not called in hot mousemove path). Disabled on touch devices.
 - **RAF convergence checks.** `HeroSpeckles` and `InteractiveHeadshot` RAF loops stop automatically when lerp values converge (within 0.1px / 0.01deg), preventing infinite 60fps loops while cursor is stationary.
 - **Parallax delayed start.** Hero parallax scroll listener attaches after 2.5s delay to avoid `style.transform` conflicting with CSS `fade-in-up` animation `forwards` fill during entrance animations.
 - **Scroll progress bar.** `ScrollProgress` component shows a 2px mauve bar at the top of the viewport. Only renders on pages >2x viewport height (via ResizeObserver). RAF-gated scroll, fades in after first scroll.
@@ -72,7 +72,9 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - **WCAG AA contrast.** Body/label text uses `text-ink-subtle` (5.57:1 on Latte Base) instead of `text-ink-muted` (3.73:1). `text-ink-muted` reserved for decorative icon colors only. Minimum text size 12px (no `text-[10px]` or `text-[11px]` on readable content).
 - **Global focus ring.** `:focus-visible` shows 2px mauve outline with 3px offset (dark mode uses `mauve-dark`). Applied site-wide via `globals.css`.
 - **`prefers-reduced-motion` supported.** Global CSS media query kills all animation durations/iterations. Hero parallax scroll listener is skipped entirely. `PageTransition` renders without `opacity: 0` start state. Gallery count-up shows final number immediately. Cursor effects gated behind `(pointer: fine)`.
-- **Gallery keyboard accessible.** Photo cards have `role="button"`, `tabIndex={0}`, `onKeyDown` (Enter/Space), and `aria-label` with photo metadata. Sort dropdown uses `role="menu"`/`role="menuitem"` with `aria-label="Sort photos by"`.
+- **Skip-to-content link and `<main>` landmark.** Layout includes a skip link (`sr-only` / `focus:not-sr-only`) targeting `<main id="main-content">`.
+- **`aria-labelledby` on all sections.** Each section component references its `SectionHeader` heading via `aria-labelledby="section-{number}"`. Hero uses `aria-label="Introduction"`.
+- **Gallery keyboard accessible.** Photo cards use native `<button>` elements with `aria-label` including camera/lens metadata. Sort dropdown uses `role="menu"`/`role="menuitem"` with `aria-controls`, `aria-label="Sort photos by"`, and `onBlur` close.
 - **Decorative elements hidden from screen readers.** All decorative SVGs (nav arrow, scroll progress, hero speckles, social icons, card arrows, sort chevron, dark mode toggle icons) use `aria-hidden="true"` and `focusable="false"`.
 - **External link labels.** All `target="_blank"` links include "(opens in new tab)" in `aria-label`.
 - **`-webkit-tap-highlight-color: transparent`** on all `a` and `button` elements for clean mobile taps.
@@ -85,11 +87,13 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 
 ```
 app/
-  layout.tsx              # Root layout, fonts (4 families), metadata, nav, footer, scroll progress
-  not-found.tsx           # Custom 404 page (editorial "wandered off the map")
+  layout.tsx              # Root layout, fonts (4 families), metadata, skip link, <main>, JSON-LD, nav, footer
+  not-found.tsx           # Custom 404 page (editorial "wandered off the map", noindex)
   opengraph-image.tsx     # Branded OG image (Catppuccin Mocha, 1200x630)
   page.tsx                # Landing: Hero, Experience, Projects, Certifications, Skills, Education
   globals.css             # @theme tokens, keyframes, utility classes, theme transitions
+  sitemap.ts              # Generated /sitemap.xml (homepage + gallery)
+  robots.ts               # Generated /robots.txt (allow all, link to sitemap)
   gallery/
     opengraph-image.tsx   # Gallery OG image (Catppuccin Mocha, 1200x630)
     page.tsx              # Photography gallery page
@@ -123,7 +127,7 @@ public/
   photos.json             # Photo metadata (CloudFront URLs, EXIF data)
   badges/                 # Non-Credly badge images (e.g. Zscaler, Snowflake)
 next.config.ts            # Image remote patterns (CloudFront, Credly)
-netlify.toml              # Netlify build config + security headers
+netlify.toml              # Netlify build config + CSP, HSTS, cache headers
 .nvmrc                    # Node version (20) for Netlify
 ```
 
@@ -135,6 +139,23 @@ netlify.toml              # Netlify build config + security headers
 - Right-click disabled on gallery images
 - To add photos: append entries to `photos.json` with S3 URL and EXIF metadata
 
+## Security Headers
+
+Configured in `netlify.toml`:
+- **CSP:** `script-src 'self'` + SHA-256 hash of the inline dark-mode script. If the inline script in `layout.tsx` changes, recompute the hash: `echo -n "<script-content>" | openssl dgst -sha256 -binary | base64`
+- **HSTS:** `max-age=63072000; includeSubDomains; preload`
+- **Cache:** Immutable 1-year cache on `/_next/static/*`, 1-hour cache on `/badges/*`
+
+## SEO
+
+- `app/sitemap.ts` generates `/sitemap.xml` (homepage priority 1 monthly, gallery priority 0.8 weekly)
+- `app/robots.ts` generates `/robots.txt` (allow all, link to sitemap)
+- JSON-LD `Person` schema in `layout.tsx` `<head>` (hardcoded object literal via `JSON.stringify`, no user input — safe)
+- Canonical URLs on homepage and gallery via `alternates.canonical`
+- `og:type` set to `'profile'` on homepage
+- Twitter card metadata on gallery page
+- 404 page has `robots: { index: false }`
+
 ## Commands
 
 ```bash
@@ -144,13 +165,13 @@ npm run start     # Serve production build locally
 npm run lint      # ESLint (flat config via eslint.config.mjs, not next lint)
 ```
 
-**Known lint errors (pre-existing, not regressions):** 2 errors in `interactive-headshot.tsx` (react-hooks/immutability — `animate` accessed before declaration) and `page-transition.tsx` (react-hooks/set-state-in-effect). These are safe to ignore.
+**Known lint error (pre-existing, not a regression):** 1 error in `interactive-headshot.tsx` (react-hooks/immutability — `animate` accessed before declaration). Safe to ignore.
 
 ## Certifications
 
 - Badges fetched dynamically from Credly API at build time via `lib/badges.ts`
 - `getAllBadges()` merges Credly badges + manual badges (e.g. Zscaler), sorts newest first
-- Credly API: `https://www.credly.com/users/amir-abdur-rahim/badges.json` (revalidates daily)
+- Credly API: `https://www.credly.com/users/amir-abdur-rahim/badges.json` (revalidates daily, 5s AbortController timeout, runtime validation + filtering for malformed entries)
 - Manual badges defined in `lib/badges.ts` `manualBadges` array — for non-Credly certs
 - Zscaler badge image stored in `public/badges/zscaler-ztca.jpeg`, Snowflake in `public/badges/snowflake-snowpro-core.png`
 - New Credly badges appear automatically on next build/revalidation
