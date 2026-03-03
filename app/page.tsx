@@ -9,13 +9,16 @@ import { PageTransition } from '@/components/page-transition'
 import { getAllBadges } from "@/lib/badges";
 
 export const metadata: Metadata = {
-  title: 'Amir Abdur-Rahim — Healthcare Meets Technology',
-  description: 'Personal site of Amir Abdur-Rahim. MS in MIS at UIC, 1st Place AWS National Cloud Quest, Zscaler Zero Trust Architect. Experience, projects, certifications, and photography. Chicago.',
+  title: { absolute: 'Amir Abdur-Rahim — Healthcare Meets Technology' },
+  description: 'Healthcare meets technology. Chicago.',
+  alternates: {
+    canonical: 'https://amirabdurrahim.com',
+  },
   openGraph: {
     title: 'Amir Abdur-Rahim',
     description: 'Healthcare meets technology. Chicago.',
     url: 'https://amirabdurrahim.com',
-    type: 'website',
+    type: 'profile',
   },
   twitter: {
     card: 'summary_large_image',

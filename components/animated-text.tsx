@@ -21,10 +21,10 @@ export function AnimatedText({ text, className = "", delay = 0 }: AnimatedTextPr
           key={index}
           style={{
             display: "inline-block",
-            opacity: 0,
             marginRight: "0.3em",
             ...(hydrated
               ? {
+                  opacity: 0,
                   animation: `fade-in-up 0.6s ease-out ${delay + index * 100}ms forwards`,
                 }
               : {}),

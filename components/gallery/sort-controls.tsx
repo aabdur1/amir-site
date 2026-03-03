@@ -21,8 +21,9 @@ export function SortControls({ value, onChange }: SortControlsProps) {
 
   const currentLabel = OPTIONS.find((o) => o.value === value)?.label ?? 'Date'
 
-  // Close on outside click
+  // Close on outside click — only attached when dropdown is open
   useEffect(() => {
+    if (!isOpen) return
     function handleClickOutside(e: MouseEvent) {
       if (
         containerRef.current &&
@@ -32,9 +33,9 @@ export function SortControls({ value, onChange }: SortControlsProps) {
         setFocusedIndex(-1)
       }
     }
-    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('mousedown', handleClickOutside, { passive: true })
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  }, [isOpen])
 
   const openDropdown = useCallback(() => {
     setIsOpen(true)
@@ -119,8 +120,15 @@ export function SortControls({ value, onChange }: SortControlsProps) {
     }
   }, [isOpen, focusedIndex])
 
+  // Close dropdown when focus leaves the container
+  function handleBlur(e: React.FocusEvent) {
+    if (!containerRef.current?.contains(e.relatedTarget as Node)) {
+      closeDropdown()
+    }
+  }
+
   return (
-    <div ref={containerRef} className="relative inline-block">
+    <div ref={containerRef} className="relative inline-block" onBlur={handleBlur}>
       {/* Trigger button */}
       <button
         type="button"
@@ -128,6 +136,7 @@ export function SortControls({ value, onChange }: SortControlsProps) {
         onKeyDown={handleTriggerKeyDown}
         aria-haspopup="menu"
         aria-expanded={isOpen}
+        aria-controls={isOpen ? 'sort-menu' : undefined}
         className="flex items-center gap-2 rounded-full px-5 py-2.5 bg-cream-dark dark:bg-night-card border border-cream-border dark:border-night-border text-sm font-[family-name:var(--font-mono)] text-ink dark:text-night-text cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
       >
         <span>Sort: {currentLabel}</span>
@@ -151,11 +160,9 @@ export function SortControls({ value, onChange }: SortControlsProps) {
       {/* Dropdown menu */}
       {isOpen && (
         <div
+          id="sort-menu"
           role="menu"
           aria-label="Sort photos by"
-          aria-activedescendant={
-            focusedIndex >= 0 ? `sort-option-${OPTIONS[focusedIndex].value}` : undefined
-          }
           onKeyDown={handleMenuKeyDown}
           className="absolute right-0 mt-2 min-w-[160px] rounded-xl bg-cream-dark dark:bg-night-card border border-cream-border dark:border-night-border shadow-card py-1 z-50 animate-dropdown-in"
         >

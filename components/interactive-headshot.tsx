@@ -15,6 +15,7 @@ export function InteractiveHeadshot() {
   const glowRef = useRef<HTMLDivElement>(null);
   const borderOuterRef = useRef<HTMLDivElement>(null);
   const borderInnerRef = useRef<HTMLDivElement>(null);
+  const cachedRectRef = useRef<DOMRect | null>(null);
 
   // Smoothed values (current) and target values
   const targetRef = useRef({ rotateX: 0, rotateY: 0, shadowX: 0, shadowY: 0 });
@@ -89,14 +90,28 @@ export function InteractiveHeadshot() {
     const mq = window.matchMedia("(pointer: fine)");
     if (!mq.matches) return;
 
-    const section = containerRef.current?.closest("section");
+    const container = containerRef.current;
+    if (!container) return;
+
+    const section = container.closest("section");
     if (!section) return;
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const container = containerRef.current;
-      if (!container) return;
+    // Cache getBoundingClientRect — avoid layout recalc on every mousemove
+    function updateRect() {
+      if (containerRef.current) {
+        cachedRectRef.current = containerRef.current.getBoundingClientRect();
+      }
+    }
+    updateRect();
 
-      const rect = container.getBoundingClientRect();
+    const ro = new ResizeObserver(updateRect);
+    ro.observe(container);
+    window.addEventListener("scroll", updateRect, { passive: true });
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = cachedRectRef.current;
+      if (!rect) return;
+
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
 
@@ -142,6 +157,8 @@ export function InteractiveHeadshot() {
     section.addEventListener("mouseleave", handleMouseLeave);
 
     return () => {
+      ro.disconnect();
+      window.removeEventListener("scroll", updateRect);
       section.removeEventListener("mousemove", handleMouseMove);
       section.removeEventListener("mouseleave", handleMouseLeave);
       if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);

@@ -26,7 +26,7 @@ const shareTechMono = Share_Tech_Mono({
 });
 
 const lora = Lora({
-  weight: ["400", "500"],
+  weight: "400",
   style: ["normal", "italic"],
   subsets: ["latin"],
   display: "swap",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     default: 'Amir Abdur-Rahim',
     template: '%s | Amir Abdur-Rahim',
   },
-  description: 'Personal site of Amir Abdur-Rahim.',
+  description: 'Amir Abdur-Rahim — software engineer, healthcare technologist, and photographer. MS in MIS at UIC. Chicago.',
   openGraph: {
     siteName: 'Amir Abdur-Rahim',
     type: 'website',
@@ -63,11 +63,45 @@ export default function RootLayout({
             __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})()`,
           }}
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Person',
+              name: 'Amir Abdur-Rahim',
+              url: 'https://amirabdurrahim.com',
+              sameAs: [
+                'https://github.com/aabdur1',
+                'https://www.linkedin.com/in/amir-abdur-rahim/',
+                'https://www.credly.com/users/amir-abdur-rahim',
+              ],
+              jobTitle: 'Software Engineer',
+              alumniOf: {
+                '@type': 'CollegeOrUniversity',
+                name: 'University of Illinois Chicago',
+              },
+              address: {
+                '@type': 'PostalAddress',
+                addressLocality: 'Chicago',
+                addressRegion: 'IL',
+              },
+            }),
+          }}
+        />
       </head>
       <body>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:z-[10000] focus:top-4 focus:left-4
+            focus:px-4 focus:py-2 focus:bg-cream focus:dark:bg-night focus:text-ink focus:dark:text-night-text
+            focus:rounded-lg focus:shadow-card focus:outline-2 focus:outline-mauve focus:dark:outline-mauve-dark"
+        >
+          Skip to main content
+        </a>
         <ScrollProgress />
         <Nav />
-        {children}
+        <main id="main-content">{children}</main>
         <Footer />
       </body>
     </html>

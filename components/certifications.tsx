@@ -23,6 +23,7 @@ export function Certifications({ badges }: CertificationsProps) {
   return (
     <section
       ref={sectionRef}
+      aria-labelledby="section-03"
       className="relative py-20 sm:py-28"
     >
       <SectionDivider />

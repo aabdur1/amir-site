@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import Lightbox from 'yet-another-react-lightbox'
 import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 import 'yet-another-react-lightbox/styles.css'
@@ -83,12 +83,25 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
 
-  const sortedPhotos = [...photos].sort((a, b) => {
+  const sortedPhotos = useMemo(() => [...photos].sort((a, b) => {
     if (sortBy === 'date') return b.date.localeCompare(a.date) // newest first
     if (sortBy === 'camera') return a.camera.localeCompare(b.camera)
     if (sortBy === 'lens') return a.lens.localeCompare(b.lens)
     return 0
-  })
+  }), [photos, sortBy])
+
+  const photoByUrl = useMemo(
+    () => Object.fromEntries(sortedPhotos.map(p => [p.url, p])),
+    [sortedPhotos]
+  )
+
+  const slides = useMemo(
+    () => sortedPhotos.map((photo) => ({
+      src: photo.url,
+      alt: `Photograph by Amir Abdur-Rahim, ${photo.date} — ${photo.camera}, ${photo.lens}`,
+    })),
+    [sortedPhotos]
+  )
 
   return (
     <div onContextMenu={(e) => e.preventDefault()}>
@@ -134,11 +147,11 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
         open={lightboxOpen}
         close={() => setLightboxOpen(false)}
         index={lightboxIndex}
-        slides={sortedPhotos.map((photo) => ({ src: photo.url }))}
+        slides={slides}
         plugins={[Zoom]}
         render={{
           slideFooter: ({ slide }) => {
-            const photo = sortedPhotos.find(p => p.url === slide.src)
+            const photo = photoByUrl[slide.src]
             if (!photo) return null
             return (
               <div className="text-center py-3 px-4 text-xs sm:text-sm text-white/70 font-[family-name:var(--font-body)] flex flex-wrap justify-center gap-x-2 gap-y-1">

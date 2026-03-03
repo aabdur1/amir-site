@@ -8,7 +8,7 @@ export function Experience() {
   const [sectionRef, visible] = useScrollReveal();
 
   return (
-    <section ref={sectionRef} className="relative py-20 sm:py-28">
+    <section ref={sectionRef} aria-labelledby="section-01" className="relative py-20 sm:py-28">
       <SectionDivider />
 
       <div className="max-w-5xl mx-auto px-6 sm:px-8">

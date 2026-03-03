@@ -10,6 +10,7 @@ export function SectionDivider({ color = "peach", absolute = true }: SectionDivi
 
   return (
     <div
+      aria-hidden="true"
       className={`flex items-center justify-center gap-3 ${
         absolute
           ? "absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2"

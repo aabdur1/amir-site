@@ -72,10 +72,14 @@ function deriveOrg(issuerName: string): string {
 /** Fetch badges from Credly API */
 async function fetchCredlyBadges(): Promise<Badge[]> {
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+
     const res = await fetch(
       `https://www.credly.com/users/${CREDLY_USER}/badges.json`,
-      { next: { revalidate: 86400 } } // revalidate daily
+      { next: { revalidate: 86400 }, signal: controller.signal }
     );
+    clearTimeout(timeout);
 
     if (!res.ok) {
       console.warn(`Credly API returned ${res.status}, using fallback`);
@@ -84,16 +88,29 @@ async function fetchCredlyBadges(): Promise<Badge[]> {
 
     const json: CredlyResponse = await res.json();
 
-    return json.data.map((badge) => ({
-      name: badge.badge_template.name
-        .replace(/ - Training Badge$/i, "")
-        .replace(/ Skill Badge$/i, ""),
-      shortName: deriveShortName(badge.badge_template.name),
-      img: badge.badge_template.image_url,
-      org: deriveOrg(badge.issuer.entities[0]?.entity.name ?? ""),
-      date: badge.issued_at_date.slice(0, 7), // "2025-11-24" → "2025-11"
-      url: `https://www.credly.com/badges/${badge.id}`,
-    }));
+    if (!Array.isArray(json?.data)) {
+      console.warn("Credly API returned unexpected shape, using fallback");
+      return [];
+    }
+
+    return json.data
+      .filter(
+        (badge) =>
+          badge?.id &&
+          typeof badge.id === "string" &&
+          badge.badge_template?.name &&
+          badge.badge_template?.image_url
+      )
+      .map((badge) => ({
+        name: badge.badge_template.name
+          .replace(/ - Training Badge$/i, "")
+          .replace(/ Skill Badge$/i, ""),
+        shortName: deriveShortName(badge.badge_template.name),
+        img: badge.badge_template.image_url,
+        org: deriveOrg(badge.issuer?.entities?.[0]?.entity?.name ?? ""),
+        date: badge.issued_at_date?.slice(0, 7) ?? "unknown",
+        url: `https://www.credly.com/badges/${badge.id}`,
+      }));
   } catch (err) {
     console.warn("Failed to fetch Credly badges:", err);
     return [];

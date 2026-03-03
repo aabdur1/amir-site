@@ -56,6 +56,7 @@ export function Projects() {
   return (
     <section
       ref={sectionRef}
+      aria-labelledby="section-02"
       className="relative py-20 sm:py-28 bg-cream-dark/50 dark:bg-night-card/40"
     >
       <SectionDivider />

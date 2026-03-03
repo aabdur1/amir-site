@@ -16,7 +16,7 @@ export default function Nav() {
 
   const updateOpacity = useCallback(() => {
     const progress = Math.min(window.scrollY / 300, 1);
-    const opacity = 0.35 + progress * 0.65;
+    const opacity = 0.6 + progress * 0.4;
     if (nameRef.current) {
       nameRef.current.style.opacity = String(opacity);
       nameRef.current.style.transform = `translateY(${(1 - opacity) * 4}px)`;
@@ -53,8 +53,8 @@ export default function Nav() {
           className="nav-wordmark min-w-0 font-[family-name:var(--font-display)] text-lg sm:text-2xl md:text-3xl text-ink dark:text-night-text
             tracking-tight leading-none"
           style={{
-            opacity: isHome ? 0.35 : 1,
-            transform: isHome ? `translateY(${(1 - 0.35) * 4}px)` : "none",
+            opacity: isHome ? 0.6 : 1,
+            transform: isHome ? `translateY(${(1 - 0.6) * 4}px)` : "none",
             transition: isHome ? "none" : "opacity 0.5s, transform 0.5s",
           }}
         >

@@ -14,7 +14,7 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
   const [isLoaded, setIsLoaded] = useState(false)
   const [isInView, setIsInView] = useState(false)
   const [entryDone, setEntryDone] = useState(false)
-  const cardRef = useRef<HTMLDivElement>(null)
+  const cardRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     const el = cardRef.current
@@ -43,14 +43,12 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
   }, [isInView, index])
 
   return (
-    <div
+    <button
       ref={cardRef}
+      type="button"
       onClick={onClick}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() } }}
-      role="button"
-      tabIndex={0}
       aria-label={`Open photo taken on ${photo.date} with ${photo.camera}`}
-      className={`mb-4 break-inside-avoid cursor-zoom-in rounded-lg ${
+      className={`mb-4 break-inside-avoid cursor-zoom-in rounded-lg text-left w-full ${
         entryDone
           ? 'group transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] hover:scale-[1.02] hover:shadow-[0_8px_40px_rgba(0,0,0,0.12)]'
           : ''
@@ -71,7 +69,7 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
       <div className="overflow-hidden rounded-lg">
         <Image
           src={photo.url}
-          alt={`Photo taken on ${photo.date}`}
+          alt={`Photograph by Amir Abdur-Rahim, ${photo.date} — ${photo.camera}, ${photo.lens}`}
           width={800}
           height={600}
           unoptimized
@@ -81,6 +79,6 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
           }`}
         />
       </div>
-    </div>
+    </button>
   )
 }

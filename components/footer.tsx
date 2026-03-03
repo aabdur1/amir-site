@@ -43,7 +43,7 @@ export function Footer() {
           >
             GitHub
           </a>
-          <span className="text-cream-border dark:text-night-border text-[10px]">&#9670;</span>
+          <span aria-hidden="true" className="text-cream-border dark:text-night-border text-[10px]">&#9670;</span>
           <a
             href="https://www.linkedin.com/in/amir-abdur-rahim/"
             target="_blank"
@@ -57,7 +57,7 @@ export function Footer() {
           >
             LinkedIn
           </a>
-          <span className="text-cream-border dark:text-night-border text-[10px]">&#9670;</span>
+          <span aria-hidden="true" className="text-cream-border dark:text-night-border text-[10px]">&#9670;</span>
           <a
             href="mailto:amirabdurrahim@gmail.com"
             className="text-xs tracking-[0.15em] uppercase font-[family-name:var(--font-mono)]

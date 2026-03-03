@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useMemo, useState } from "react";
+import { useEffect, useRef, useMemo, useSyncExternalStore } from "react";
 
 const ACCENT_COLORS = [
   "var(--color-mauve-dark)",
@@ -62,6 +62,8 @@ const MAX_DRIFT = 6;
 const GLOW_OPACITY = 0.55;
 const LERP = 0.06;
 
+const noopSubscribe = () => () => {};
+
 export function HeroSpeckles() {
   const containerRef = useRef<HTMLDivElement>(null);
   const statesRef = useRef<DotState[]>([]);
@@ -70,9 +72,12 @@ export function HeroSpeckles() {
   const activeRef = useRef(false);
   const rafRef = useRef<number>(0);
 
-  // Compute dot count from viewport width on mount (opacity:0 hides the re-render)
-  const [dotCount, setDotCount] = useState(DOT_COUNT_REF);
-  useEffect(() => { setDotCount(getDotCount(window.innerWidth)); }, []);
+  // Viewport-proportional dot count — 0 on server, measured on client
+  const dotCount = useSyncExternalStore(
+    noopSubscribe,
+    () => getDotCount(window.innerWidth),
+    () => 0,
+  );
 
   const dotConfigs = useMemo(() => generateDots(dotCount), [dotCount]);
 

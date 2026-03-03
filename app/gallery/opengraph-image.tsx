@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og'
 
-export const alt = 'Photography — Amir Abdur-Rahim'
+export const alt = 'Photography portfolio by Amir Abdur-Rahim — landscape and street photography.'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 

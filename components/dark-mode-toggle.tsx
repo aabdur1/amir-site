@@ -25,7 +25,8 @@ export default function DarkModeToggle() {
   const iconRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem("theme");
+    let stored: string | null = null;
+    try { stored = localStorage.getItem("theme"); } catch {}
     if (stored === "dark" || stored === "light") {
       document.documentElement.classList.toggle("dark", stored === "dark");
       return;
@@ -42,13 +43,19 @@ export default function DarkModeToggle() {
 
   const toggle = useCallback(() => {
     const html = document.documentElement;
-    // Enable smooth theme transition
-    html.classList.add("theme-transitioning");
     const next = !html.classList.contains("dark");
+    // Only animate theme transition if user hasn't opted out of motion
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!prefersReduced) {
+      html.classList.add("theme-transitioning");
+      setTimeout(() => html.classList.remove("theme-transitioning"), 350);
+    }
     html.classList.toggle("dark", next);
-    localStorage.setItem("theme", next ? "dark" : "light");
-    // Remove transitioning class after animation completes
-    setTimeout(() => html.classList.remove("theme-transitioning"), 350);
+    try {
+      localStorage.setItem("theme", next ? "dark" : "light");
+    } catch {
+      // localStorage may be full or unavailable
+    }
     // Trigger the swap animation by bumping the key
     swapKeyRef.current += 1;
     if (iconRef.current) {

@@ -10,6 +10,7 @@ export function Education() {
   return (
     <section
       ref={sectionRef}
+      aria-labelledby="section-05"
       className="relative py-20 sm:py-28"
     >
       <SectionDivider />

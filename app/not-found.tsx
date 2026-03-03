@@ -1,5 +1,12 @@
 import Link from "next/link";
 import { PageTransition } from "@/components/page-transition";
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Page Not Found',
+  description: 'The page you were looking for does not exist.',
+  robots: { index: false },
+}
 
 export default function NotFound() {
   return (

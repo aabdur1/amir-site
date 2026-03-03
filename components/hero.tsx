@@ -101,6 +101,7 @@ export function Hero() {
   return (
     <section
       ref={sectionRef}
+      aria-label="Introduction"
       className="relative overflow-hidden min-h-[calc(100dvh-4.5rem)] flex items-center justify-center"
     >
       <HeroSpeckles />
@@ -284,7 +285,7 @@ export function Hero() {
         }}
       >
         <span
-          className="text-[11px] tracking-[0.2em] uppercase font-[family-name:var(--font-mono)] text-lavender/50 dark:text-lavender-dark/50"
+          className="text-[12px] tracking-[0.2em] uppercase font-[family-name:var(--font-mono)] text-lavender/70 dark:text-lavender-dark/70"
           style={{ animation: mounted ? "shimmer 3s ease-in-out 3s infinite" : "none" }}
         >
           Scroll
