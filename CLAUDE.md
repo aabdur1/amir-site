@@ -76,7 +76,8 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - **Decorative elements hidden from screen readers.** All decorative SVGs (nav arrow, scroll progress, hero speckles, social icons, card arrows, sort chevron, dark mode toggle icons) use `aria-hidden="true"` and `focusable="false"`.
 - **External link labels.** All `target="_blank"` links include "(opens in new tab)" in `aria-label`.
 - **`-webkit-tap-highlight-color: transparent`** on all `a` and `button` elements for clean mobile taps.
-- **`100dvh` for hero.** Uses dynamic viewport height to account for mobile browser chrome. Hero top padding reduced on mobile (`pt-8 pb-20 sm:py-20`) so badges and scroll indicator are visible above the fold.
+- **`100dvh` for hero.** Uses dynamic viewport height to account for mobile browser chrome. Hero top padding reduced on mobile (`pt-8 pb-20 sm:py-20`) so badges are visible above the fold.
+- **Scroll indicator hidden on mobile.** The "Scroll" text + bobbing line is `hidden sm:flex` — only visible at 640px+ where it serves as a visual cue on full-viewport hero layouts.
 - **Hero decorative line hidden on mobile.** The vertical accent line (`hero-line`) is `hidden sm:block` — only visible at 640px+ where left margin clears content.
 - **`overflow-x: hidden` on body.** Prevents accidental horizontal scroll.
 
@@ -122,8 +123,6 @@ public/
   photos.json             # Photo metadata (CloudFront URLs, EXIF data)
   badges/                 # Non-Credly badge images (e.g. Zscaler, Snowflake)
 next.config.ts            # Image remote patterns (CloudFront, Credly)
-docs/
-  plans/                  # Design docs and implementation plans
 netlify.toml              # Netlify build config + security headers
 .nvmrc                    # Node version (20) for Netlify
 ```
