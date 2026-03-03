@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 
 const ACCENT_COLORS = [
   "var(--color-mauve-dark)",
@@ -48,7 +48,15 @@ function generateDots(count: number): DotConfig[] {
   return dots;
 }
 
-const DOT_COUNT = 150;
+const DOT_COUNT_MIN = 40;
+const DOT_COUNT_MAX = 250;
+const DOT_COUNT_REF = 150; // reference count at 1920px width
+
+function getDotCount(width: number): number {
+  return Math.max(DOT_COUNT_MIN, Math.min(DOT_COUNT_MAX,
+    Math.round((width / 1920) * DOT_COUNT_REF)));
+}
+
 const INTERACTION_RADIUS = 150;
 const MAX_DRIFT = 6;
 const GLOW_OPACITY = 0.55;
@@ -62,7 +70,11 @@ export function HeroSpeckles() {
   const activeRef = useRef(false);
   const rafRef = useRef<number>(0);
 
-  const dotConfigs = useMemo(() => generateDots(DOT_COUNT), []);
+  // Compute dot count from viewport width on mount (opacity:0 hides the re-render)
+  const [dotCount, setDotCount] = useState(DOT_COUNT_REF);
+  useEffect(() => { setDotCount(getDotCount(window.innerWidth)); }, []);
+
+  const dotConfigs = useMemo(() => generateDots(dotCount), [dotCount]);
 
   useEffect(() => {
     const container = containerRef.current;

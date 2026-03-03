@@ -32,7 +32,7 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - **Per-element parallax.** Hero elements each have their own scroll speed (label fastest, badges slowest), creating a spread/dispersal effect on scroll. Uses refs + RAF + passive scroll listener — no state re-renders. Skipped entirely when `prefers-reduced-motion` is enabled.
 - **Scroll-driven ref mutations (no re-renders).** Nav wordmark opacity and hero parallax both use direct `ref.style` mutations inside RAF callbacks instead of `setState`, avoiding React re-renders on every scroll frame.
 - **Multi-accent hero badges.** Each hero badge pill has a distinct Catppuccin accent (sapphire, mauve, peach, lavender) with tinted background, colored dot, and matching hover border.
-- **Cursor-reactive hero speckles (dark mode only).** `HeroSpeckles` renders 150 small dots (1-3px) across the hero using Catppuccin Mocha accents (mauve, sapphire, peach, lavender). Dots drift away from cursor (6px max) and glow brighter on approach. Hidden in light mode via `hidden dark:block`. Uses seeded PRNG for deterministic placement, RAF + lerp (0.06) + convergence check. Disabled on touch devices and with `prefers-reduced-motion`.
+- **Cursor-reactive hero speckles (dark mode only).** `HeroSpeckles` renders viewport-proportional dots (40–250, reference 150 at 1920px) across the hero using Catppuccin Mocha accents (mauve, sapphire, peach, lavender). Count scales linearly with `window.innerWidth`, computed once on mount. Dots drift away from cursor (6px max) and glow brighter on approach. Hidden in light mode via `hidden dark:block`. Uses seeded PRNG for deterministic placement (smaller viewports render a subset of the same positions), RAF + lerp (0.06) + convergence check. Disabled on touch devices and with `prefers-reduced-motion`.
 - **Cursor-reactive headshot.** `InteractiveHeadshot` tilts image toward cursor (3deg max) with dynamic shadow — cursor acts as light source. Uses perspective 3D transform + RAF + lerp. Disabled on touch devices.
 - **RAF convergence checks.** `HeroSpeckles` and `InteractiveHeadshot` RAF loops stop automatically when lerp values converge (within 0.1px / 0.01deg), preventing infinite 60fps loops while cursor is stationary.
 - **Parallax delayed start.** Hero parallax scroll listener attaches after 2.5s delay to avoid `style.transform` conflicting with CSS `fade-in-up` animation `forwards` fill during entrance animations.
@@ -76,7 +76,7 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - **Decorative elements hidden from screen readers.** All decorative SVGs (nav arrow, scroll progress, hero speckles, social icons, card arrows, sort chevron, dark mode toggle icons) use `aria-hidden="true"` and `focusable="false"`.
 - **External link labels.** All `target="_blank"` links include "(opens in new tab)" in `aria-label`.
 - **`-webkit-tap-highlight-color: transparent`** on all `a` and `button` elements for clean mobile taps.
-- **`100dvh` for hero.** Uses dynamic viewport height to account for mobile browser chrome.
+- **`100dvh` for hero.** Uses dynamic viewport height to account for mobile browser chrome. Hero top padding reduced on mobile (`pt-8 pb-20 sm:py-20`) so badges and scroll indicator are visible above the fold.
 - **Hero decorative line hidden on mobile.** The vertical accent line (`hero-line`) is `hidden sm:block` — only visible at 640px+ where left margin clears content.
 - **`overflow-x: hidden` on body.** Prevents accidental horizontal scroll.
 
@@ -120,7 +120,7 @@ lib/
   badges.ts               # Credly API fetcher + manual badges, exports getAllBadges()
 public/
   photos.json             # Photo metadata (CloudFront URLs, EXIF data)
-  badges/                 # Non-Credly badge images (e.g. Zscaler)
+  badges/                 # Non-Credly badge images (e.g. Zscaler, Snowflake)
 next.config.ts            # Image remote patterns (CloudFront, Credly)
 docs/
   plans/                  # Design docs and implementation plans
@@ -153,7 +153,7 @@ npm run lint      # ESLint (flat config via eslint.config.mjs, not next lint)
 - `getAllBadges()` merges Credly badges + manual badges (e.g. Zscaler), sorts newest first
 - Credly API: `https://www.credly.com/users/amir-abdur-rahim/badges.json` (revalidates daily)
 - Manual badges defined in `lib/badges.ts` `manualBadges` array — for non-Credly certs
-- Zscaler badge image stored in `public/badges/zscaler-ztca.jpeg`
+- Zscaler badge image stored in `public/badges/zscaler-ztca.jpeg`, Snowflake in `public/badges/snowflake-snowpro-core.png`
 - New Credly badges appear automatically on next build/revalidation
 - To add a non-Credly badge: add entry to `manualBadges` in `lib/badges.ts`, put image in `public/badges/`
 - Credly profile: `https://www.credly.com/users/amir-abdur-rahim`

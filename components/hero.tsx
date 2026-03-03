@@ -115,7 +115,7 @@ export function Hero() {
         }}
       />
 
-      <div className="relative w-full max-w-6xl mx-auto px-6 sm:px-12 lg:px-20 py-20">
+      <div className="relative w-full max-w-6xl mx-auto px-6 sm:px-12 lg:px-20 pt-8 pb-20 sm:py-20">
         {/* Main content grid — asymmetric editorial */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8 lg:gap-16 items-center">
 

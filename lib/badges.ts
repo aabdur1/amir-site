@@ -26,7 +26,7 @@ interface CredlyResponse {
   data: CredlyBadge[];
 }
 
-/** Manual badges not on Credly (e.g. Zscaler) */
+/** Manual badges not on Credly (e.g. Zscaler, Snowflake) */
 const manualBadges: Badge[] = [
   {
     name: "Zscaler Zero Trust Certified Architect",
@@ -35,6 +35,14 @@ const manualBadges: Badge[] = [
     org: "Zscaler",
     date: "2025-06",
     url: "https://www.zscaler.com/education-and-certification",
+  },
+  {
+    name: "SnowPro Associate: Platform Certification",
+    shortName: "SnowPro Associate",
+    img: "/badges/snowflake-snowpro-core.png",
+    org: "Snowflake",
+    date: "2026-03",
+    url: "https://achieve.snowflake.com/b5d33342-5619-46ea-97ef-ca514f99cdb2#acc.9vlsqPTz",
   },
 ];
 
