@@ -5,6 +5,18 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+[[redirects]]
+  from = "https://amirabdurrahim.dev/*"
+  to = "https://amirabdurrahim.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://www.amirabdurrahim.dev/*"
+  to = "https://amirabdurrahim.com/:splat"
+  status = 301
+  force = true
+
 [[headers]]
   for = "/*"
   [headers.values]
