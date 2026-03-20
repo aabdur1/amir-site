@@ -403,6 +403,25 @@ function Section1() {
 // ======================================================================
 // SECTION 2: Learning Rate
 // ======================================================================
+// Helper: run GD for N steps at a given eta, starting from w=7
+function runGD(etaVal: number, steps: number): number[] {
+  const losses = [loss(7)]
+  let w = 7
+  for (let i = 0; i < steps; i++) {
+    w = w - etaVal * grad(w)
+    if (w < -4) w = -4
+    if (w > 10) w = 10
+    losses.push(loss(w))
+  }
+  return losses
+}
+
+const COMPARE_PRESETS = [
+  { eta: 0.02, label: 'Slow', colorKey: 'green' as const },
+  { eta: 0.30, label: 'Good', colorKey: 'blue' as const },
+  { eta: 1.00, label: 'Fast', colorKey: 'red' as const },
+] as const
+
 function Section2() {
   const [sectionRef, visible] = useScrollReveal()
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -410,10 +429,7 @@ function Section2() {
   const [eta, setEta] = useState(0.3)
   const [wVal, setWVal] = useState(7)
   const [history, setHistory] = useState<Array<{ w: number; l: number }>>([])
-  const [mode, setMode] = useState<'gd' | 'you'>('gd')
-  const [yourClicks, setYourClicks] = useState<Array<{ w: number; l: number }>>([])
-  // Store layout for click→w conversion
-  const mainLayoutRef = useRef<{ pL: number; pw: number } | null>(null)
+  const [compareMode, setCompareMode] = useState(false)
 
   const currentLoss = loss(wVal)
   const currentGrad = grad(wVal)
@@ -444,7 +460,7 @@ function Section2() {
   const reset = useCallback(() => {
     setHistory([])
     setWVal(7)
-    setYourClicks([])
+    setCompareMode(false)
   }, [])
 
   // --- Main canvas ---
@@ -461,8 +477,6 @@ function Section2() {
     const ph = H - p.t - p.b
     const xOf = (v: number) => p.l + (v + 3) / 13 * pw
     const yOf = (v: number) => p.t + (1 - v / 26) * ph
-
-    mainLayoutRef.current = { pL: p.l, pw }
 
     // Grid
     ctx.strokeStyle = c.grid
@@ -507,28 +521,6 @@ function Section2() {
     ctx.fill()
     ctx.globalAlpha = 1
 
-    // "Your clicks" path (if in you mode)
-    if (yourClicks.length > 0) {
-      for (let i = 0; i < yourClicks.length; i++) {
-        if (i > 0) {
-          ctx.strokeStyle = c.amber
-          ctx.lineWidth = 1.5
-          ctx.globalAlpha = 0.4
-          ctx.beginPath()
-          ctx.moveTo(xOf(yourClicks[i - 1].w), yOf(yourClicks[i - 1].l))
-          ctx.lineTo(xOf(yourClicks[i].w), yOf(yourClicks[i].l))
-          ctx.stroke()
-          ctx.globalAlpha = 1
-        }
-        ctx.fillStyle = c.amber
-        ctx.globalAlpha = i === yourClicks.length - 1 ? 1 : 0.4
-        ctx.beginPath()
-        ctx.arc(xOf(yourClicks[i].w), yOf(yourClicks[i].l), i === yourClicks.length - 1 ? 6 : 3, 0, Math.PI * 2)
-        ctx.fill()
-        ctx.globalAlpha = 1
-      }
-    }
-
     // GD path
     const all = [...history, { w: wVal, l: loss(wVal) }]
     if (all.length > 1) {
@@ -563,41 +555,102 @@ function Section2() {
     for (let i = 0; i < Math.min(all.length, 8); i++) {
       ctx.fillText(String(i), xOf(all[i].w), yOf(all[i].l) - 12)
     }
-
-    // "Click to place" hint in you mode
-    if (mode === 'you' && yourClicks.length === 0 && history.length === 0) {
-      ctx.fillStyle = c.amber
-      ctx.globalAlpha = 0.6
-      ctx.font = '500 12px sans-serif'
-      ctx.textAlign = 'center'
-      ctx.fillText('Click on the curve to place your steps!', W / 2, p.t + 20)
-      ctx.globalAlpha = 1
-    }
-  }, [history, wVal, yourClicks, mode])
+  }, [history, wVal])
 
   // --- Sparkline canvas ---
   const drawSparkline = useCallback(() => {
     const canvas = sparkRef.current
     if (!canvas) return
-    const result = setupCanvas(canvas, 80)
+    const result = setupCanvas(canvas, 100)
     if (!result) return
     const { ctx, W, H } = result
     const c = getThemeColors()
 
+    const p = { l: 36, r: 12, t: 12, b: 22 }
+    const pw = W - p.l - p.r
+    const ph = H - p.t - p.b
+
+    // In compare mode, show 3 preset curves
+    if (compareMode) {
+      const STEPS = 20
+      const presetData = COMPARE_PRESETS.map(pr => runGD(pr.eta, STEPS))
+      const allVals = presetData.flat()
+      const maxL = Math.max(...allVals, 1)
+
+      // Axis
+      ctx.strokeStyle = c.axis
+      ctx.lineWidth = 0.5
+      ctx.beginPath()
+      ctx.moveTo(p.l, p.t)
+      ctx.lineTo(p.l, H - p.b)
+      ctx.lineTo(W - p.r, H - p.b)
+      ctx.stroke()
+
+      ctx.fillStyle = c.subtext
+      ctx.font = '10px sans-serif'
+      ctx.textAlign = 'center'
+      ctx.fillText('step', W / 2, H - 4)
+      ctx.textAlign = 'right'
+      ctx.fillText('loss', p.l - 4, p.t + 10)
+
+      // Draw each preset line
+      const colorMap = { green: c.green, blue: c.blue, red: c.red }
+      for (let pi = 0; pi < presetData.length; pi++) {
+        const data = presetData[pi]
+        const preset = COMPARE_PRESETS[pi]
+        const color = colorMap[preset.colorKey]
+
+        ctx.beginPath()
+        ctx.strokeStyle = color
+        ctx.lineWidth = 2
+        for (let i = 0; i < data.length; i++) {
+          const x = p.l + (i / STEPS) * pw
+          const y = p.t + (1 - data[i] / maxL) * ph
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y)
+        }
+        ctx.stroke()
+
+        // End dot
+        const lastX = p.l + pw
+        const lastY = p.t + (1 - data[data.length - 1] / maxL) * ph
+        ctx.fillStyle = color
+        ctx.beginPath()
+        ctx.arc(lastX, lastY, 3, 0, Math.PI * 2)
+        ctx.fill()
+      }
+
+      // Legend
+      let lx = W - 10
+      ctx.font = '10px sans-serif'
+      ctx.textAlign = 'right'
+      for (let i = COMPARE_PRESETS.length - 1; i >= 0; i--) {
+        const preset = COMPARE_PRESETS[i]
+        const color = colorMap[preset.colorKey]
+        const label = `${preset.label} (${preset.eta})`
+        const tw = ctx.measureText(label).width
+        ctx.fillStyle = c.subtext
+        ctx.fillText(label, lx, p.t + 10)
+        ctx.fillStyle = color
+        ctx.beginPath()
+        ctx.arc(lx - tw - 6, p.t + 6, 3, 0, Math.PI * 2)
+        ctx.fill()
+        lx -= tw + 18
+      }
+      return
+    }
+
+    // Normal mode: show current GD loss over steps
     const all = [...history.map(h => h.l), loss(wVal)]
     if (all.length < 2) {
       ctx.fillStyle = c.subtext
       ctx.globalAlpha = 0.4
-      ctx.font = '11px sans-serif'
+      ctx.font = '12px sans-serif'
       ctx.textAlign = 'center'
       ctx.fillText('Loss over steps will appear here', W / 2, H / 2 + 4)
       ctx.globalAlpha = 1
       return
     }
 
-    const p = { l: 30, r: 10, t: 10, b: 20 }
-    const pw = W - p.l - p.r
-    const ph = H - p.t - p.b
     const maxL = Math.max(...all, 1)
 
     // Axis
@@ -610,16 +663,16 @@ function Section2() {
     ctx.stroke()
 
     ctx.fillStyle = c.subtext
-    ctx.font = '9px sans-serif'
+    ctx.font = '10px sans-serif'
     ctx.textAlign = 'center'
-    ctx.fillText('step', W / 2, H - 3)
+    ctx.fillText('step', W / 2, H - 4)
     ctx.textAlign = 'right'
-    ctx.fillText('loss', p.l - 4, p.t + 8)
+    ctx.fillText('loss', p.l - 4, p.t + 10)
 
-    // GD loss line
+    // Loss line
     ctx.beginPath()
     ctx.strokeStyle = c.blue
-    ctx.lineWidth = 1.5
+    ctx.lineWidth = 2
     for (let i = 0; i < all.length; i++) {
       const x = p.l + (i / (all.length - 1)) * pw
       const y = p.t + (1 - all[i] / maxL) * ph
@@ -627,82 +680,34 @@ function Section2() {
     }
     ctx.stroke()
 
-    // Dots at each step
+    // Dots
     for (let i = 0; i < all.length; i++) {
       const x = p.l + (i / (all.length - 1)) * pw
       const y = p.t + (1 - all[i] / maxL) * ph
       ctx.fillStyle = c.blue
       ctx.beginPath()
-      ctx.arc(x, y, 2, 0, Math.PI * 2)
+      ctx.arc(x, y, 2.5, 0, Math.PI * 2)
       ctx.fill()
     }
 
-    // "Your" loss line (if applicable)
-    if (yourClicks.length > 1) {
-      ctx.beginPath()
-      ctx.strokeStyle = c.amber
-      ctx.lineWidth = 1.5
-      ctx.setLineDash([3, 3])
-      for (let i = 0; i < yourClicks.length; i++) {
-        const x = p.l + (i / (all.length - 1)) * pw
-        const y = p.t + (1 - yourClicks[i].l / maxL) * ph
-        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y)
-      }
-      ctx.stroke()
-      ctx.setLineDash([])
-
-      for (let i = 0; i < yourClicks.length; i++) {
-        const x = p.l + (i / (all.length - 1)) * pw
-        const y = p.t + (1 - yourClicks[i].l / maxL) * ph
-        ctx.fillStyle = c.amber
-        ctx.beginPath()
-        ctx.arc(x, y, 2, 0, Math.PI * 2)
-        ctx.fill()
-      }
-    }
-
-    // Legend
-    const legendY = H - 6
-    ctx.fillStyle = c.blue
-    ctx.beginPath()
-    ctx.arc(W - 80, legendY, 3, 0, Math.PI * 2)
-    ctx.fill()
+    // η label
     ctx.fillStyle = c.subtext
-    ctx.font = '9px sans-serif'
-    ctx.textAlign = 'left'
-    ctx.fillText('GD', W - 74, legendY + 3)
-    if (yourClicks.length > 0) {
-      ctx.fillStyle = c.amber
-      ctx.beginPath()
-      ctx.arc(W - 46, legendY, 3, 0, Math.PI * 2)
-      ctx.fill()
-      ctx.fillStyle = c.subtext
-      ctx.fillText('You', W - 40, legendY + 3)
-    }
-  }, [history, wVal, yourClicks])
+    ctx.font = '10px sans-serif'
+    ctx.textAlign = 'right'
+    ctx.fillText(`\u03B7 = ${eta.toFixed(2)}`, W - p.r, p.t + 10)
+  }, [history, wVal, compareMode, eta])
 
   useEffect(() => { draw(); drawSparkline() }, [draw, drawSparkline])
   useDarkModeObserver(() => { draw(); drawSparkline() })
   useCanvasResize(canvasRef, draw)
   useCanvasResize(sparkRef, drawSparkline)
 
-  // --- "You" mode click handler ---
-  const handleCanvasClick = useCallback((e: React.PointerEvent) => {
-    if (mode !== 'you') return
-    const canvas = canvasRef.current
-    const layout = mainLayoutRef.current
-    if (!canvas || !layout) return
-    const rect = canvas.getBoundingClientRect()
-    const px = e.clientX - rect.left - layout.pL
-    const w = -3 + (px / layout.pw) * 13
-    const clamped = Math.max(-3, Math.min(10, w))
-    setYourClicks(prev => [...prev, { w: clamped, l: loss(clamped) }])
-  }, [mode])
-
   // Insight text
   let insight: React.ReactNode
-  if (history.length === 0) {
-    insight = <>Hit {'\u201C'}1 step{'\u201D'} to start. Try {'\u03B7'}=0.30 first, then 0.02 (slow) and 1.00 (overshoots).</>
+  if (compareMode) {
+    insight = <><strong>Comparison:</strong> Green ({'\u03B7'}=0.02) barely moves in 20 steps. Blue ({'\u03B7'}=0.30) converges smoothly. Red ({'\u03B7'}=1.00) overshoots and zigzags — the loss spikes before settling. The {'\u201C'}right{'\u201D'} learning rate balances speed and stability.</>
+  } else if (history.length === 0) {
+    insight = <>Hit {'\u201C'}1 step{'\u201D'} to start. Try {'\u03B7'}=0.30 first, then 0.02 (slow) and 1.00 (overshoots). Or hit {'\u201C'}Compare All 3{'\u201D'} to see them side by side.</>
   } else if (eta >= 0.9) {
     insight = <><strong>Overshooting!</strong> {'\u03B7'} is too large — steps jump past the minimum and bounce back. Watch the sparkline zigzag.</>
   } else if (eta <= 0.05) {
@@ -710,9 +715,7 @@ function Section2() {
   } else if (Math.abs(currentGrad) < 0.05) {
     insight = <><strong>Converged!</strong> After {history.length} steps, w {'\u2248'} {wVal.toFixed(2)}. The sparkline has flattened — loss isn{"'"}t decreasing anymore.</>
   } else {
-    insight = <>After {history.length} steps: w moved 7.0 {'\u2192'} {wVal.toFixed(2)}. Loss: {loss(7).toFixed(2)} {'\u2192'} {currentLoss.toFixed(2)}.{
-      yourClicks.length > 1 ? ` Your best loss: ${Math.min(...yourClicks.map(c => c.l)).toFixed(2)}.` : ''
-    }</>
+    insight = <>After {history.length} steps: w moved 7.0 {'\u2192'} {wVal.toFixed(2)}. Loss: {loss(7).toFixed(2)} {'\u2192'} {currentLoss.toFixed(2)}.</>
   }
 
   return (
@@ -728,42 +731,15 @@ function Section2() {
         Learning Rate
       </h2>
       <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
-        Watch gradient descent step by step. Adjust {'\u03B7'} to see overshooting vs slow convergence. Switch to {'\u201C'}You{'\u201D'} mode to click your own path and compare.
+        Watch gradient descent step by step. Adjust {'\u03B7'} to see overshooting vs slow convergence, or compare all three at once.
       </p>
-
-      {/* Mode toggle */}
-      <div className="flex gap-1.5 mb-3">
-        <button
-          type="button"
-          onClick={() => setMode('gd')}
-          className={`px-3.5 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
-            mode === 'gd'
-              ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark'
-              : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
-          }`}
-        >
-          GD Mode
-        </button>
-        <button
-          type="button"
-          onClick={() => setMode('you')}
-          className={`px-3.5 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
-            mode === 'you'
-              ? 'border-amber-400/40 dark:border-amber-500/40 bg-amber-100/40 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300'
-              : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
-          }`}
-        >
-          Try to Beat GD
-        </button>
-      </div>
 
       <canvas
         ref={canvasRef}
         role="img"
         aria-label="Loss curve showing gradient descent steps with adjustable learning rate"
-        className={`w-full rounded-lg ${mode === 'you' ? 'cursor-crosshair' : ''}`}
-        style={{ height: 280, touchAction: mode === 'you' ? 'none' : 'auto' }}
-        onPointerDown={handleCanvasClick}
+        className="w-full rounded-lg"
+        style={{ height: 280 }}
       />
 
       <div className="flex items-center gap-3 mt-2 mb-2">
@@ -780,7 +756,7 @@ function Section2() {
           max={1.1}
           step={0.02}
           value={eta}
-          onChange={(e) => setEta(parseFloat(e.target.value))}
+          onChange={(e) => { setEta(parseFloat(e.target.value)); setCompareMode(false) }}
           aria-valuetext={`eta = ${eta.toFixed(2)}`}
           className="flex-1"
         />
@@ -819,6 +795,17 @@ function Section2() {
         </button>
         <button
           type="button"
+          onClick={() => setCompareMode(true)}
+          className={`px-4 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
+            compareMode
+              ? 'border-mauve/30 dark:border-mauve-dark/30 bg-mauve/10 dark:bg-mauve-dark/10 text-mauve dark:text-mauve-dark'
+              : 'border-mauve/30 dark:border-mauve-dark/30 text-mauve dark:text-mauve-dark hover:bg-mauve/10 dark:hover:bg-mauve-dark/10'
+          }`}
+        >
+          Compare All 3
+        </button>
+        <button
+          type="button"
           onClick={reset}
           className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-cream-border dark:border-night-border
             text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60 transition-colors"
@@ -832,9 +819,9 @@ function Section2() {
         <canvas
           ref={sparkRef}
           role="img"
-          aria-label="Sparkline chart showing loss value at each gradient descent step"
+          aria-label="Chart showing loss over steps — compare slow, good, and fast learning rates"
           className="w-full"
-          style={{ height: 80 }}
+          style={{ height: 100 }}
         />
       </div>
 
