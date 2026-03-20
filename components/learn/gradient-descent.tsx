@@ -130,6 +130,9 @@ function Section1() {
   const [sectionRef, visible] = useScrollReveal()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [wPos, setWPos] = useState(7)
+  const draggingRef = useRef(false)
+  // Store layout for pointer→w conversion without recalculating
+  const layoutRef = useRef<{ pL: number; pw: number } | null>(null)
 
   const g = grad(wPos)
   const lv = loss(wPos)
@@ -137,7 +140,7 @@ function Section1() {
   const draw = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    const result = setupCanvas(canvas, 260)
+    const result = setupCanvas(canvas, 280)
     if (!result) return
     const { ctx, W, H } = result
     const c = getThemeColors()
@@ -147,6 +150,9 @@ function Section1() {
     const ph = H - p.t - p.b
     const xOf = (v: number) => p.l + (v + 2) / 10 * pw
     const yOf = (v: number) => p.t + (1 - v / 14) * ph
+
+    // Cache layout for pointer events
+    layoutRef.current = { pL: p.l, pw }
 
     // Grid
     ctx.strokeStyle = c.grid
@@ -202,9 +208,35 @@ function Section1() {
     ctx.textAlign = 'center'
     ctx.fillText('minimum', xOf(3), yOf(0.5) + 18)
 
-    // Current position
+    // --- Tangent line at current position ---
     const cx = xOf(wPos)
     const cy = yOf(lv)
+    const tangentLen = pw * 0.18
+    const slope = g // gradient IS the slope
+    // Convert slope from data space to pixel space
+    const dxData = 1
+    const dxPx = dxData / 10 * pw
+    const dyPx = -(slope * dxData) / 14 * ph // negative because y-axis is flipped
+    const mag = Math.sqrt(dxPx * dxPx + dyPx * dyPx)
+    const ux = dxPx / mag
+    const uy = dyPx / mag
+    ctx.strokeStyle = c.amber
+    ctx.lineWidth = 1.5
+    ctx.setLineDash([5, 4])
+    ctx.globalAlpha = 0.7
+    ctx.beginPath()
+    ctx.moveTo(cx - ux * tangentLen, cy - uy * tangentLen)
+    ctx.lineTo(cx + ux * tangentLen, cy + uy * tangentLen)
+    ctx.stroke()
+    ctx.setLineDash([])
+    ctx.globalAlpha = 1
+    // Tangent label
+    ctx.fillStyle = c.amber
+    ctx.font = '500 10px sans-serif'
+    ctx.textAlign = g >= 0 ? 'left' : 'right'
+    ctx.fillText(`slope = ${g.toFixed(1)}`, cx + ux * tangentLen + (g >= 0 ? 4 : -4), cy + uy * tangentLen - 4)
+
+    // Current position (drawn on top of tangent)
     ctx.fillStyle = c.blue
     ctx.beginPath()
     ctx.arc(cx, cy, 7, 0, Math.PI * 2)
@@ -249,6 +281,36 @@ function Section1() {
   useDarkModeObserver(draw)
   useCanvasResize(canvasRef, draw)
 
+  // --- Direct canvas dragging ---
+  const pxToW = useCallback((clientX: number) => {
+    const canvas = canvasRef.current
+    const layout = layoutRef.current
+    if (!canvas || !layout) return null
+    const rect = canvas.getBoundingClientRect()
+    const px = clientX - rect.left - layout.pL
+    const w = -2 + (px / layout.pw) * 10
+    return Math.max(-2, Math.min(8, Math.round(w * 10) / 10))
+  }, [])
+
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    const w = pxToW(e.clientX)
+    if (w !== null) {
+      draggingRef.current = true
+      setWPos(w)
+      ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+    }
+  }, [pxToW])
+
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    if (!draggingRef.current) return
+    const w = pxToW(e.clientX)
+    if (w !== null) setWPos(w)
+  }, [pxToW])
+
+  const handlePointerUp = useCallback(() => {
+    draggingRef.current = false
+  }, [])
+
   // Insight text
   let insight: React.ReactNode
   if (Math.abs(g) < 0.3) {
@@ -256,7 +318,7 @@ function Section1() {
   } else if (g > 0) {
     insight = (
       <>
-        <strong>Gradient = +{g.toFixed(1)}</strong> — slope goes UP to the right. Negative gradient points LEFT.{' '}
+        <strong>Gradient = +{g.toFixed(1)}</strong> — the tangent line tilts uphill to the right (slope = +{g.toFixed(1)}). Negative gradient points LEFT.{' '}
         <code className="font-[family-name:var(--font-mono)] text-[13px]">
           w_new = {wPos.toFixed(1)} {'\u2212'} {'\u03B7'}{'\u00D7'}{g.toFixed(1)}
         </code>{' '}
@@ -266,7 +328,7 @@ function Section1() {
   } else {
     insight = (
       <>
-        <strong>Gradient = {g.toFixed(1)}</strong> — slope goes UP to the left. Negative gradient points RIGHT.{' '}
+        <strong>Gradient = {g.toFixed(1)}</strong> — the tangent line tilts uphill to the left (slope = {g.toFixed(1)}). Negative gradient points RIGHT.{' '}
         <code className="font-[family-name:var(--font-mono)] text-[13px]">
           w_new = {wPos.toFixed(1)} {'\u2212'} {'\u03B7'}{'\u00D7'}({g.toFixed(1)})
         </code>{' '}
@@ -288,15 +350,19 @@ function Section1() {
         Why Gradients Point Downhill
       </h2>
       <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
-        This is a loss curve — height = error. Drag the slider to place yourself on the curve and see what the gradient tells you.
+        Drag the dot on the curve (or use the slider). The dashed yellow line is the <strong>tangent</strong> — its slope IS the gradient. Watch how the gradient arrow always points uphill, and the negative gradient points downhill.
       </p>
 
       <canvas
         ref={canvasRef}
         role="img"
-        aria-label="Interactive loss curve showing a draggable position with gradient and negative gradient arrows"
-        className="w-full rounded-lg"
-        style={{ height: 260 }}
+        aria-label="Interactive loss curve — drag the dot to move along the curve and see gradient, tangent line, and negative gradient"
+        className="w-full rounded-lg cursor-grab active:cursor-grabbing"
+        style={{ height: 280, touchAction: 'none' }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
       />
 
       <div className="flex items-center gap-3 mt-2 mb-2">
@@ -325,7 +391,7 @@ function Section1() {
       <div className="flex gap-2.5 flex-wrap my-2.5">
         <MetricCard label="Position (w)" value={wPos.toFixed(1)} />
         <MetricCard label="Loss" value={lv.toFixed(2)} />
-        <MetricCard label="Gradient" value={`${g >= 0 ? '+' : ''}${g.toFixed(1)}`} colorClass={METRIC_COLORS.red} />
+        <MetricCard label="Gradient (slope)" value={`${g >= 0 ? '+' : ''}${g.toFixed(1)}`} colorClass={METRIC_COLORS.red} />
         <MetricCard label={'\u2212Gradient'} value={`${-g >= 0 ? '+' : ''}${(-g).toFixed(1)}`} colorClass={METRIC_COLORS.green} />
       </div>
 
@@ -340,9 +406,14 @@ function Section1() {
 function Section2() {
   const [sectionRef, visible] = useScrollReveal()
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const sparkRef = useRef<HTMLCanvasElement>(null)
   const [eta, setEta] = useState(0.3)
   const [wVal, setWVal] = useState(7)
   const [history, setHistory] = useState<Array<{ w: number; l: number }>>([])
+  const [mode, setMode] = useState<'gd' | 'you'>('gd')
+  const [yourClicks, setYourClicks] = useState<Array<{ w: number; l: number }>>([])
+  // Store layout for click→w conversion
+  const mainLayoutRef = useRef<{ pL: number; pw: number } | null>(null)
 
   const currentLoss = loss(wVal)
   const currentGrad = grad(wVal)
@@ -373,8 +444,10 @@ function Section2() {
   const reset = useCallback(() => {
     setHistory([])
     setWVal(7)
+    setYourClicks([])
   }, [])
 
+  // --- Main canvas ---
   const draw = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -388,6 +461,8 @@ function Section2() {
     const ph = H - p.t - p.b
     const xOf = (v: number) => p.l + (v + 3) / 13 * pw
     const yOf = (v: number) => p.t + (1 - v / 26) * ph
+
+    mainLayoutRef.current = { pL: p.l, pw }
 
     // Grid
     ctx.strokeStyle = c.grid
@@ -432,7 +507,29 @@ function Section2() {
     ctx.fill()
     ctx.globalAlpha = 1
 
-    // Path
+    // "Your clicks" path (if in you mode)
+    if (yourClicks.length > 0) {
+      for (let i = 0; i < yourClicks.length; i++) {
+        if (i > 0) {
+          ctx.strokeStyle = c.amber
+          ctx.lineWidth = 1.5
+          ctx.globalAlpha = 0.4
+          ctx.beginPath()
+          ctx.moveTo(xOf(yourClicks[i - 1].w), yOf(yourClicks[i - 1].l))
+          ctx.lineTo(xOf(yourClicks[i].w), yOf(yourClicks[i].l))
+          ctx.stroke()
+          ctx.globalAlpha = 1
+        }
+        ctx.fillStyle = c.amber
+        ctx.globalAlpha = i === yourClicks.length - 1 ? 1 : 0.4
+        ctx.beginPath()
+        ctx.arc(xOf(yourClicks[i].w), yOf(yourClicks[i].l), i === yourClicks.length - 1 ? 6 : 3, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.globalAlpha = 1
+      }
+    }
+
+    // GD path
     const all = [...history, { w: wVal, l: loss(wVal) }]
     if (all.length > 1) {
       for (let i = 0; i < all.length - 1; i++) {
@@ -453,7 +550,7 @@ function Section2() {
       }
     }
 
-    // Current position
+    // Current GD position
     ctx.fillStyle = c.blue
     ctx.beginPath()
     ctx.arc(xOf(wVal), yOf(loss(wVal)), 7, 0, Math.PI * 2)
@@ -466,31 +563,163 @@ function Section2() {
     for (let i = 0; i < Math.min(all.length, 8); i++) {
       ctx.fillText(String(i), xOf(all[i].w), yOf(all[i].l) - 12)
     }
-  }, [history, wVal])
 
-  useEffect(() => { draw() }, [draw])
-  useDarkModeObserver(draw)
+    // "Click to place" hint in you mode
+    if (mode === 'you' && yourClicks.length === 0 && history.length === 0) {
+      ctx.fillStyle = c.amber
+      ctx.globalAlpha = 0.6
+      ctx.font = '500 12px sans-serif'
+      ctx.textAlign = 'center'
+      ctx.fillText('Click on the curve to place your steps!', W / 2, p.t + 20)
+      ctx.globalAlpha = 1
+    }
+  }, [history, wVal, yourClicks, mode])
+
+  // --- Sparkline canvas ---
+  const drawSparkline = useCallback(() => {
+    const canvas = sparkRef.current
+    if (!canvas) return
+    const result = setupCanvas(canvas, 80)
+    if (!result) return
+    const { ctx, W, H } = result
+    const c = getThemeColors()
+
+    const all = [...history.map(h => h.l), loss(wVal)]
+    if (all.length < 2) {
+      ctx.fillStyle = c.subtext
+      ctx.globalAlpha = 0.4
+      ctx.font = '11px sans-serif'
+      ctx.textAlign = 'center'
+      ctx.fillText('Loss over steps will appear here', W / 2, H / 2 + 4)
+      ctx.globalAlpha = 1
+      return
+    }
+
+    const p = { l: 30, r: 10, t: 10, b: 20 }
+    const pw = W - p.l - p.r
+    const ph = H - p.t - p.b
+    const maxL = Math.max(...all, 1)
+
+    // Axis
+    ctx.strokeStyle = c.axis
+    ctx.lineWidth = 0.5
+    ctx.beginPath()
+    ctx.moveTo(p.l, p.t)
+    ctx.lineTo(p.l, H - p.b)
+    ctx.lineTo(W - p.r, H - p.b)
+    ctx.stroke()
+
+    ctx.fillStyle = c.subtext
+    ctx.font = '9px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText('step', W / 2, H - 3)
+    ctx.textAlign = 'right'
+    ctx.fillText('loss', p.l - 4, p.t + 8)
+
+    // GD loss line
+    ctx.beginPath()
+    ctx.strokeStyle = c.blue
+    ctx.lineWidth = 1.5
+    for (let i = 0; i < all.length; i++) {
+      const x = p.l + (i / (all.length - 1)) * pw
+      const y = p.t + (1 - all[i] / maxL) * ph
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y)
+    }
+    ctx.stroke()
+
+    // Dots at each step
+    for (let i = 0; i < all.length; i++) {
+      const x = p.l + (i / (all.length - 1)) * pw
+      const y = p.t + (1 - all[i] / maxL) * ph
+      ctx.fillStyle = c.blue
+      ctx.beginPath()
+      ctx.arc(x, y, 2, 0, Math.PI * 2)
+      ctx.fill()
+    }
+
+    // "Your" loss line (if applicable)
+    if (yourClicks.length > 1) {
+      ctx.beginPath()
+      ctx.strokeStyle = c.amber
+      ctx.lineWidth = 1.5
+      ctx.setLineDash([3, 3])
+      for (let i = 0; i < yourClicks.length; i++) {
+        const x = p.l + (i / (all.length - 1)) * pw
+        const y = p.t + (1 - yourClicks[i].l / maxL) * ph
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y)
+      }
+      ctx.stroke()
+      ctx.setLineDash([])
+
+      for (let i = 0; i < yourClicks.length; i++) {
+        const x = p.l + (i / (all.length - 1)) * pw
+        const y = p.t + (1 - yourClicks[i].l / maxL) * ph
+        ctx.fillStyle = c.amber
+        ctx.beginPath()
+        ctx.arc(x, y, 2, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    }
+
+    // Legend
+    const legendY = H - 6
+    ctx.fillStyle = c.blue
+    ctx.beginPath()
+    ctx.arc(W - 80, legendY, 3, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.fillStyle = c.subtext
+    ctx.font = '9px sans-serif'
+    ctx.textAlign = 'left'
+    ctx.fillText('GD', W - 74, legendY + 3)
+    if (yourClicks.length > 0) {
+      ctx.fillStyle = c.amber
+      ctx.beginPath()
+      ctx.arc(W - 46, legendY, 3, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.fillStyle = c.subtext
+      ctx.fillText('You', W - 40, legendY + 3)
+    }
+  }, [history, wVal, yourClicks])
+
+  useEffect(() => { draw(); drawSparkline() }, [draw, drawSparkline])
+  useDarkModeObserver(() => { draw(); drawSparkline() })
   useCanvasResize(canvasRef, draw)
+  useCanvasResize(sparkRef, drawSparkline)
+
+  // --- "You" mode click handler ---
+  const handleCanvasClick = useCallback((e: React.PointerEvent) => {
+    if (mode !== 'you') return
+    const canvas = canvasRef.current
+    const layout = mainLayoutRef.current
+    if (!canvas || !layout) return
+    const rect = canvas.getBoundingClientRect()
+    const px = e.clientX - rect.left - layout.pL
+    const w = -3 + (px / layout.pw) * 13
+    const clamped = Math.max(-3, Math.min(10, w))
+    setYourClicks(prev => [...prev, { w: clamped, l: loss(clamped) }])
+  }, [mode])
 
   // Insight text
   let insight: React.ReactNode
   if (history.length === 0) {
     insight = <>Hit {'\u201C'}1 step{'\u201D'} to start. Try {'\u03B7'}=0.30 first, then 0.02 (slow) and 1.00 (overshoots).</>
   } else if (eta >= 0.9) {
-    insight = <><strong>Overshooting!</strong> {'\u03B7'} is too large — steps jump past the minimum and bounce back.</>
+    insight = <><strong>Overshooting!</strong> {'\u03B7'} is too large — steps jump past the minimum and bounce back. Watch the sparkline zigzag.</>
   } else if (eta <= 0.05) {
-    insight = <><strong>Very slow.</strong> Each step is tiny — needs many more iterations.</>
+    insight = <><strong>Very slow.</strong> Each step is tiny — the sparkline shows a gradual descent that needs many more iterations.</>
   } else if (Math.abs(currentGrad) < 0.05) {
-    insight = <><strong>Converged!</strong> After {history.length} steps, w {'\u2248'} {wVal.toFixed(2)}. Gradient {'\u2248'} 0.</>
+    insight = <><strong>Converged!</strong> After {history.length} steps, w {'\u2248'} {wVal.toFixed(2)}. The sparkline has flattened — loss isn{"'"}t decreasing anymore.</>
   } else {
-    insight = <>After {history.length} steps: w moved 7.0 {'\u2192'} {wVal.toFixed(2)}. Loss: {loss(7).toFixed(2)} {'\u2192'} {currentLoss.toFixed(2)}.</>
+    insight = <>After {history.length} steps: w moved 7.0 {'\u2192'} {wVal.toFixed(2)}. Loss: {loss(7).toFixed(2)} {'\u2192'} {currentLoss.toFixed(2)}.{
+      yourClicks.length > 1 ? ` Your best loss: ${Math.min(...yourClicks.map(c => c.l)).toFixed(2)}.` : ''
+    }</>
   }
 
   return (
     <section
       ref={sectionRef as React.RefObject<HTMLElement>}
       aria-labelledby="gd-learning-rate"
-      className={`py-16 sm:py-20 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`py-8 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       <h2
         id="gd-learning-rate"
@@ -499,15 +728,42 @@ function Section2() {
         Learning Rate
       </h2>
       <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
-        Watch gradient descent step by step. Adjust {'\u03B7'} to see overshooting vs slow convergence.
+        Watch gradient descent step by step. Adjust {'\u03B7'} to see overshooting vs slow convergence. Switch to {'\u201C'}You{'\u201D'} mode to click your own path and compare.
       </p>
+
+      {/* Mode toggle */}
+      <div className="flex gap-1.5 mb-3">
+        <button
+          type="button"
+          onClick={() => setMode('gd')}
+          className={`px-3.5 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
+            mode === 'gd'
+              ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark'
+              : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
+          }`}
+        >
+          GD Mode
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode('you')}
+          className={`px-3.5 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
+            mode === 'you'
+              ? 'border-amber-400/40 dark:border-amber-500/40 bg-amber-100/40 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300'
+              : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
+          }`}
+        >
+          Try to Beat GD
+        </button>
+      </div>
 
       <canvas
         ref={canvasRef}
         role="img"
         aria-label="Loss curve showing gradient descent steps with adjustable learning rate"
-        className="w-full rounded-lg"
-        style={{ height: 280 }}
+        className={`w-full rounded-lg ${mode === 'you' ? 'cursor-crosshair' : ''}`}
+        style={{ height: 280, touchAction: mode === 'you' ? 'none' : 'auto' }}
+        onPointerDown={handleCanvasClick}
       />
 
       <div className="flex items-center gap-3 mt-2 mb-2">
@@ -569,6 +825,17 @@ function Section2() {
         >
           Reset
         </button>
+      </div>
+
+      {/* Loss sparkline */}
+      <div className="mt-4 mb-2 rounded-lg border border-cream-border dark:border-night-border overflow-hidden">
+        <canvas
+          ref={sparkRef}
+          role="img"
+          aria-label="Sparkline chart showing loss value at each gradient descent step"
+          className="w-full"
+          style={{ height: 80 }}
+        />
       </div>
 
       <div className="flex gap-2.5 flex-wrap my-2.5">
