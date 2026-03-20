@@ -203,6 +203,9 @@ function Section1() {
   const [corr, setCorr] = useState(0.85)
   const [pts, setPts] = useState<[number, number][]>(() => genCorr(120, 0.85))
   const [showPC, setShowPC] = useState(true)
+  const [showReconstruction, setShowReconstruction] = useState(false)
+  const [sweepPlaying, setSweepPlaying] = useState(false)
+  const sweepRef = useRef<number | null>(null)
 
   const resample = useCallback(() => {
     setPts(genCorr(120, corr))
@@ -211,6 +214,62 @@ function Section1() {
   const pca = pca2d(pts)
   const varExplained1 = pca.eigenvalues[0] / pca.totalVar * 100
   const varExplained2 = pca.eigenvalues[1] / pca.totalVar * 100
+
+  // Compute reconstruction error (average distance from original to PC1-only reconstruction)
+  const reconstructionError = (() => {
+    let totalErr = 0
+    for (const p of pts) {
+      const dx = p[0] - pca.mean[0]
+      const dy = p[1] - pca.mean[1]
+      const proj = dx * pca.eigenvectors[0][0] + dy * pca.eigenvectors[0][1]
+      const rx = pca.mean[0] + proj * pca.eigenvectors[0][0]
+      const ry = pca.mean[1] + proj * pca.eigenvectors[0][1]
+      totalErr += Math.sqrt((p[0] - rx) ** 2 + (p[1] - ry) ** 2)
+    }
+    return totalErr / pts.length
+  })()
+
+  // Animated correlation sweep
+  const startSweep = useCallback(() => {
+    // Respect prefers-reduced-motion
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReduced) {
+      const targetCorr = 0.85
+      setCorr(targetCorr)
+      setPts(genCorr(120, targetCorr))
+      return
+    }
+    setSweepPlaying(true)
+    const duration = 3000
+    const startTime = performance.now()
+    const startCorr = 0
+    const endCorr = 0.98
+
+    const animate = (now: number) => {
+      const elapsed = now - startTime
+      const t = Math.min(elapsed / duration, 1)
+      // Smooth ease-in-out
+      const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2
+      const currentCorr = startCorr + (endCorr - startCorr) * eased
+      const snapped = Math.round(currentCorr / 0.02) * 0.02
+      setCorr(snapped)
+      setPts(genCorr(120, snapped))
+      if (t < 1) {
+        sweepRef.current = requestAnimationFrame(animate)
+      } else {
+        setSweepPlaying(false)
+        sweepRef.current = null
+      }
+    }
+    sweepRef.current = requestAnimationFrame(animate)
+  }, [])
+
+  // Cleanup sweep on unmount
+  useEffect(() => {
+    return () => {
+      if (sweepRef.current) cancelAnimationFrame(sweepRef.current)
+    }
+  }, [])
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current
@@ -268,6 +327,34 @@ function Section1() {
     ctx.rotate(-Math.PI / 2)
     ctx.fillText('Variable 2', 0, 0)
     ctx.restore()
+
+    // Reconstruction overlay (draw before original points so originals are on top)
+    if (showReconstruction && showPC) {
+      for (const p of pts) {
+        const dx = p[0] - pca.mean[0]
+        const dy = p[1] - pca.mean[1]
+        const proj = dx * pca.eigenvectors[0][0] + dy * pca.eigenvectors[0][1]
+        const rx = pca.mean[0] + proj * pca.eigenvectors[0][0]
+        const ry = pca.mean[1] + proj * pca.eigenvectors[0][1]
+
+        // Line from original to reconstructed
+        ctx.strokeStyle = c.amber
+        ctx.globalAlpha = 0.25
+        ctx.lineWidth = 0.8
+        ctx.beginPath()
+        ctx.moveTo(xOf(p[0]), yOf(p[1]))
+        ctx.lineTo(xOf(rx), yOf(ry))
+        ctx.stroke()
+
+        // Reconstructed dot (faded)
+        ctx.fillStyle = c.amber
+        ctx.globalAlpha = 0.35
+        ctx.beginPath()
+        ctx.arc(xOf(rx), yOf(ry), 2.5, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.globalAlpha = 1
+      }
+    }
 
     // Points
     pts.forEach(p => {
@@ -336,7 +423,7 @@ function Section1() {
       ctx.setLineDash([])
       ctx.globalAlpha = 1
     }
-  }, [pts, showPC, pca, varExplained1, varExplained2])
+  }, [pts, showPC, showReconstruction, pca, varExplained1, varExplained2])
 
   useEffect(() => { draw() }, [draw])
   useDarkModeObserver(draw)
@@ -408,13 +495,14 @@ function Section1() {
           max={0.98}
           step={0.02}
           value={corr}
+          disabled={sweepPlaying}
           onChange={(e) => {
             const v = parseFloat(e.target.value)
             setCorr(v)
             setPts(genCorr(120, v))
           }}
           aria-valuetext={`correlation = ${corr.toFixed(2)}`}
-          className="flex-1"
+          className={`flex-1${sweepPlaying ? ' opacity-50' : ''}`}
         />
         <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[44px] text-right text-ink dark:text-night-text">
           {corr.toFixed(2)}
@@ -433,6 +521,29 @@ function Section1() {
         </button>
         <button
           type="button"
+          onClick={() => setShowReconstruction(prev => !prev)}
+          className={`px-4 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
+            showReconstruction
+              ? 'border-amber-400/30 dark:border-amber-300/30 bg-amber-100/60 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 font-semibold'
+              : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
+          }`}
+        >
+          {showReconstruction ? 'Hide' : 'Show'} reconstruction
+        </button>
+        <button
+          type="button"
+          onClick={startSweep}
+          disabled={sweepPlaying}
+          className={`px-4 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
+            sweepPlaying
+              ? 'border-peach/30 dark:border-peach-dark/30 bg-peach/10 dark:bg-peach-dark/10 text-peach dark:text-peach-dark'
+              : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
+          }`}
+        >
+          {sweepPlaying ? 'Playing...' : 'Play sweep'}
+        </button>
+        <button
+          type="button"
           onClick={resample}
           className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-cream-border dark:border-night-border
             text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60 transition-colors"
@@ -446,6 +557,9 @@ function Section1() {
         <MetricCard label="PC1 variance" value={`${varExplained1.toFixed(1)}%`} colorClass={METRIC_COLORS.red} />
         <MetricCard label="PC2 variance" value={`${varExplained2.toFixed(1)}%`} colorClass={METRIC_COLORS.green} />
         <MetricCard label="Total" value="100%" />
+        {showReconstruction && (
+          <MetricCard label="Recon. error" value={reconstructionError.toFixed(3)} colorClass={METRIC_COLORS.amber} />
+        )}
       </div>
 
       <InsightBox>{insight}</InsightBox>
@@ -466,6 +580,8 @@ function Section2() {
 
   const retained = eigenvalues.slice(0, keep).reduce((s, v) => s + v, 0)
   const dropped = 100 - retained
+  const meanEigenvalue = 100 / dims
+  const kaiserCount = eigenvalues.filter(v => v > meanEigenvalue).length
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current
@@ -528,6 +644,21 @@ function Section2() {
     ctx.textAlign = 'left'
     ctx.fillText('80% threshold', p.l + 4, yOfCum(80) - 4)
     ctx.setLineDash([])
+
+    // Kaiser criterion line (mean eigenvalue)
+    const meanEig = 100 / d
+    ctx.setLineDash([4, 4])
+    ctx.strokeStyle = c.green + '88'
+    ctx.lineWidth = 1.5
+    ctx.beginPath()
+    ctx.moveTo(p.l, yOf(meanEig))
+    ctx.lineTo(W - p.r, yOf(meanEig))
+    ctx.stroke()
+    ctx.setLineDash([])
+    ctx.fillStyle = c.green
+    ctx.font = '10px sans-serif'
+    ctx.textAlign = 'right'
+    ctx.fillText(`Kaiser criterion (${meanEig.toFixed(1)}%)`, W - p.r - 4, yOf(meanEig) - 5)
 
     // Bars
     const barW = pw / d * 0.6
@@ -718,6 +849,7 @@ function Section2() {
         <MetricCard label="Variance retained" value={`${retained.toFixed(1)}%`} colorClass={METRIC_COLORS.green} />
         <MetricCard label="Variance dropped" value={`${dropped.toFixed(1)}%`} colorClass={METRIC_COLORS.red} />
         <MetricCard label="Compression" value={`${dims}\u2192${keep}`} />
+        <MetricCard label="Kaiser keeps" value={`${kaiserCount} PCs`} colorClass={METRIC_COLORS.green} />
       </div>
 
       <InsightBox>{insight}</InsightBox>
@@ -729,9 +861,24 @@ function Section2() {
 // ======================================================================
 // SECTION 3: Why Standardize?
 // ======================================================================
+// Generate stable scatter data for Section 3 (seeded so it doesn't change on re-render)
+const S3_SCATTER_DATA: { sodium: number; fiber: number }[] = (() => {
+  const pts: { sodium: number; fiber: number }[] = []
+  // Deterministic seed using simple LCG
+  let seed = 42
+  const rand = () => { seed = (seed * 1664525 + 1013904223) & 0x7fffffff; return seed / 0x7fffffff }
+  for (let i = 0; i < 30; i++) {
+    const sodium = 50 + rand() * 750  // 50-800 mg
+    const fiber = 1 + rand() * 14      // 1-15 g
+    pts.push({ sodium, fiber })
+  }
+  return pts
+})()
+
 function Section3() {
   const [sectionRef, visible] = useScrollReveal()
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const scatterRef = useRef<HTMLCanvasElement>(null)
   const [standardized, setStandardized] = useState(false)
 
   const rawVar = [55.5, 22.3, 14.8, 7.4]
@@ -797,9 +944,143 @@ function Section3() {
     })
   }, [vals])
 
-  useEffect(() => { draw() }, [draw])
-  useDarkModeObserver(draw)
+  // Draw scatter plot
+  const drawScatter = useCallback(() => {
+    const canvas = scatterRef.current
+    if (!canvas) return
+    const result = setupCanvas(canvas, 200)
+    if (!result) return
+    const { ctx, W, H } = result
+    const c = getThemeColors()
+
+    const pad = { l: 50, r: 20, t: 16, b: 36 }
+    const pw = W - pad.l - pad.r
+    const ph = H - pad.t - pad.b
+
+    if (standardized) {
+      // Z-score standardization
+      const sodiumMean = S3_SCATTER_DATA.reduce((s, d) => s + d.sodium, 0) / S3_SCATTER_DATA.length
+      const fiberMean = S3_SCATTER_DATA.reduce((s, d) => s + d.fiber, 0) / S3_SCATTER_DATA.length
+      const sodiumStd = Math.sqrt(S3_SCATTER_DATA.reduce((s, d) => s + (d.sodium - sodiumMean) ** 2, 0) / S3_SCATTER_DATA.length)
+      const fiberStd = Math.sqrt(S3_SCATTER_DATA.reduce((s, d) => s + (d.fiber - fiberMean) ** 2, 0) / S3_SCATTER_DATA.length)
+
+      const zData = S3_SCATTER_DATA.map(d => ({
+        x: (d.sodium - sodiumMean) / sodiumStd,
+        y: (d.fiber - fiberMean) / fiberStd,
+      }))
+
+      const zRange = 3.2
+      const xOf = (v: number) => pad.l + ((v + zRange) / (2 * zRange)) * pw
+      const yOf = (v: number) => pad.t + ((zRange - v) / (2 * zRange)) * ph
+
+      // Axes
+      ctx.strokeStyle = c.axis
+      ctx.lineWidth = 0.5
+      ctx.beginPath()
+      ctx.moveTo(pad.l, H - pad.b)
+      ctx.lineTo(W - pad.r, H - pad.b)
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.moveTo(pad.l, pad.t)
+      ctx.lineTo(pad.l, H - pad.b)
+      ctx.stroke()
+
+      // Zero lines
+      ctx.strokeStyle = c.grid
+      ctx.lineWidth = 0.5
+      ctx.beginPath()
+      ctx.moveTo(xOf(-zRange), yOf(0))
+      ctx.lineTo(xOf(zRange), yOf(0))
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.moveTo(xOf(0), yOf(-zRange))
+      ctx.lineTo(xOf(0), yOf(zRange))
+      ctx.stroke()
+
+      // Axis labels
+      ctx.fillStyle = c.subtext
+      ctx.font = '11px sans-serif'
+      ctx.textAlign = 'center'
+      ctx.fillText('Sodium (z-score)', W / 2, H - 6)
+      ctx.save()
+      ctx.translate(14, H / 2)
+      ctx.rotate(-Math.PI / 2)
+      ctx.fillText('Fiber (z-score)', 0, 0)
+      ctx.restore()
+
+      // Tick labels
+      ctx.font = '10px sans-serif'
+      ctx.textAlign = 'center'
+      for (let v = -2; v <= 2; v++) {
+        ctx.fillText(String(v), xOf(v), H - pad.b + 13)
+      }
+      ctx.textAlign = 'right'
+      for (let v = -2; v <= 2; v++) {
+        ctx.fillText(String(v), pad.l - 5, yOf(v) + 3)
+      }
+
+      // Points
+      zData.forEach(d => {
+        ctx.fillStyle = c.isDark ? 'rgba(133,183,235,0.55)' : 'rgba(59,139,212,0.45)'
+        ctx.beginPath()
+        ctx.arc(xOf(d.x), yOf(d.y), 4, 0, Math.PI * 2)
+        ctx.fill()
+      })
+    } else {
+      // Raw scale: sodium 0-800, fiber 0-15
+      const xMin = 0, xMax = 850
+      const yMin2 = 0, yMax2 = 16
+      const xOf = (v: number) => pad.l + ((v - xMin) / (xMax - xMin)) * pw
+      const yOf = (v: number) => pad.t + (1 - (v - yMin2) / (yMax2 - yMin2)) * ph
+
+      // Axes
+      ctx.strokeStyle = c.axis
+      ctx.lineWidth = 0.5
+      ctx.beginPath()
+      ctx.moveTo(pad.l, H - pad.b)
+      ctx.lineTo(W - pad.r, H - pad.b)
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.moveTo(pad.l, pad.t)
+      ctx.lineTo(pad.l, H - pad.b)
+      ctx.stroke()
+
+      // Axis labels
+      ctx.fillStyle = c.subtext
+      ctx.font = '11px sans-serif'
+      ctx.textAlign = 'center'
+      ctx.fillText('Sodium (mg) \u2014 range 0\u2013800', W / 2, H - 6)
+      ctx.save()
+      ctx.translate(14, H / 2)
+      ctx.rotate(-Math.PI / 2)
+      ctx.fillText('Fiber (g) \u2014 range 0\u201315', 0, 0)
+      ctx.restore()
+
+      // Tick labels
+      ctx.font = '10px sans-serif'
+      ctx.textAlign = 'center'
+      for (let v = 0; v <= 800; v += 200) {
+        ctx.fillText(String(v), xOf(v), H - pad.b + 13)
+      }
+      ctx.textAlign = 'right'
+      for (let v = 0; v <= 15; v += 5) {
+        ctx.fillText(String(v), pad.l - 5, yOf(v) + 3)
+      }
+
+      // Points — on raw scale, cloud is a flat horizontal line
+      S3_SCATTER_DATA.forEach(d => {
+        ctx.fillStyle = c.isDark ? 'rgba(133,183,235,0.55)' : 'rgba(59,139,212,0.45)'
+        ctx.beginPath()
+        ctx.arc(xOf(d.sodium), yOf(d.fiber), 4, 0, Math.PI * 2)
+        ctx.fill()
+      })
+    }
+  }, [standardized])
+
+  useEffect(() => { draw(); drawScatter() }, [draw, drawScatter])
+  useDarkModeObserver(useCallback(() => { draw(); drawScatter() }, [draw, drawScatter]))
   useCanvasResize(canvasRef, draw)
+  useCanvasResize(scatterRef, drawScatter)
 
   const insight: React.ReactNode = standardized ? (
     <>
@@ -865,6 +1146,25 @@ function Section3() {
         style={{ height: 200 }}
       />
 
+      {/* Before/After scatter plot */}
+      <div className="mt-4 rounded-xl border border-cream-border dark:border-night-border bg-cream dark:bg-night p-4">
+        <p className="text-[14px] font-medium text-ink dark:text-night-text mb-1">
+          Sodium vs Fiber scatter plot
+        </p>
+        <p className="text-[12px] text-ink-subtle dark:text-night-muted mb-2">
+          {standardized
+            ? 'Standardized: both axes on the same z-score scale — the cloud shape is now visible.'
+            : 'Raw: sodium (0\u2013800 mg) dwarfs fiber (0\u201315 g) — the cloud is a flat horizontal line.'}
+        </p>
+        <canvas
+          ref={scatterRef}
+          role="img"
+          aria-label={`Scatter plot of sodium vs fiber ${standardized ? 'after z-score standardization showing balanced cloud' : 'on raw scales showing flat horizontal line due to scale mismatch'}`}
+          className="w-full rounded-lg"
+          style={{ height: 200 }}
+        />
+      </div>
+
       <div className="flex gap-2.5 flex-wrap my-2.5">
         <MetricCard label="Mode" value={standardized ? 'cor=TRUE' : 'cor=FALSE'} />
         <MetricCard
@@ -885,6 +1185,7 @@ function Section3() {
 // ======================================================================
 function Section4() {
   const [sectionRef, visible] = useScrollReveal()
+  const projCanvasRef = useRef<HTMLCanvasElement>(null)
   const [w1, setW1] = useState(-0.847)
   const [w2, setW2] = useState(0.532)
   const [x1, setX1] = useState(70)
@@ -893,6 +1194,137 @@ function Section4() {
   const t1 = w1 * x1
   const t2 = w2 * x2
   const z = t1 + t2
+
+  // Projection canvas drawing
+  const drawProj = useCallback(() => {
+    const canvas = projCanvasRef.current
+    if (!canvas) return
+    const result = setupCanvas(canvas, 250)
+    if (!result) return
+    const { ctx, W, H } = result
+    const c = getThemeColors()
+
+    const pad = { l: 40, r: 30, t: 20, b: 36 }
+    const pw = W - pad.l - pad.r
+    const ph = H - pad.t - pad.b
+    const cx = pad.l + pw / 2
+    const cy = pad.t + ph / 2
+
+    // Determine a good scale: fit the data point and some margin
+    const maxCoord = Math.max(Math.abs(x1), Math.abs(x2), 10)
+    const scale = Math.min(pw, ph) / (maxCoord * 2.6)
+
+    const toX = (v: number) => cx + v * scale
+    const toY = (v: number) => cy - v * scale
+
+    // Grid
+    ctx.strokeStyle = c.grid
+    ctx.lineWidth = 0.5
+    ctx.beginPath()
+    ctx.moveTo(pad.l, cy)
+    ctx.lineTo(W - pad.r, cy)
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.moveTo(cx, pad.t)
+    ctx.lineTo(cx, H - pad.b)
+    ctx.stroke()
+
+    // Axis labels
+    ctx.fillStyle = c.subtext
+    ctx.font = '11px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText('x\u2081', W - pad.r + 6, cy + 4)
+    ctx.fillText('x\u2082', cx, pad.t - 6)
+
+    // Eigenvector direction line through origin (long red line)
+    const wNorm = Math.sqrt(w1 * w1 + w2 * w2) || 1
+    const ew1 = w1 / wNorm
+    const ew2 = w2 / wNorm
+    const lineLen = maxCoord * 1.5
+    ctx.strokeStyle = c.red
+    ctx.lineWidth = 2
+    ctx.globalAlpha = 0.5
+    ctx.beginPath()
+    ctx.moveTo(toX(-ew1 * lineLen), toY(-ew2 * lineLen))
+    ctx.lineTo(toX(ew1 * lineLen), toY(ew2 * lineLen))
+    ctx.stroke()
+    ctx.globalAlpha = 1
+
+    // Label the eigenvector direction
+    ctx.fillStyle = c.red
+    ctx.font = '500 11px sans-serif'
+    ctx.textAlign = 'left'
+    const labelX = toX(ew1 * lineLen * 0.75)
+    const labelY = toY(ew2 * lineLen * 0.75)
+    ctx.fillText('PC1 direction', labelX + 6, labelY - 6)
+
+    // Data point vector from origin (blue arrow)
+    ctx.strokeStyle = c.blue
+    ctx.lineWidth = 2.5
+    ctx.beginPath()
+    ctx.moveTo(toX(0), toY(0))
+    ctx.lineTo(toX(x1), toY(x2))
+    ctx.stroke()
+
+    // Arrowhead for data vector
+    const dataAngle = Math.atan2(-(toY(x2) - toY(0)), toX(x1) - toX(0))
+    ctx.fillStyle = c.blue
+    ctx.beginPath()
+    ctx.moveTo(toX(x1) + Math.cos(dataAngle) * 8, toY(x2) + Math.sin(dataAngle) * 8)
+    ctx.lineTo(toX(x1) + Math.cos(dataAngle + 2.5) * 4, toY(x2) + Math.sin(dataAngle + 2.5) * 4)
+    ctx.lineTo(toX(x1) + Math.cos(dataAngle - 2.5) * 4, toY(x2) + Math.sin(dataAngle - 2.5) * 4)
+    ctx.closePath()
+    ctx.fill()
+
+    // Data point dot
+    ctx.fillStyle = c.blue
+    ctx.beginPath()
+    ctx.arc(toX(x1), toY(x2), 5, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.fillStyle = c.blue
+    ctx.font = '500 11px sans-serif'
+    ctx.textAlign = 'left'
+    ctx.fillText(`(${x1}, ${x2})`, toX(x1) + 8, toY(x2) - 6)
+
+    // Projection onto eigenvector
+    const projLen = x1 * ew1 + x2 * ew2
+    const projX = projLen * ew1
+    const projY = projLen * ew2
+
+    // Dashed perpendicular from data point to projection
+    ctx.setLineDash([4, 4])
+    ctx.strokeStyle = c.green
+    ctx.lineWidth = 1.5
+    ctx.globalAlpha = 0.6
+    ctx.beginPath()
+    ctx.moveTo(toX(x1), toY(x2))
+    ctx.lineTo(toX(projX), toY(projY))
+    ctx.stroke()
+    ctx.setLineDash([])
+    ctx.globalAlpha = 1
+
+    // Projection dot (green)
+    ctx.fillStyle = c.green
+    ctx.beginPath()
+    ctx.arc(toX(projX), toY(projY), 6, 0, Math.PI * 2)
+    ctx.fill()
+
+    // Label projection length as score value
+    ctx.fillStyle = c.green
+    ctx.font = '500 11px sans-serif'
+    ctx.textAlign = 'left'
+    ctx.fillText(`score = ${projLen.toFixed(1)}`, toX(projX) + 8, toY(projY) + 14)
+
+    // Origin dot
+    ctx.fillStyle = c.subtext
+    ctx.beginPath()
+    ctx.arc(toX(0), toY(0), 3, 0, Math.PI * 2)
+    ctx.fill()
+  }, [x1, x2, w1, w2])
+
+  useEffect(() => { drawProj() }, [drawProj])
+  useDarkModeObserver(drawProj)
+  useCanvasResize(projCanvasRef, drawProj)
 
   return (
     <section
@@ -1021,6 +1453,25 @@ function Section4() {
             ? 'Calories contributes more to this score because |w\u2081\u00B7x\u2081| > |w\u2082\u00B7x\u2082|.'
             : 'Rating contributes more to this score.'}
         </p>
+      </div>
+
+      {/* Geometric projection canvas */}
+      <div className="mt-4 rounded-xl border border-cream-border dark:border-night-border bg-cream dark:bg-night p-4">
+        <p className="text-[14px] font-medium text-ink dark:text-night-text mb-1">
+          Geometric view: projection = dot product
+        </p>
+        <p className="text-[12px] text-ink-subtle dark:text-night-muted mb-2">
+          The <span className="text-sapphire dark:text-sapphire-dark">blue arrow</span> is the data point.
+          The <span className="text-red-600 dark:text-red-400">red line</span> is the PC1 direction (eigenvector).
+          The <span className="text-green-600 dark:text-green-400">green dot</span> is the projection — its distance from the origin is the PC score.
+        </p>
+        <canvas
+          ref={projCanvasRef}
+          role="img"
+          aria-label="Geometric projection diagram showing data vector projected onto eigenvector direction, with projection length equal to PC score"
+          className="w-full rounded-lg"
+          style={{ height: 250 }}
+        />
       </div>
 
       <InsightBox>
@@ -1332,41 +1783,40 @@ function Section5() {
         </div>
 
         {/* Preset buttons */}
-        <div className="flex gap-1.5 flex-wrap mt-2">
-          <button
-            type="button"
-            onClick={() => { setWH(0.71); setWW(0.71) }}
-            className="px-3 py-1.5 rounded-lg text-[13px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
-              bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark
-              hover:bg-sapphire/20 dark:hover:bg-sapphire-dark/20 transition-colors"
-          >
-            PC1: overall size
-          </button>
-          <button
-            type="button"
-            onClick={() => { setWH(0.71); setWW(-0.71) }}
-            className="px-3 py-1.5 rounded-lg text-[13px] font-medium border border-cream-border dark:border-night-border
-              text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60 transition-colors"
-          >
-            PC2: tall-light vs short-heavy
-          </button>
-          <button
-            type="button"
-            onClick={() => { setWH(0.95); setWW(0.05) }}
-            className="px-3 py-1.5 rounded-lg text-[13px] font-medium border border-cream-border dark:border-night-border
-              text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60 transition-colors"
-          >
-            Mostly height
-          </button>
-          <button
-            type="button"
-            onClick={() => { setWH(1); setWW(0) }}
-            className="px-3 py-1.5 rounded-lg text-[13px] font-medium border border-cream-border dark:border-night-border
-              text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60 transition-colors"
-          >
-            Pure height (NOT a PC)
-          </button>
-        </div>
+        {(() => {
+          const PRESETS = [
+            { label: 'Size', h: 0.71, w: 0.71, desc: 'equal, captures overall size' },
+            { label: 'Body type', h: 0.71, w: -0.71, desc: 'contrast, tall-thin vs short-heavy' },
+            { label: 'Height focus', h: 0.95, w: 0.31, desc: 'height-heavy blend' },
+            { label: 'Weight focus', h: 0.31, w: 0.95, desc: 'weight-heavy blend' },
+          ]
+          const TOLERANCE = 0.05
+          const activeIdx = PRESETS.findIndex(
+            p => Math.abs(p.h - wH) < TOLERANCE && Math.abs(p.w - wW) < TOLERANCE
+          )
+          return (
+            <div className="flex gap-1.5 flex-wrap mt-2">
+              {PRESETS.map((p, i) => {
+                const isActive = i === activeIdx
+                return (
+                  <button
+                    key={p.label}
+                    type="button"
+                    onClick={() => { setWH(p.h); setWW(p.w) }}
+                    aria-pressed={isActive}
+                    className={`px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
+                      isActive
+                        ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
+                        : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                )
+              })}
+            </div>
+          )
+        })()}
       </div>
 
       {/* People cards */}
