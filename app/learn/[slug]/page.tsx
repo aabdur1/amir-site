@@ -14,7 +14,7 @@ const LogLossCrossEntropy = dynamic(() => import('@/components/learn/log-loss-cr
 const PCA = dynamic(() => import('@/components/learn/pca').then(m => ({ default: m.PCA })))
 const Regularization = dynamic(() => import('@/components/learn/regularization').then(m => ({ default: m.Regularization })))
 const Clustering = dynamic(() => import('@/components/learn/clustering').then(m => ({ default: m.Clustering })))
-// const SHAP = dynamic(() => import('@/components/learn/shap').then(m => ({ default: m.SHAP })))
+const SHAP = dynamic(() => import('@/components/learn/shap').then(m => ({ default: m.SHAP })))
 
 export function generateStaticParams() {
   return ARTIFACTS.map((a) => ({ slug: a.slug }))
@@ -60,7 +60,7 @@ const ARTIFACT_COMPONENTS: Record<string, React.ComponentType> = {
   'pca': PCA,
   'regularization': Regularization,
   'clustering': Clustering,
-  // 'shap': SHAP,
+  'shap': SHAP,
 }
 
 export default async function LearnArtifactPage({
