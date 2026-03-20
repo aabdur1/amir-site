@@ -1,6 +1,6 @@
 # amir-site
 
-Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero + 5 editorial resume sections) + photography gallery.
+Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero + 5 editorial resume sections) + photography gallery + interactive data mining explainers.
 
 ## Tech Stack
 
@@ -17,7 +17,7 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - **Fonts via next/font/google.** DM Serif Display (headings), DM Sans (body), Share Tech Mono (mono/tags), Lora (credential badges). Loaded as CSS variables (`--font-display`, `--font-body`, `--font-mono`, `--font-badge`) in `app/layout.tsx`.
 - **Dark mode via class toggle.** Uses `.dark` class on `<html>`. Custom variant defined in globals.css: `@custom-variant dark (&:where(.dark, .dark *));`. Blocking inline `<script>` in `layout.tsx` prevents flash of wrong theme on load. Toggle adds `.theme-transitioning` class for smooth 300ms crossfade.
 - **No icon libraries.** Icons are inline SVGs.
-- **Client components marked explicitly.** Components using `"use client"`: nav, dark-mode-toggle, hero, animated-text, hero-speckles, interactive-headshot, certifications, experience, projects, skills, education, footer, scroll-progress, page-transition. Gallery components (masonry-grid, photo-card, sort-controls) are also client components.
+- **Client components marked explicitly.** Components using `"use client"`: nav, dark-mode-toggle, hero, animated-text, hero-speckles, interactive-headshot, certifications, experience, projects, skills, education, footer, scroll-progress, page-transition. Gallery components (masonry-grid, photo-card, sort-controls) are also client components. Learn components (learn-card, gradient-descent, log-loss-cross-entropy, pca, regularization, clustering, shap) are client components. learn-nav is a server component.
 - **No shorthand/longhand mixing in inline styles.** Always fold `animationDelay` into the `animation` shorthand to avoid React warnings.
 
 ## Key Patterns
@@ -27,7 +27,10 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - **Shared accent styles in `lib/styles.ts`.** Unified `ACCENT_STYLES` map (sapphire, mauve, peach, lavender) with `bg`, `border`, `hoverBorder`, `dot`, `text` classes. Used by hero badges, skills pills, and project cards. Projects extends with local `STRIPE_STYLES` for top border color.
 - **`next/image` for optimized images.** Headshot uses `fill` + `priority` (LCP element), badges use explicit `width/height`, gallery photos use `unoptimized` (direct CloudFront delivery — avoids `/_next/image` proxy overhead for ~50 large photos). Remote patterns configured in `next.config.ts` for CloudFront and Credly domains.
 - **Blur-up image loading.** Gallery photo cards show a blurred placeholder and transition to the full image on load, using CSS filter transitions. Custom implementation (not `placeholder="blur"`) to avoid needing `blurDataURL` per remote image.
-- **Branded OG images.** `app/opengraph-image.tsx` and `app/gallery/opengraph-image.tsx` generate 1200x630 PNGs at build time using `ImageResponse` from `next/og`. Catppuccin Mocha branding with DM Serif Display font loaded from Google Fonts gstatic (with try/catch fallback if font fetch fails). No hardcoded `images` in metadata — Next.js auto-injects from these routes.
+- **Branded OG images.** `app/opengraph-image.tsx`, `app/gallery/opengraph-image.tsx`, and `app/learn/opengraph-image.tsx` generate 1200x630 PNGs at build time using `ImageResponse` from `next/og`. Catppuccin Mocha branding with DM Serif Display font loaded from Google Fonts gstatic (with try/catch fallback if font fetch fails). No hardcoded `images` in metadata — Next.js auto-injects from these routes. `app/learn/[slug]/opengraph-image.tsx` re-exports the learn OG image for artifact pages.
+- **Metadata-driven learn section.** `lib/learn/artifacts.ts` is the single source of truth for all artifact metadata (slug, title, description, subtopics, section count). The index page, prev/next nav, sitemap entries, and JSON-LD `LearningResource` schema all derive from this array. Adding a new artifact: create the component, add an entry to the array.
+- **Canvas dark mode via MutationObserver.** Learn artifact components read Catppuccin color tokens via `getComputedStyle()` and detect `.dark` class changes on `<html>` via `MutationObserver` to re-draw canvases. Each artifact has a `getThemeColors()` helper returning the current palette.
+- **Learn artifact components are code-split.** `app/learn/[slug]/page.tsx` uses `next/dynamic` to lazy-load each artifact component, preventing all 6 from bundling into a single chunk.
 - **Staggered page transitions.** `PageTransition` wraps each direct child with `fade-in-up` animation, 120ms stagger between sections. Tracks visited pages via module-level `Set` — first visit gets full stagger, return visits get a quick 200ms fade-in.
 - **Per-element parallax.** Hero elements each have their own scroll speed (label fastest, badges slowest), creating a spread/dispersal effect on scroll. Uses refs + RAF + passive scroll listener — no state re-renders. Skipped entirely when `prefers-reduced-motion` is enabled.
 - **Scroll-driven ref mutations (no re-renders).** Nav wordmark opacity and hero parallax both use direct `ref.style` mutations inside RAF callbacks instead of `setState`, avoiding React re-renders on every scroll frame.
@@ -92,13 +95,19 @@ app/
   opengraph-image.tsx     # Branded OG image (Catppuccin Mocha, 1200x630)
   page.tsx                # Landing: Hero, Experience, Projects, Certifications, Skills, Education
   globals.css             # @theme tokens, keyframes, utility classes, theme transitions
-  sitemap.ts              # Generated /sitemap.xml (homepage + gallery)
+  sitemap.ts              # Generated /sitemap.xml (homepage + gallery + learn)
   robots.ts               # Generated /robots.txt (allow all, link to sitemap)
   gallery/
     opengraph-image.tsx   # Gallery OG image (Catppuccin Mocha, 1200x630)
     page.tsx              # Photography gallery page
+  learn/
+    page.tsx              # Learn index: card grid of 6 interactive explainers
+    opengraph-image.tsx   # Learn OG image (Catppuccin Mocha, 1200x630)
+    [slug]/
+      page.tsx            # Dynamic route: back link, artifact component, prev/next nav, JSON-LD
+      opengraph-image.tsx # Re-exports learn OG image
 components/
-  nav.tsx                 # Sticky nav: wordmark hidden on home until scroll, gallery pill, thin rule
+  nav.tsx                 # Sticky nav: wordmark, Learn pill (mauve), Gallery pill (sapphire), thin rule
   footer.tsx              # Editorial footer: name, tagline, links, diamond ornaments
   dark-mode-toggle.tsx    # Animated sun/moon toggle with smooth theme crossfade
   hero.tsx                # Asymmetric hero: animated name, headshot, badges, parallax
@@ -118,11 +127,22 @@ components/
     masonry-grid.tsx      # Masonry layout with sort + lightbox + count-up animation
     photo-card.tsx        # Blur-up loading + scroll reveal + hover + zoom-in cursor
     sort-controls.tsx     # Styled sort dropdown (menu/menuitem ARIA)
+  learn/
+    learn-card.tsx        # Index page card (illustration + number + title + accent pills)
+    learn-nav.tsx         # Prev/next navigation between artifacts (server component)
+    gradient-descent.tsx  # 01/ Gradient Descent (4 Canvas sections)
+    log-loss-cross-entropy.tsx # 02/ Log Loss & Cross-Entropy (4 Canvas sections)
+    pca.tsx               # 03/ PCA / Dimensionality Reduction (5 Canvas sections)
+    regularization.tsx    # 04/ Regularization / Bias-Variance (2 Canvas sections)
+    clustering.tsx        # 05/ Clustering: K-means, Hierarchical, DBSCAN (3 Canvas sections)
+    shap.tsx              # 06/ SHAP / Interpretability (4 Canvas sections)
 lib/
   hooks.ts                # Shared hooks: useHydrated(), useScrollReveal()
   styles.ts               # Shared accent style map (ACCENT_STYLES)
   types.ts                # Photo type definition
   badges.ts               # Credly API fetcher + manual badges, exports getAllBadges()
+  learn/
+    artifacts.ts          # Artifact metadata array: slug, title, description, subtopics, order
 public/
   photos.json             # Photo metadata (CloudFront URLs, EXIF data)
   badges/                 # Non-Credly badge images (e.g. Zscaler, Snowflake)
