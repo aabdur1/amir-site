@@ -35,10 +35,10 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - **Per-element parallax.** Hero elements each have their own scroll speed (label fastest, badges slowest), creating a spread/dispersal effect on scroll. Uses refs + RAF + passive scroll listener — no state re-renders. Skipped entirely when `prefers-reduced-motion` is enabled.
 - **Scroll-driven ref mutations (no re-renders).** Nav wordmark opacity and hero parallax both use direct `ref.style` mutations inside RAF callbacks instead of `setState`, avoiding React re-renders on every scroll frame.
 - **Multi-accent hero badges.** Each hero badge pill has a distinct Catppuccin accent (sapphire, mauve, peach, lavender) with tinted background, colored dot, and matching hover border.
-- **Cursor-reactive hero speckles (dark mode only).** `HeroSpeckles` renders viewport-proportional dots (40–250, reference 150 at 1920px) across the hero using Catppuccin Mocha accents (mauve, sapphire, peach, lavender). Count scales linearly with `window.innerWidth` via `useSyncExternalStore` (0 on server, measured on client). Dots drift away from cursor (6px max) and glow brighter on approach. Hidden in light mode via `hidden dark:block`. Uses seeded PRNG for deterministic placement (smaller viewports render a subset of the same positions), RAF + lerp (0.06) + convergence check. Disabled on touch devices and with `prefers-reduced-motion`.
-- **Cursor-reactive headshot.** `InteractiveHeadshot` tilts image toward cursor (3deg max) with dynamic shadow — cursor acts as light source. Uses perspective 3D transform + RAF + lerp. `getBoundingClientRect` cached via ResizeObserver + passive scroll listener (not called in hot mousemove path). Disabled on touch devices.
-- **RAF convergence checks.** `HeroSpeckles` and `InteractiveHeadshot` RAF loops stop automatically when lerp values converge (within 0.1px / 0.01deg), preventing infinite 60fps loops while cursor is stationary.
-- **Parallax delayed start.** Hero parallax scroll listener attaches after 2.5s delay to avoid `style.transform` conflicting with CSS `fade-in-up` animation `forwards` fill during entrance animations.
+- **Cursor-reactive hero speckles (dark mode only).** `HeroSpeckles` renders viewport-proportional Catppuccin dots that drift from cursor. Seeded PRNG, RAF + lerp with convergence check. Disabled on touch/reduced-motion.
+- **Cursor-reactive headshot.** `InteractiveHeadshot` tilts toward cursor (3deg max) with light-source shadow. Perspective 3D + RAF + lerp, `getBoundingClientRect` cached via ResizeObserver. Disabled on touch.
+- **RAF convergence checks.** Speckle and headshot RAF loops auto-stop when lerp values converge, preventing idle 60fps loops.
+- **Parallax delayed start.** Hero parallax attaches after 2.5s to avoid conflicting with entrance `fade-in-up` animation fill.
 - **Scroll progress bar.** `ScrollProgress` component shows a 2px mauve bar at the top of the viewport. Only renders on pages >2x viewport height (via ResizeObserver). RAF-gated scroll, fades in after first scroll.
 - **Gallery count-up animation.** Photo count in gallery subtitle animates from 0 to target using RAF with cubic ease-out over 1.2s. Triggers on viewport entry via IntersectionObserver. Respects `prefers-reduced-motion`.
 - **Numbered editorial sections.** Landing page sections use `01/`–`05/` numbered mono labels (peach accent number + slash separator). Sections alternate backgrounds: transparent → `bg-cream-dark/50 dark:bg-night-card/40` → transparent, etc. Each section has an ornamental diamond divider at top, display font heading, and mauve accent rule with `line-grow` animation.
@@ -64,10 +64,11 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 
 **Animations:** `fade-in`, `fade-in-up`, `scale-in`, `dropdown-in`, `line-grow` (mauve accent rule), `shimmer` (scroll indicator), `float` (scroll line bob). Dark mode toggle: `icon-swap-in` (springy pop), `sun-spin`, `moon-rock`, `sun-glow` (gold), `moon-glow` (lavender). Staggered delays throughout hero and all landing page sections (experience, projects, certifications, skills, education).
 
-**Utility classes:** `btn-lift` (hover lift with spring overshoot), `card-hover` (hover lift + elevated shadow). Spring easing: `cubic-bezier(0.34, 1.56, 0.64, 1)` for hover entry, `cubic-bezier(0.22, 1, 0.36, 1)` for settle-back.
+**Utility classes:** `btn-lift` (hover lift with spring overshoot), `card-hover` (hover lift + elevated shadow), `scrollbar-none` (hides scrollbar for horizontal scroll containers). Spring easing: `cubic-bezier(0.34, 1.56, 0.64, 1)` for hover entry, `cubic-bezier(0.22, 1, 0.36, 1)` for settle-back.
 
 **CSS-based nav animations:** `.nav-wordmark::after` (mauve underline sweep), `.nav-gallery-pill::before` (sapphire fill sweep), `.nav-learn-pill::before` (mauve fill sweep), `.hero-line` (gradient vertical line). All use CSS `transform: scaleX()` transitions.
-- **Learn artifact tab bar.** Horizontal row of pill links on each `/learn/[slug]` page, rendered in `app/learn/[slug]/page.tsx` (server component). Shows all 6 artifacts, current one highlighted with mauve accent. Horizontally scrollable on mobile with hidden scrollbar (`scrollbar-none` utility).
+
+**Learn artifact tab bar.** Horizontal pill links on each `/learn/[slug]` page for jumping between artifacts. Current one highlighted mauve. Scrollable on mobile with `scrollbar-none` utility.
 
 ## Mobile & Accessibility
 
@@ -169,12 +170,13 @@ Configured in `netlify.toml`:
 
 ## SEO
 
-- `app/sitemap.ts` generates `/sitemap.xml` (homepage priority 1 monthly, gallery priority 0.8 weekly)
+- `app/sitemap.ts` generates `/sitemap.xml` (homepage priority 1 monthly, gallery priority 0.8 weekly, learn index priority 0.8 monthly, 6 artifact pages priority 0.7 monthly)
 - `app/robots.ts` generates `/robots.txt` (allow all, link to sitemap)
 - JSON-LD `Person` schema in `layout.tsx` `<head>` (hardcoded object literal via `JSON.stringify`, no user input — safe)
-- Canonical URLs on homepage and gallery via `alternates.canonical`
+- JSON-LD `LearningResource` schema on each `/learn/[slug]` page (rendered as `<script>` tag in JSX, not via metadata.other)
+- Canonical URLs on homepage, gallery, and learn pages via `alternates.canonical`
 - `og:type` set to `'profile'` on homepage
-- Twitter card metadata on gallery page
+- Twitter card metadata on gallery and learn pages
 - 404 page has `robots: { index: false }`
 
 ## Commands
