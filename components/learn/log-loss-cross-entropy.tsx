@@ -172,16 +172,51 @@ function Section1() {
   const [sectionRef, visible] = useScrollReveal()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [distType, setDistType] = useState<DistributionType>('normal')
+  const [sampleSize, setSampleSize] = useState(80)
   const [data, setData] = useState<number[]>(() => genData('normal', 80))
 
   const switchDist = useCallback((type: DistributionType) => {
     setDistType(type)
-    setData(genData(type, 80))
-  }, [])
+    setData(genData(type, sampleSize))
+  }, [sampleSize])
 
   const resample = useCallback(() => {
-    setData(genData(distType, 80))
+    setData(genData(distType, sampleSize))
+  }, [distType, sampleSize])
+
+  // Recompute when sample size changes
+  const handleSampleSize = useCallback((n: number) => {
+    setSampleSize(n)
+    setData(genData(distType, n))
   }, [distType])
+
+  // Shapiro-Wilk approximation via QQ correlation
+  const qqCorrelation = (() => {
+    const n = data.length
+    const sorted = [...data].sort((a, b) => a - b)
+    const mean = sorted.reduce((s, v) => s + v, 0) / n
+    const sd = Math.sqrt(sorted.reduce((s, v) => s + (v - mean) ** 2, 0) / n)
+    if (sd === 0) return { r2: 1, isNormal: true }
+    const theorQ: number[] = []
+    const normData: number[] = []
+    for (let i = 0; i < n; i++) {
+      theorQ.push(normInv((i + 0.5) / n))
+      normData.push((sorted[i] - mean) / sd)
+    }
+    const tMean = theorQ.reduce((s, v) => s + v, 0) / n
+    const dMean = normData.reduce((s, v) => s + v, 0) / n
+    let num = 0, denT = 0, denD = 0
+    for (let i = 0; i < n; i++) {
+      const dt = theorQ[i] - tMean
+      const dd = normData[i] - dMean
+      num += dt * dd
+      denT += dt * dt
+      denD += dd * dd
+    }
+    const r = denT > 0 && denD > 0 ? num / Math.sqrt(denT * denD) : 0
+    const r2 = r * r
+    return { r2, isNormal: r2 > 0.95 }
+  })()
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current
@@ -347,6 +382,37 @@ function Section1() {
         style={{ height: 320 }}
       />
 
+      {/* Sample size slider */}
+      <div className="flex items-center gap-3 mt-2 mb-2">
+        <label
+          htmlFor="ll-sample-size-slider"
+          className="text-sm text-ink-subtle dark:text-night-muted min-w-[90px]"
+        >
+          Sample size
+        </label>
+        <input
+          id="ll-sample-size-slider"
+          type="range"
+          min={20}
+          max={200}
+          step={10}
+          value={sampleSize}
+          onChange={(e) => handleSampleSize(parseInt(e.target.value))}
+          aria-valuetext={`n = ${sampleSize}`}
+          className="flex-1"
+        />
+        <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[44px] text-right text-ink dark:text-night-text">
+          {sampleSize}
+        </span>
+      </div>
+
+      {/* Shapiro-Wilk metric cards */}
+      <div className="flex gap-2.5 flex-wrap my-2.5">
+        <MetricCard label="W statistic (r\u00B2)" value={qqCorrelation.r2.toFixed(4)} colorClass={qqCorrelation.isNormal ? METRIC_COLORS.green : METRIC_COLORS.red} />
+        <MetricCard label="Normality test" value={qqCorrelation.isNormal ? 'Normal (p > 0.05)' : 'Non-normal (p \u2264 0.05)'} colorClass={qqCorrelation.isNormal ? METRIC_COLORS.green : METRIC_COLORS.red} />
+        <MetricCard label="Sample size" value={String(sampleSize)} colorClass={METRIC_COLORS.blue} />
+      </div>
+
       <div className="flex gap-1.5 flex-wrap my-2">
         <button
           type="button"
@@ -367,14 +433,64 @@ function Section1() {
 // ======================================================================
 // SECTION 2: Log Loss Explorer
 // ======================================================================
+type SamplePoint = { y: number; p: number }
+
+function genMultiSamples(): SamplePoint[] {
+  return Array.from({ length: 5 }, () => {
+    const y = Math.random() > 0.5 ? 1 : 0
+    const p = Math.round((Math.random() * 0.88 + 0.06) * 100) / 100 // 0.06 to 0.94
+    return { y, p }
+  })
+}
+
 function Section2() {
   const [sectionRef, visible] = useScrollReveal()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [actualY, setActualY] = useState(1)
   const [predP, setPredP] = useState(0.8)
+  const sweepRef = useRef<number | null>(null)
+  const [sweeping, setSweeping] = useState(false)
+  const [multiMode, setMultiMode] = useState(false)
+  const [samples, setSamples] = useState<SamplePoint[]>(() => genMultiSamples())
 
   const curLoss = actualY === 1 ? -Math.log(predP) : -Math.log(1 - predP)
   const rightWrong = (actualY === 1 && predP >= 0.5) || (actualY === 0 && predP < 0.5)
+
+  // Multi-sample average loss
+  const avgLoss = samples.reduce((sum, s) => {
+    const l = s.y === 1 ? -Math.log(Math.max(s.p, 0.001)) : -Math.log(Math.max(1 - s.p, 0.001))
+    return sum + l
+  }, 0) / samples.length
+
+  // Sweep animation
+  const startSweep = useCallback(() => {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reducedMotion) {
+      setPredP(0.5)
+      return
+    }
+    if (sweepRef.current) cancelAnimationFrame(sweepRef.current)
+    setSweeping(true)
+    const start = performance.now()
+    const duration = 2000
+    function tick(now: number) {
+      const t = Math.min((now - start) / duration, 1)
+      const p = 0.01 + t * 0.98 // 0.01 to 0.99
+      setPredP(Math.round(p * 100) / 100)
+      if (t < 1) {
+        sweepRef.current = requestAnimationFrame(tick)
+      } else {
+        setSweeping(false)
+        sweepRef.current = null
+      }
+    }
+    sweepRef.current = requestAnimationFrame(tick)
+  }, [])
+
+  // Cleanup RAF on unmount
+  useEffect(() => {
+    return () => { if (sweepRef.current) cancelAnimationFrame(sweepRef.current) }
+  }, [])
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current
@@ -447,38 +563,129 @@ function Section2() {
         ctx.fillText(forY === 1 ? '\u2212log(p)  [y=1]' : '\u2212log(1\u2212p)  [y=0]', lx, pad.t + 16)
       }
     }
-    drawLossCurve(1, c.blue, actualY === 1)
-    drawLossCurve(0, c.amber, actualY === 0)
+    if (multiMode) {
+      // Draw both curves faintly
+      drawLossCurve(1, c.blue, false)
+      drawLossCurve(0, c.amber, false)
+      // Re-draw both curves with moderate visibility
+      ctx.globalAlpha = 0.6
+      ctx.strokeStyle = c.blue
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      for (let px = 0; px <= pw; px++) {
+        const pv = Math.max(0.005, Math.min(0.995, px / pw))
+        const lv = -Math.log(pv)
+        const clamp = Math.min(lv, maxLoss)
+        if (px === 0) ctx.moveTo(pad.l + px, yOf(clamp))
+        else ctx.lineTo(pad.l + px, yOf(clamp))
+      }
+      ctx.stroke()
+      ctx.strokeStyle = c.amber
+      ctx.beginPath()
+      for (let px = 0; px <= pw; px++) {
+        const pv = Math.max(0.005, Math.min(0.995, px / pw))
+        const lv = -Math.log(1 - pv)
+        const clamp = Math.min(lv, maxLoss)
+        if (px === 0) ctx.moveTo(pad.l + px, yOf(clamp))
+        else ctx.lineTo(pad.l + px, yOf(clamp))
+      }
+      ctx.stroke()
+      ctx.globalAlpha = 1
 
-    // Current point
-    const clampLoss = Math.min(curLoss, maxLoss)
-    const cx = xOf(predP)
-    const cy = yOf(clampLoss)
-    const col = actualY === 1 ? c.blue : c.amber
+      // Labels for curves
+      ctx.font = '500 11px sans-serif'
+      ctx.fillStyle = c.blue
+      ctx.textAlign = 'right'
+      ctx.fillText('\u2212log(p)  [y=1]', pad.l + pw * 0.15, pad.t + 16)
+      ctx.fillStyle = c.amber
+      ctx.textAlign = 'left'
+      ctx.fillText('\u2212log(1\u2212p)  [y=0]', pad.l + pw * 0.85, pad.t + 16)
 
-    // Vertical dashed line
-    ctx.setLineDash([4, 4])
-    ctx.strokeStyle = col
-    ctx.lineWidth = 1
-    ctx.globalAlpha = 0.4
-    ctx.beginPath()
-    ctx.moveTo(cx, yOf(0))
-    ctx.lineTo(cx, cy)
-    ctx.stroke()
-    ctx.setLineDash([])
-    ctx.globalAlpha = 1
+      // Average loss horizontal line
+      const avgClamp = Math.min(avgLoss, maxLoss)
+      ctx.setLineDash([6, 4])
+      ctx.strokeStyle = c.green
+      ctx.lineWidth = 1.5
+      ctx.globalAlpha = 0.6
+      ctx.beginPath()
+      ctx.moveTo(pad.l, yOf(avgClamp))
+      ctx.lineTo(W - pad.r, yOf(avgClamp))
+      ctx.stroke()
+      ctx.setLineDash([])
+      ctx.globalAlpha = 1
+      ctx.fillStyle = c.green
+      ctx.font = '500 11px sans-serif'
+      ctx.textAlign = 'left'
+      ctx.fillText(`avg = ${avgLoss.toFixed(3)}`, W - pad.r - 90, yOf(avgClamp) - 6)
 
-    // Dot
-    ctx.fillStyle = col
-    ctx.beginPath()
-    ctx.arc(cx, cy, 7, 0, Math.PI * 2)
-    ctx.fill()
+      // Draw 5 sample dots
+      const sampleColors = [c.blue, c.amber]
+      for (let i = 0; i < samples.length; i++) {
+        const s = samples[i]
+        const sLoss = s.y === 1 ? -Math.log(Math.max(s.p, 0.001)) : -Math.log(Math.max(1 - s.p, 0.001))
+        const clamp = Math.min(sLoss, maxLoss)
+        const sx = xOf(s.p)
+        const sy = yOf(clamp)
+        const sCol = sampleColors[s.y]
 
-    // Loss value label
-    ctx.fillStyle = c.text
-    ctx.font = '500 12px sans-serif'
-    ctx.textAlign = 'left'
-    ctx.fillText(curLoss.toFixed(3), cx + 12, cy + 4)
+        // Vertical line
+        ctx.setLineDash([3, 3])
+        ctx.strokeStyle = sCol
+        ctx.lineWidth = 0.8
+        ctx.globalAlpha = 0.3
+        ctx.beginPath()
+        ctx.moveTo(sx, yOf(0))
+        ctx.lineTo(sx, sy)
+        ctx.stroke()
+        ctx.setLineDash([])
+        ctx.globalAlpha = 1
+
+        // Dot
+        ctx.fillStyle = sCol
+        ctx.beginPath()
+        ctx.arc(sx, sy, 6, 0, Math.PI * 2)
+        ctx.fill()
+
+        // Label
+        ctx.fillStyle = c.text
+        ctx.font = '500 10px sans-serif'
+        ctx.textAlign = 'left'
+        ctx.fillText(`#${i + 1}`, sx + 9, sy + 3)
+      }
+    } else {
+      drawLossCurve(1, c.blue, actualY === 1)
+      drawLossCurve(0, c.amber, actualY === 0)
+
+      // Current point
+      const clampLoss = Math.min(curLoss, maxLoss)
+      const cx = xOf(predP)
+      const cy = yOf(clampLoss)
+      const col = actualY === 1 ? c.blue : c.amber
+
+      // Vertical dashed line
+      ctx.setLineDash([4, 4])
+      ctx.strokeStyle = col
+      ctx.lineWidth = 1
+      ctx.globalAlpha = 0.4
+      ctx.beginPath()
+      ctx.moveTo(cx, yOf(0))
+      ctx.lineTo(cx, cy)
+      ctx.stroke()
+      ctx.setLineDash([])
+      ctx.globalAlpha = 1
+
+      // Dot
+      ctx.fillStyle = col
+      ctx.beginPath()
+      ctx.arc(cx, cy, 7, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Loss value label
+      ctx.fillStyle = c.text
+      ctx.font = '500 12px sans-serif'
+      ctx.textAlign = 'left'
+      ctx.fillText(curLoss.toFixed(3), cx + 12, cy + 4)
+    }
 
     // p axis labels
     ctx.fillStyle = c.subtext
@@ -487,7 +694,7 @@ function Section2() {
     for (const v of [0, 0.25, 0.5, 0.75, 1]) {
       ctx.fillText(v.toFixed(2), xOf(v), H - pad.b + 14)
     }
-  }, [actualY, predP, curLoss])
+  }, [actualY, predP, curLoss, multiMode, samples, avgLoss])
 
   useEffect(() => { draw() }, [draw])
   useDarkModeObserver(draw)
@@ -576,71 +783,167 @@ function Section2() {
         probability to see how the penalty grows {'\u2014'} confident wrong predictions are CATASTROPHICALLY expensive.
       </p>
 
-      {/* y toggle */}
-      <div className="flex gap-1.5 mb-3">
+      {/* y toggle + sweep + mode toggle */}
+      <div className="flex gap-1.5 flex-wrap mb-3">
+        {!multiMode && (
+          <>
+            <button
+              type="button"
+              onClick={() => setActualY(1)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
+                actualY === 1
+                  ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
+                  : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
+              }`}
+            >
+              Actual = 1 (positive)
+            </button>
+            <button
+              type="button"
+              onClick={() => setActualY(0)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
+                actualY === 0
+                  ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
+                  : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
+              }`}
+            >
+              Actual = 0 (negative)
+            </button>
+            <button
+              type="button"
+              onClick={startSweep}
+              disabled={sweeping}
+              className="px-3 py-1.5 rounded-lg text-[13px] font-medium border border-mauve/30 dark:border-mauve-dark/30
+                bg-mauve/10 dark:bg-mauve-dark/10 text-mauve dark:text-mauve-dark
+                hover:bg-mauve/20 dark:hover:bg-mauve-dark/20 transition-colors disabled:opacity-50"
+            >
+              {sweeping ? 'Sweeping\u2026' : 'Sweep'}
+            </button>
+          </>
+        )}
+        {/* Mode toggle */}
         <button
           type="button"
-          onClick={() => setActualY(1)}
+          onClick={() => { setMultiMode(false); if (sweepRef.current) { cancelAnimationFrame(sweepRef.current); sweepRef.current = null; setSweeping(false) } }}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
-            actualY === 1
+            !multiMode
               ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
               : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
           }`}
         >
-          Actual = 1 (positive)
+          Single point
         </button>
         <button
           type="button"
-          onClick={() => setActualY(0)}
+          onClick={() => { setMultiMode(true); if (sweepRef.current) { cancelAnimationFrame(sweepRef.current); sweepRef.current = null; setSweeping(false) } }}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
-            actualY === 0
+            multiMode
               ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
               : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
           }`}
         >
-          Actual = 0 (negative)
+          5 samples
         </button>
       </div>
 
       <canvas
         ref={canvasRef}
         role="img"
-        aria-label="Log loss curve showing penalty for predicted probability with current position highlighted"
+        aria-label={multiMode
+          ? "Log loss curves with 5 sample data points and average loss line"
+          : "Log loss curve showing penalty for predicted probability with current position highlighted"}
         className="w-full rounded-lg"
         style={{ height: 280 }}
       />
 
-      <div className="flex items-center gap-3 mt-2 mb-2">
-        <label
-          htmlFor="ll-p-slider"
-          className="text-sm text-ink-subtle dark:text-night-muted min-w-[90px]"
-        >
-          Predicted p
-        </label>
-        <input
-          id="ll-p-slider"
-          type="range"
-          min={0.01}
-          max={0.99}
-          step={0.01}
-          value={predP}
-          onChange={(e) => setPredP(parseFloat(e.target.value))}
-          aria-valuetext={`p = ${predP.toFixed(2)}`}
-          className="flex-1"
-        />
-        <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[44px] text-right text-ink dark:text-night-text">
-          {predP.toFixed(2)}
-        </span>
-      </div>
+      {!multiMode && (
+        <div className="flex items-center gap-3 mt-2 mb-2">
+          <label
+            htmlFor="ll-p-slider"
+            className="text-sm text-ink-subtle dark:text-night-muted min-w-[90px]"
+          >
+            Predicted p
+          </label>
+          <input
+            id="ll-p-slider"
+            type="range"
+            min={0.01}
+            max={0.99}
+            step={0.01}
+            value={predP}
+            onChange={(e) => setPredP(parseFloat(e.target.value))}
+            aria-valuetext={`p = ${predP.toFixed(2)}`}
+            className="flex-1"
+          />
+          <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[44px] text-right text-ink dark:text-night-text">
+            {predP.toFixed(2)}
+          </span>
+        </div>
+      )}
 
-      <div className="flex gap-2.5 flex-wrap my-2.5">
-        <MetricCard label="Actual label" value={String(actualY)} />
-        <MetricCard label="Predicted p" value={predP.toFixed(2)} colorClass={actualY === 1 ? METRIC_COLORS.blue : METRIC_COLORS.amber} />
-        <MetricCard label="Log loss" value={curLoss.toFixed(3)} colorClass={lossColorClass} />
-        <MetricCard label="Verdict" value={rightWrong ? 'Correct' : 'Wrong'} colorClass={rightWrong ? METRIC_COLORS.green : METRIC_COLORS.red} />
-      </div>
+      {multiMode ? (
+        <>
+          <div className="flex gap-1.5 flex-wrap my-2">
+            <button
+              type="button"
+              onClick={() => setSamples(genMultiSamples())}
+              className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
+                bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark
+                hover:bg-sapphire/20 dark:hover:bg-sapphire-dark/20 transition-colors"
+            >
+              Regenerate samples
+            </button>
+          </div>
 
-      <InsightBox>{insight}</InsightBox>
+          {/* Sample details table */}
+          <div className="overflow-x-auto rounded-lg border border-cream-border dark:border-night-border my-2.5">
+            <table className="w-full text-[13px]">
+              <thead>
+                <tr>
+                  <th className="text-left py-1.5 px-2 text-[12px] font-medium text-ink-subtle dark:text-night-muted border-b border-cream-border dark:border-night-border">#</th>
+                  <th className="text-left py-1.5 px-2 text-[12px] font-medium text-ink-subtle dark:text-night-muted border-b border-cream-border dark:border-night-border">y</th>
+                  <th className="text-left py-1.5 px-2 text-[12px] font-medium text-ink-subtle dark:text-night-muted border-b border-cream-border dark:border-night-border">p</th>
+                  <th className="text-left py-1.5 px-2 text-[12px] font-medium text-ink-subtle dark:text-night-muted border-b border-cream-border dark:border-night-border">Loss</th>
+                </tr>
+              </thead>
+              <tbody>
+                {samples.map((s, i) => {
+                  const sLoss = s.y === 1 ? -Math.log(Math.max(s.p, 0.001)) : -Math.log(Math.max(1 - s.p, 0.001))
+                  return (
+                    <tr key={i}>
+                      <td className="py-1.5 px-2 font-[family-name:var(--font-mono)] border-b border-cream-border/50 dark:border-night-border/50">{i + 1}</td>
+                      <td className={`py-1.5 px-2 font-medium border-b border-cream-border/50 dark:border-night-border/50 ${s.y === 1 ? METRIC_COLORS.blue : METRIC_COLORS.amber}`}>{s.y}</td>
+                      <td className="py-1.5 px-2 font-[family-name:var(--font-mono)] border-b border-cream-border/50 dark:border-night-border/50">{s.p.toFixed(2)}</td>
+                      <td className={`py-1.5 px-2 font-[family-name:var(--font-mono)] border-b border-cream-border/50 dark:border-night-border/50 ${sLoss > 1 ? METRIC_COLORS.red : sLoss > 0.3 ? METRIC_COLORS.amber : METRIC_COLORS.green}`}>{sLoss.toFixed(3)}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="flex gap-2.5 flex-wrap my-2.5">
+            <MetricCard label="Avg log loss" value={avgLoss.toFixed(3)} colorClass={avgLoss > 1 ? METRIC_COLORS.red : avgLoss > 0.3 ? METRIC_COLORS.amber : METRIC_COLORS.green} />
+            <MetricCard label="Samples" value="5" colorClass={METRIC_COLORS.blue} />
+          </div>
+
+          <InsightBox>
+            <strong>Average log loss</strong> over a dataset is what model evaluation actually reports. Each sample
+            contributes independently {'\u2014'} one catastrophically wrong prediction can dominate the average.
+          </InsightBox>
+        </>
+      ) : (
+        <>
+          <div className="flex gap-2.5 flex-wrap my-2.5">
+            <MetricCard label="Actual label" value={String(actualY)} />
+            <MetricCard label="Predicted p" value={predP.toFixed(2)} colorClass={actualY === 1 ? METRIC_COLORS.blue : METRIC_COLORS.amber} />
+            <MetricCard label="Log loss" value={curLoss.toFixed(3)} colorClass={lossColorClass} />
+            <MetricCard label="Verdict" value={rightWrong ? 'Correct' : 'Wrong'} colorClass={rightWrong ? METRIC_COLORS.green : METRIC_COLORS.red} />
+          </div>
+
+          <InsightBox>{insight}</InsightBox>
+        </>
+      )}
     </section>
   )
 }
@@ -648,15 +951,40 @@ function Section2() {
 // ======================================================================
 // SECTION 3: Entropy & Gini
 // ======================================================================
+function binaryEntropy(p: number): number {
+  if (p <= 0.001 || p >= 0.999) return 0
+  return -p * Math.log2(p) - (1 - p) * Math.log2(1 - p)
+}
+
 function Section3() {
   const [sectionRef, visible] = useScrollReveal()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [pClass1, setPClass1] = useState(0.5)
+  const [leftChild, setLeftChild] = useState(0.2)
+  const [rightChild, setRightChild] = useState(0.8)
+  const [splitRatio, setSplitRatio] = useState(0.5)
 
   const entropy = pClass1 > 0.001 && pClass1 < 0.999
     ? -pClass1 * Math.log2(pClass1) - (1 - pClass1) * Math.log2(1 - pClass1)
     : 0
   const gini = 1 - pClass1 * pClass1 - (1 - pClass1) * (1 - pClass1)
+
+  // Information gain calculation
+  const parentEntropy = binaryEntropy(pClass1)
+  const leftEntropy = binaryEntropy(leftChild)
+  const rightEntropy = binaryEntropy(rightChild)
+  const weightedChildEntropy = splitRatio * leftEntropy + (1 - splitRatio) * rightEntropy
+  const infoGain = parentEntropy - weightedChildEntropy
+
+  // Bits interpretation
+  const bitsText = (() => {
+    if (entropy < 0.01) return 'Nearly 0 bits \u2014 outcome is almost certain. No surprise at all.'
+    if (entropy < 0.2) return `${entropy.toFixed(2)} bits \u2014 barely any information needed. Highly predictable.`
+    if (entropy < 0.5) return `${entropy.toFixed(2)} bits \u2014 some uncertainty, but one class dominates.`
+    if (entropy < 0.8) return `${entropy.toFixed(2)} bits \u2014 moderate uncertainty. Both outcomes are plausible.`
+    if (entropy < 0.95) return `${entropy.toFixed(2)} bits \u2014 high uncertainty, approaching a coin flip.`
+    return `${entropy.toFixed(2)} bits \u2014 like a fair coin flip. Maximum surprise.`
+  })()
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current
@@ -858,6 +1186,118 @@ function Section3() {
       </div>
 
       <InsightBox>{insight}</InsightBox>
+
+      {/* Bits interpretation */}
+      <div className="mt-4 rounded-lg bg-cream-dark/60 dark:bg-night-card/60 border border-cream-border dark:border-night-border px-4 py-3">
+        <p className="text-[13px] font-medium text-ink dark:text-night-text mb-1">
+          Bits to encode this distribution
+        </p>
+        <p className="text-sm text-ink-subtle dark:text-night-muted leading-relaxed">
+          {bitsText}
+        </p>
+      </div>
+
+      {/* Information Gain Calculator */}
+      <div className="mt-6 rounded-xl bg-cream-dark/60 dark:bg-night-card/60 border border-cream-border dark:border-night-border px-4 py-4">
+        <p className="text-[15px] font-medium text-ink dark:text-night-text mb-3 font-[family-name:var(--font-display)]">
+          Decision Tree Split
+        </p>
+
+        <div className="flex gap-2.5 flex-wrap mb-3">
+          <MetricCard label="Parent entropy" value={parentEntropy.toFixed(3)} colorClass={METRIC_COLORS.purple} />
+        </div>
+
+        {/* Left child slider */}
+        <div className="flex items-center gap-3 mt-2 mb-2">
+          <label
+            htmlFor="ll-left-child-slider"
+            className="text-sm text-ink-subtle dark:text-night-muted min-w-[140px]"
+          >
+            Left child P(class 1)
+          </label>
+          <input
+            id="ll-left-child-slider"
+            type="range"
+            min={0.01}
+            max={0.99}
+            step={0.01}
+            value={leftChild}
+            onChange={(e) => setLeftChild(parseFloat(e.target.value))}
+            aria-valuetext={`Left child P(class 1) = ${leftChild.toFixed(2)}`}
+            className="flex-1"
+          />
+          <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[44px] text-right text-ink dark:text-night-text">
+            {leftChild.toFixed(2)}
+          </span>
+        </div>
+
+        {/* Right child slider */}
+        <div className="flex items-center gap-3 mt-2 mb-2">
+          <label
+            htmlFor="ll-right-child-slider"
+            className="text-sm text-ink-subtle dark:text-night-muted min-w-[140px]"
+          >
+            Right child P(class 1)
+          </label>
+          <input
+            id="ll-right-child-slider"
+            type="range"
+            min={0.01}
+            max={0.99}
+            step={0.01}
+            value={rightChild}
+            onChange={(e) => setRightChild(parseFloat(e.target.value))}
+            aria-valuetext={`Right child P(class 1) = ${rightChild.toFixed(2)}`}
+            className="flex-1"
+          />
+          <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[44px] text-right text-ink dark:text-night-text">
+            {rightChild.toFixed(2)}
+          </span>
+        </div>
+
+        {/* Split ratio slider */}
+        <div className="flex items-center gap-3 mt-2 mb-2">
+          <label
+            htmlFor="ll-split-ratio-slider"
+            className="text-sm text-ink-subtle dark:text-night-muted min-w-[140px]"
+          >
+            Split ratio (% left)
+          </label>
+          <input
+            id="ll-split-ratio-slider"
+            type="range"
+            min={0.1}
+            max={0.9}
+            step={0.05}
+            value={splitRatio}
+            onChange={(e) => setSplitRatio(parseFloat(e.target.value))}
+            aria-valuetext={`Split ratio = ${(splitRatio * 100).toFixed(0)}% left`}
+            className="flex-1"
+          />
+          <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[44px] text-right text-ink dark:text-night-text">
+            {(splitRatio * 100).toFixed(0)}%
+          </span>
+        </div>
+
+        <div className="flex gap-2.5 flex-wrap my-2.5">
+          <MetricCard label="Left entropy" value={leftEntropy.toFixed(3)} colorClass={METRIC_COLORS.blue} />
+          <MetricCard label="Right entropy" value={rightEntropy.toFixed(3)} colorClass={METRIC_COLORS.amber} />
+          <MetricCard label="Weighted child" value={weightedChildEntropy.toFixed(3)} colorClass={METRIC_COLORS.purple} />
+          <MetricCard
+            label="Information gain"
+            value={infoGain.toFixed(3)}
+            colorClass={infoGain > 0 ? METRIC_COLORS.green : METRIC_COLORS.red}
+          />
+        </div>
+
+        <InsightBox>
+          A good split <strong>reduces entropy</strong>. Information gain = parent entropy {'\u2212'} weighted child
+          entropy. {infoGain > 0
+            ? <>Gain = {infoGain.toFixed(3)} {'>'} 0 {'\u2014'} the children are purer than the parent. This split helps!</>
+            : <>Gain = {infoGain.toFixed(3)} {'\u2264'} 0 {'\u2014'} this split does not reduce impurity. A decision tree would look for a better feature or threshold.</>
+          }
+        </InsightBox>
+      </div>
     </section>
   )
 }
@@ -867,6 +1307,7 @@ function Section3() {
 // ======================================================================
 function Section4() {
   const [sectionRef, visible] = useScrollReveal()
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
 
   const chain: Array<{ title: string; sub: string; colorClass: string }> = [
     { title: 'Logistic regression MLE', sub: 'Maximizes P(data | coefficients)', colorClass: 'border-sapphire dark:border-sapphire-dark text-sapphire dark:text-sapphire-dark' },
@@ -885,10 +1326,10 @@ function Section4() {
     'which gradient boosting fits trees to',
   ]
 
-  const tableRows: Array<{ name: string; context: string; formula: string; colorClass: string }> = [
-    { name: 'Log loss', context: 'Logistic regression evaluation metric', formula: '\u2212(1/N) \u03A3[ y\u00B7log(p) + (1\u2212y)\u00B7log(1\u2212p) ]', colorClass: 'text-green-600 dark:text-green-400' },
-    { name: 'Binary cross-entropy', context: 'Information theory name', formula: 'Same formula', colorClass: 'text-mauve dark:text-mauve-dark' },
-    { name: 'Negative log-likelihood', context: 'MLE objective (what logistic regression maximizes)', formula: 'Same formula (with sign flip)', colorClass: 'text-sapphire dark:text-sapphire-dark' },
+  const tableRows: Array<{ name: string; context: string; formula: string; colorClass: string; chainIdx: number }> = [
+    { name: 'Log loss', context: 'Logistic regression evaluation metric', formula: '\u2212(1/N) \u03A3[ y\u00B7log(p) + (1\u2212y)\u00B7log(1\u2212p) ]', colorClass: 'text-green-600 dark:text-green-400', chainIdx: 1 },
+    { name: 'Binary cross-entropy', context: 'Information theory name', formula: 'Same formula', colorClass: 'text-mauve dark:text-mauve-dark', chainIdx: 2 },
+    { name: 'Negative log-likelihood', context: 'MLE objective (what logistic regression maximizes)', formula: 'Same formula (with sign flip)', colorClass: 'text-sapphire dark:text-sapphire-dark', chainIdx: 0 },
   ]
 
   return (
@@ -905,14 +1346,23 @@ function Section4() {
       </h2>
       <p className="text-[15px] text-ink-subtle dark:text-night-muted leading-relaxed mb-4">
         One formula runs through the entire course. Every connection below is something you{'\u2019'}ve already seen {'\u2014'}{' '}
-        this just makes the chain explicit.
+        this just makes the chain explicit. Hover over any node to highlight it.
       </p>
 
       {/* Chain visualization */}
-      <div className="relative py-4 mb-6">
+      <div className="relative py-4 mb-6" onMouseLeave={() => setHoveredIdx(null)}>
         {chain.map((node, idx) => (
           <div key={idx}>
-            <div className={`border-l-[3px] ${node.colorClass} rounded-r-lg bg-cream-dark/60 dark:bg-night-card/60 px-3.5 py-2.5 mb-1`}>
+            <div
+              className={`border-l-[3px] ${node.colorClass} rounded-r-lg bg-cream-dark/60 dark:bg-night-card/60 px-3.5 py-2.5 mb-1 transition-all duration-200 ${
+                hoveredIdx !== null
+                  ? hoveredIdx === idx
+                    ? 'opacity-100 scale-[1.02] origin-left'
+                    : 'opacity-40'
+                  : 'opacity-100'
+              }`}
+              onMouseEnter={() => setHoveredIdx(idx)}
+            >
               <div className={`text-[13px] font-medium ${node.colorClass}`}>
                 {node.title}
               </div>
@@ -921,7 +1371,9 @@ function Section4() {
               </div>
             </div>
             {idx < arrows.length && (
-              <div className="pl-5 py-0.5 text-[13px] text-ink-faint dark:text-night-muted">
+              <div className={`pl-5 py-0.5 text-[13px] text-ink-faint dark:text-night-muted transition-opacity duration-200 ${
+                hoveredIdx !== null ? 'opacity-40' : 'opacity-100'
+              }`}>
                 {'\u2193'} {arrows[idx]}
               </div>
             )}
@@ -949,9 +1401,19 @@ function Section4() {
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody onMouseLeave={() => setHoveredIdx(null)}>
               {tableRows.map((row, idx) => (
-                <tr key={idx}>
+                <tr
+                  key={idx}
+                  className={`cursor-default transition-opacity duration-200 ${
+                    hoveredIdx !== null
+                      ? hoveredIdx === row.chainIdx
+                        ? 'opacity-100'
+                        : 'opacity-40'
+                      : 'opacity-100'
+                  }`}
+                  onMouseEnter={() => setHoveredIdx(row.chainIdx)}
+                >
                   <td className={`py-1.5 px-2 font-medium border-b border-cream-border/50 dark:border-night-border/50 ${row.colorClass}`}>
                     {row.name}
                   </td>
