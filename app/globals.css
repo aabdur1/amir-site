@@ -273,6 +273,30 @@ h1, h2 {
   transform: scaleX(1);
 }
 
+/* Nav learn pill — mauve background fill sweep on hover */
+.nav-learn-pill::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: rgba(136, 57, 239, 0.08);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dark .nav-learn-pill::before {
+  background: rgba(203, 166, 247, 0.1);
+}
+
+.nav-learn-pill:hover::before {
+  transform: scaleX(1);
+}
+
+.nav-learn-pill.nav-learn-active::before {
+  transform: scaleX(1);
+}
+
 /* Selection — Catppuccin Mauve tint */
 ::selection {
   background-color: rgba(136, 57, 239, 0.2);

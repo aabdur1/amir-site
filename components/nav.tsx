@@ -9,6 +9,7 @@ export default function Nav() {
   const pathname = usePathname();
   const isHome = pathname === "/";
   const isGallery = pathname === "/gallery";
+  const isLearn = pathname.startsWith("/learn");
 
   // Direct ref mutation avoids re-rendering the nav tree on every scroll frame
   const nameRef = useRef<HTMLAnchorElement>(null);
@@ -63,6 +64,40 @@ export default function Nav() {
 
         {/* Right: Nav links + Dark mode toggle */}
         <div className="flex items-center gap-5">
+          {/* Learn — pill with arrow that expands on hover */}
+          <Link
+            href="/learn"
+            className={`nav-learn-pill group relative font-[family-name:var(--font-mono)] text-[13px]
+              tracking-[0.15em] uppercase
+              px-4 py-2 rounded-full border overflow-hidden
+              transition-all duration-300
+              ${isLearn
+                ? "nav-learn-active border-mauve dark:border-mauve-dark text-ink dark:text-night-text"
+                : "border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:border-mauve/60 dark:hover:border-mauve-dark/60 hover:text-ink dark:hover:text-night-text"
+              }`}
+          >
+            <span className={`relative z-10 flex items-center transition-all duration-300 ${
+              isLearn ? 'gap-1.5' : 'gap-0 group-hover:gap-1.5'
+            }`}>
+              Learn
+              <svg
+                aria-hidden="true"
+                focusable="false"
+                viewBox="0 0 12 12"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={`h-3 overflow-hidden transition-all duration-300 ${
+                  isLearn ? 'w-3 opacity-100' : 'w-0 opacity-0 group-hover:w-3 group-hover:opacity-100'
+                }`}
+              >
+                <path d="M2 6h8M7 3l3 3-3 3" />
+              </svg>
+            </span>
+          </Link>
+
           {/* Gallery — pill with arrow that expands on hover */}
           <Link
             href="/gallery"
