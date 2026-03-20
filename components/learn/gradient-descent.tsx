@@ -848,7 +848,7 @@ interface VariantState {
   frame: number
 }
 
-function genPath(type: VariantKey): PathPoint[] {
+function genPath(type: VariantKey, noiseLevel: number): PathPoint[] {
   const eta = 0.15
   const steps = 50
   const w: [number, number] = [6.5, 5.5]
@@ -857,12 +857,13 @@ function genPath(type: VariantKey): PathPoint[] {
     const g = grad2d(w[0], w[1])
     let n1 = 0, n2 = 0
     if (type === 'sgd') {
-      n1 = (Math.random() - 0.5) * 2.5
-      n2 = (Math.random() - 0.5) * 4
+      n1 = (Math.random() - 0.5) * 2.5 * noiseLevel
+      n2 = (Math.random() - 0.5) * 4 * noiseLevel
     } else if (type === 'mini') {
-      n1 = (Math.random() - 0.5) * 0.8
-      n2 = (Math.random() - 0.5) * 1.2
+      n1 = (Math.random() - 0.5) * 2.5 * noiseLevel * 0.35
+      n2 = (Math.random() - 0.5) * 4 * noiseLevel * 0.35
     }
+    // Batch always uses noise=0 regardless of slider
     w[0] -= eta * (g[0] + n1)
     w[1] -= eta * (g[1] + n2)
     path.push({ w: [...w] })
@@ -870,10 +871,41 @@ function genPath(type: VariantKey): PathPoint[] {
   return path
 }
 
+function computePathSmoothness(path: PathPoint[]): number {
+  if (path.length < 3) return 0
+  const angles: number[] = []
+  for (let i = 1; i < path.length - 1; i++) {
+    const dx1 = path[i].w[0] - path[i - 1].w[0]
+    const dy1 = path[i].w[1] - path[i - 1].w[1]
+    const dx2 = path[i + 1].w[0] - path[i].w[0]
+    const dy2 = path[i + 1].w[1] - path[i].w[1]
+    const a1 = Math.atan2(dy1, dx1)
+    const a2 = Math.atan2(dy2, dx2)
+    let diff = a2 - a1
+    // Normalize to [-pi, pi]
+    while (diff > Math.PI) diff -= 2 * Math.PI
+    while (diff < -Math.PI) diff += 2 * Math.PI
+    angles.push(diff)
+  }
+  if (angles.length === 0) return 0
+  const mean = angles.reduce((s, a) => s + a, 0) / angles.length
+  const variance = angles.reduce((s, a) => s + (a - mean) ** 2, 0) / angles.length
+  return variance
+}
+
+function computeConvergenceSpeed(path: PathPoint[]): string {
+  for (let i = 0; i < path.length; i++) {
+    const dist = Math.sqrt((path[i].w[0] - 3) ** 2 + (path[i].w[1] - 2) ** 2)
+    if (dist < 0.5) return String(i)
+  }
+  return '>50'
+}
+
 function Section3() {
   const [sectionRef, visible] = useScrollReveal()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [active, setActive] = useState<VariantKey>('batch')
+  const [noiseLevel, setNoiseLevel] = useState(0.7)
   const [variants, setVariants] = useState<Record<VariantKey, VariantState>>({
     batch: { path: [], done: false, frame: 999 },
     sgd: { path: [], done: false, frame: 999 },
@@ -1057,20 +1089,20 @@ function Section3() {
 
   const runSelected = useCallback(() => {
     if (animRef.current) cancelAnimationFrame(animRef.current)
-    const path = genPath(active)
+    const path = genPath(active, noiseLevel)
     setVariants(prev => ({ ...prev, [active]: { path, done: false, frame: 0 } }))
     animateVariant(active, path)
-  }, [active, animateVariant])
+  }, [active, animateVariant, noiseLevel])
 
   const runAll = useCallback(() => {
     if (animRef.current) cancelAnimationFrame(animRef.current)
     const paths: Record<VariantKey, PathPoint[]> = {
-      batch: genPath('batch'),
-      sgd: genPath('sgd'),
-      mini: genPath('mini'),
+      batch: genPath('batch', noiseLevel),
+      sgd: genPath('sgd', noiseLevel),
+      mini: genPath('mini', noiseLevel),
     }
     animateAll(paths)
-  }, [animateAll])
+  }, [animateAll, noiseLevel])
 
   const clearAll = useCallback(() => {
     if (animRef.current) cancelAnimationFrame(animRef.current)
@@ -1123,11 +1155,16 @@ function Section3() {
     { key: 'mini', label: 'Mini-batch', desc: 'small group, moderate' },
   ]
 
+  // Compute smoothness and convergence for active variant
+  const activePath = variants[active].path
+  const smoothness = activePath.length > 0 ? computePathSmoothness(activePath) : null
+  const convergence = activePath.length > 0 ? computeConvergenceSpeed(activePath) : null
+
   return (
     <section
       ref={sectionRef as React.RefObject<HTMLElement>}
       aria-labelledby="gd-batch-variants"
-      className={`py-16 sm:py-20 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`py-8 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       <h2
         id="gd-batch-variants"
@@ -1137,7 +1174,7 @@ function Section3() {
       </h2>
       <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
         Select a variant and run it. Each starts from the same point (top-right) heading to the minimum (center).
-        Run them one at a time to clearly see the difference.
+        Adjust the noise slider to see the full spectrum from clean to chaotic.
       </p>
 
       {/* Variant buttons */}
@@ -1167,6 +1204,30 @@ function Section3() {
             </button>
           )
         })}
+      </div>
+
+      {/* Noise level slider */}
+      <div className="flex items-center gap-3 mt-2 mb-3">
+        <label
+          htmlFor="noise-slider"
+          className="text-sm text-ink-subtle dark:text-night-muted min-w-[90px]"
+        >
+          Noise level
+        </label>
+        <input
+          id="noise-slider"
+          type="range"
+          min={0}
+          max={1}
+          step={0.05}
+          value={noiseLevel}
+          onChange={(e) => setNoiseLevel(parseFloat(e.target.value))}
+          aria-valuetext={`noise = ${noiseLevel.toFixed(2)}`}
+          className="flex-1"
+        />
+        <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[44px] text-right text-ink dark:text-night-text">
+          {noiseLevel.toFixed(2)}
+        </span>
       </div>
 
       <canvas
@@ -1212,6 +1273,12 @@ function Section3() {
           <MetricCard label={`${nm[active]} final w\u2082`} value={lastPt[1].toFixed(2)} colorClass={METRIC_COLORS.blue} />
           <MetricCard label="Distance to min" value={dist!.toFixed(3)} />
           <MetricCard label="Final loss" value={fl!.toFixed(3)} />
+          {smoothness !== null && (
+            <MetricCard label="Path smoothness" value={smoothness.toFixed(3)} colorClass={METRIC_COLORS.amber} />
+          )}
+          {convergence !== null && (
+            <MetricCard label="Converge speed" value={convergence} colorClass={METRIC_COLORS.green} />
+          )}
         </div>
       )}
 
@@ -1221,7 +1288,7 @@ function Section3() {
 }
 
 // ======================================================================
-// SECTION 4: GD vs Gradient Boosting
+// SECTION 4: GD vs Gradient Boosting (Side-by-Side)
 // ======================================================================
 const GB_ACTUAL = [4, 10, 7, 15, 11, 3, 13]
 const GB_LABELS = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
@@ -1232,8 +1299,8 @@ function gbMSE(preds: number[]) {
 
 function Section4() {
   const [sectionRef, visible] = useScrollReveal()
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [mode, setMode] = useState<'gd' | 'gb'>('gd')
+  const gdCanvasRef = useRef<HTMLCanvasElement>(null)
+  const gbCanvasRef = useRef<HTMLCanvasElement>(null)
   const [eta, setEta] = useState(0.3)
 
   // GD state
@@ -1243,326 +1310,274 @@ function Section4() {
   // GB state
   const meanVal = GB_ACTUAL.reduce((a, b) => a + b, 0) / GB_ACTUAL.length
   const [gbPreds, setGbPreds] = useState<number[]>(() => GB_ACTUAL.map(() => meanVal))
-  const [gbStep, setGbStep] = useState(0)
+  const [stepCount, setStepCount] = useState(0)
   const [gbHist, setGbHist] = useState<Array<{ preds: number[]; mse: number }>>(() => [
     { preds: GB_ACTUAL.map(() => meanVal), mse: gbMSE(GB_ACTUAL.map(() => meanVal)) },
   ])
 
+  // Advance both GD and GB simultaneously
   const step = useCallback(() => {
-    if (mode === 'gd') {
-      setGdHist(prev => [...prev, { w: gdW, l: loss(gdW) }])
-      setGdW(prev => {
-        let next = prev - eta * grad(prev)
-        if (next < -4) next = -4
-        if (next > 10) next = 10
-        return next
-      })
-    } else {
-      setGbPreds(prev => {
-        const resid = GB_ACTUAL.map((v, i) => v - prev[i])
-        const treePred = resid.map(r => r * (0.6 + Math.random() * 0.2))
-        const newPreds = prev.map((p, i) => p + eta * treePred[i])
-        setGbHist(h => [...h, { preds: [...newPreds], mse: gbMSE(newPreds) }])
-        return newPreds
-      })
-      setGbStep(s => s + 1)
-    }
-  }, [mode, gdW, eta])
+    // GD step
+    setGdHist(prev => [...prev, { w: gdW, l: loss(gdW) }])
+    setGdW(prev => {
+      let next = prev - eta * grad(prev)
+      if (next < -4) next = -4
+      if (next > 10) next = 10
+      return next
+    })
+    // GB step
+    setGbPreds(prev => {
+      const resid = GB_ACTUAL.map((v, i) => v - prev[i])
+      const treePred = resid.map(r => r * (0.6 + Math.random() * 0.2))
+      const newPreds = prev.map((p, i) => p + eta * treePred[i])
+      setGbHist(h => [...h, { preds: [...newPreds], mse: gbMSE(newPreds) }])
+      return newPreds
+    })
+    setStepCount(s => s + 1)
+  }, [gdW, eta])
 
   const stepN = useCallback((n: number) => {
-    if (mode === 'gd') {
-      let w = gdW
-      const newHist: Array<{ w: number; l: number }> = []
-      for (let i = 0; i < n; i++) {
-        newHist.push({ w, l: loss(w) })
-        w = w - eta * grad(w)
-        if (w < -4) w = -4
-        if (w > 10) w = 10
-      }
-      setGdHist(prev => [...prev, ...newHist])
-      setGdW(w)
-    } else {
-      let preds = [...gbPreds]
-      const newHistEntries: Array<{ preds: number[]; mse: number }> = []
-      for (let i = 0; i < n; i++) {
-        const resid = GB_ACTUAL.map((v, j) => v - preds[j])
-        const treePred = resid.map(r => r * (0.6 + Math.random() * 0.2))
-        preds = preds.map((p, j) => p + eta * treePred[j])
-        newHistEntries.push({ preds: [...preds], mse: gbMSE(preds) })
-      }
-      setGbPreds(preds)
-      setGbStep(s => s + n)
-      setGbHist(h => [...h, ...newHistEntries])
+    // GD steps
+    let w = gdW
+    const newGdHist: Array<{ w: number; l: number }> = []
+    for (let i = 0; i < n; i++) {
+      newGdHist.push({ w, l: loss(w) })
+      w = w - eta * grad(w)
+      if (w < -4) w = -4
+      if (w > 10) w = 10
     }
-  }, [mode, gdW, eta, gbPreds])
+    setGdHist(prev => [...prev, ...newGdHist])
+    setGdW(w)
+    // GB steps
+    let preds = [...gbPreds]
+    const newGbHistEntries: Array<{ preds: number[]; mse: number }> = []
+    for (let i = 0; i < n; i++) {
+      const resid = GB_ACTUAL.map((v, j) => v - preds[j])
+      const treePred = resid.map(r => r * (0.6 + Math.random() * 0.2))
+      preds = preds.map((p, j) => p + eta * treePred[j])
+      newGbHistEntries.push({ preds: [...preds], mse: gbMSE(preds) })
+    }
+    setGbPreds(preds)
+    setStepCount(s => s + n)
+    setGbHist(h => [...h, ...newGbHistEntries])
+  }, [gdW, eta, gbPreds])
 
   const reset = useCallback(() => {
-    if (mode === 'gd') {
-      setGdW(7)
-      setGdHist([])
-    } else {
-      const m = GB_ACTUAL.reduce((a, b) => a + b, 0) / GB_ACTUAL.length
-      setGbPreds(GB_ACTUAL.map(() => m))
-      setGbStep(0)
-      setGbHist([{ preds: GB_ACTUAL.map(() => m), mse: gbMSE(GB_ACTUAL.map(() => m)) }])
-    }
-  }, [mode])
-
-  const switchMode = useCallback((m: 'gd' | 'gb') => {
-    setMode(m)
-    // Reset on mode switch
-    if (m === 'gd') {
-      setGdW(7)
-      setGdHist([])
-    } else {
-      const mean = GB_ACTUAL.reduce((a, b) => a + b, 0) / GB_ACTUAL.length
-      setGbPreds(GB_ACTUAL.map(() => mean))
-      setGbStep(0)
-      setGbHist([{ preds: GB_ACTUAL.map(() => mean), mse: gbMSE(GB_ACTUAL.map(() => mean)) }])
-    }
+    setGdW(7)
+    setGdHist([])
+    const m = GB_ACTUAL.reduce((a, b) => a + b, 0) / GB_ACTUAL.length
+    setGbPreds(GB_ACTUAL.map(() => m))
+    setStepCount(0)
+    setGbHist([{ preds: GB_ACTUAL.map(() => m), mse: gbMSE(GB_ACTUAL.map(() => m)) }])
   }, [])
 
-  const draw = useCallback(() => {
-    const canvas = canvasRef.current
+  // --- GD canvas draw ---
+  const drawGD = useCallback(() => {
+    const canvas = gdCanvasRef.current
     if (!canvas) return
     const result = setupCanvas(canvas, 300)
     if (!result) return
     const { ctx, W, H } = result
     const c = getThemeColors()
 
-    if (mode === 'gd') {
-      // Draw GD view (same as Tab 2 but in Tab 4 context)
-      const p = { l: 40, r: 20, t: 20, b: 36 }
-      const pw = W - p.l - p.r
-      const ph = H - p.t - p.b
-      const xOf = (v: number) => p.l + (v + 3) / 13 * pw
-      const yOf = (v: number) => p.t + (1 - v / 26) * ph
+    const p = { l: 40, r: 20, t: 20, b: 36 }
+    const pw = W - p.l - p.r
+    const ph = H - p.t - p.b
+    const xOf = (v: number) => p.l + (v + 3) / 13 * pw
+    const yOf = (v: number) => p.t + (1 - v / 26) * ph
 
-      // Grid
-      ctx.strokeStyle = c.grid
-      ctx.lineWidth = 0.5
-      for (let v = 0; v <= 26; v += 5) {
-        ctx.beginPath(); ctx.moveTo(p.l, yOf(v)); ctx.lineTo(W - p.r, yOf(v)); ctx.stroke()
+    // Grid
+    ctx.strokeStyle = c.grid; ctx.lineWidth = 0.5
+    for (let v = 0; v <= 26; v += 5) {
+      ctx.beginPath(); ctx.moveTo(p.l, yOf(v)); ctx.lineTo(W - p.r, yOf(v)); ctx.stroke()
+    }
+    ctx.strokeStyle = c.axis; ctx.lineWidth = 0.5
+    ctx.beginPath(); ctx.moveTo(p.l, p.t); ctx.lineTo(p.l, H - p.b); ctx.lineTo(W - p.r, H - p.b); ctx.stroke()
+    ctx.fillStyle = c.subtext; ctx.font = '11px sans-serif'; ctx.textAlign = 'center'
+    ctx.fillText('w (parameter)', W / 2, H - 4)
+    ctx.save(); ctx.translate(12, H / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('Loss', 0, 0); ctx.restore()
+
+    // Loss curve
+    ctx.beginPath(); ctx.strokeStyle = c.subtext; ctx.lineWidth = 2
+    for (let px = 0; px <= pw; px++) {
+      const wv = -3 + px / pw * 13
+      const x = p.l + px, y = yOf(loss(wv))
+      if (px === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y)
+    }
+    ctx.stroke()
+
+    // Minimum
+    ctx.fillStyle = c.green; ctx.globalAlpha = 0.25
+    ctx.beginPath(); ctx.arc(xOf(3), yOf(0.5), 6, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1
+    ctx.fillStyle = c.subtext; ctx.font = '11px sans-serif'; ctx.fillText('min', xOf(3), yOf(0.5) + 16)
+
+    // Path
+    const all = [...gdHist, { w: gdW, l: loss(gdW) }]
+    if (all.length > 1) {
+      for (let i = 0; i < all.length - 1; i++) {
+        ctx.strokeStyle = c.blue; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.4
+        ctx.beginPath(); ctx.moveTo(xOf(all[i].w), yOf(all[i].l)); ctx.lineTo(xOf(all[i + 1].w), yOf(all[i + 1].l)); ctx.stroke()
+        ctx.globalAlpha = 1; ctx.fillStyle = c.blue; ctx.globalAlpha = 0.3
+        ctx.beginPath(); ctx.arc(xOf(all[i].w), yOf(all[i].l), 3, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1
       }
-      ctx.strokeStyle = c.axis; ctx.lineWidth = 0.5
-      ctx.beginPath(); ctx.moveTo(p.l, p.t); ctx.lineTo(p.l, H - p.b); ctx.lineTo(W - p.r, H - p.b); ctx.stroke()
+    }
+    ctx.fillStyle = c.blue
+    ctx.beginPath(); ctx.arc(xOf(gdW), yOf(loss(gdW)), 7, 0, Math.PI * 2); ctx.fill()
+
+    // Step labels
+    ctx.font = '500 9px sans-serif'; ctx.fillStyle = c.subtext; ctx.textAlign = 'center'
+    for (let i = 0; i < Math.min(all.length, 10); i++) {
+      ctx.fillText(String(i), xOf(all[i].w), yOf(all[i].l) - 12)
+    }
+  }, [gdW, gdHist])
+
+  // --- GB canvas draw ---
+  const drawGB = useCallback(() => {
+    const canvas = gbCanvasRef.current
+    if (!canvas) return
+    const result = setupCanvas(canvas, 300)
+    if (!result) return
+    const { ctx, W, H } = result
+    const c = getThemeColors()
+
+    const n = GB_ACTUAL.length
+    const p = { l: 50, r: 20, t: 20, b: 40 }
+    const pw = W - p.l - p.r
+    const ph = H - p.t - p.b
+    const maxVal = Math.max(...GB_ACTUAL) + 2
+    const barW = pw / (n * 3 + 1)
+    const gap = barW
+    const groupW = barW * 2 + 4
+    const totalW = n * groupW + (n - 1) * gap
+    const startX = p.l + (pw - totalW) / 2
+    const yOf = (v: number) => p.t + (1 - v / maxVal) * ph
+
+    // Axes
+    ctx.strokeStyle = c.axis; ctx.lineWidth = 0.5
+    ctx.beginPath(); ctx.moveTo(p.l, p.t); ctx.lineTo(p.l, H - p.b); ctx.lineTo(W - p.r, H - p.b); ctx.stroke()
+    ctx.fillStyle = c.subtext; ctx.font = '11px sans-serif'; ctx.textAlign = 'right'
+    for (let v = 0; v <= maxVal; v += 5) {
+      ctx.fillText(String(v), p.l - 6, yOf(v) + 4)
+      ctx.strokeStyle = c.grid; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.l, yOf(v)); ctx.lineTo(W - p.r, yOf(v)); ctx.stroke()
+    }
+    ctx.textAlign = 'center'; ctx.fillText('Value', p.l - 6, p.t - 6)
+
+    // Bars
+    for (let i = 0; i < n; i++) {
+      const x = startX + i * (groupW + gap)
+      const actual = GB_ACTUAL[i]
+      const pred = gbPreds[i]
+
+      // Actual bar
+      const ah = Math.max(0, (actual / maxVal) * ph)
+      ctx.fillStyle = c.barActual
+      ctx.fillRect(x, yOf(actual), barW, ah)
+      ctx.strokeStyle = c.subtext; ctx.lineWidth = 0.5; ctx.strokeRect(x, yOf(actual), barW, ah)
+
+      // Prediction bar
+      const predClamped = Math.max(0, Math.min(pred, maxVal))
+      const predH = Math.max(0, (predClamped / maxVal) * ph)
+      ctx.fillStyle = c.green + '44'
+      ctx.fillRect(x + barW + 4, yOf(predClamped), barW, predH)
+      ctx.strokeStyle = c.green; ctx.lineWidth = 1; ctx.strokeRect(x + barW + 4, yOf(predClamped), barW, predH)
+
+      // Residual line
+      const actualY = yOf(actual)
+      const predY = yOf(predClamped)
+      const midX = x + barW + 2
+      if (Math.abs(actual - predClamped) > 0.1) {
+        ctx.strokeStyle = c.red; ctx.lineWidth = 1.5; ctx.setLineDash([3, 3])
+        ctx.beginPath(); ctx.moveTo(midX, actualY); ctx.lineTo(midX, predY); ctx.stroke()
+        ctx.setLineDash([])
+        const resid = actual - pred
+        ctx.fillStyle = c.red; ctx.font = '500 10px sans-serif'; ctx.textAlign = 'center'
+        ctx.fillText((resid >= 0 ? '+' : '') + resid.toFixed(1), midX, (actualY + predY) / 2 + (resid > 0 ? -6 : 10))
+      }
+
+      // Label
       ctx.fillStyle = c.subtext; ctx.font = '11px sans-serif'; ctx.textAlign = 'center'
-      ctx.fillText('w (parameter)', W / 2, H - 4)
-      ctx.save(); ctx.translate(12, H / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('Loss', 0, 0); ctx.restore()
+      ctx.fillText(GB_LABELS[i], x + groupW / 2, H - p.b + 14)
+    }
 
-      // Loss curve
-      ctx.beginPath(); ctx.strokeStyle = c.subtext; ctx.lineWidth = 2
-      for (let px = 0; px <= pw; px++) {
-        const wv = -3 + px / pw * 13
-        const x = p.l + px, y = yOf(loss(wv))
-        if (px === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y)
-      }
+    // Legend
+    ctx.font = '11px sans-serif'; ctx.textAlign = 'left'
+    const lgX = p.l + 8, lgY = p.t + 10
+    ctx.fillStyle = c.barActual; ctx.fillRect(lgX, lgY, 10, 10)
+    ctx.fillStyle = c.subtext; ctx.fillText('Actual', lgX + 14, lgY + 9)
+    ctx.fillStyle = c.green + '44'; ctx.fillRect(lgX + 60, lgY, 10, 10)
+    ctx.strokeStyle = c.green; ctx.lineWidth = 1; ctx.strokeRect(lgX + 60, lgY, 10, 10)
+    ctx.fillStyle = c.subtext; ctx.fillText('Prediction', lgX + 74, lgY + 9)
+    ctx.fillStyle = c.red; ctx.fillText('\u2190 residual', lgX + 140, lgY + 9)
+
+    // MSE sparkline
+    if (gbHist.length > 1) {
+      const spW = 100, spH = 40, spX = W - p.r - spW - 8, spY = p.t + 4
+      ctx.fillStyle = c.subtext; ctx.font = '10px sans-serif'; ctx.textAlign = 'right'
+      ctx.fillText('MSE', spX - 4, spY + spH / 2 + 3)
+      const maxMSE = gbHist[0].mse
+      ctx.strokeStyle = c.amber; ctx.lineWidth = 1.5; ctx.beginPath()
+      gbHist.forEach((h, i) => {
+        const sx = spX + i / (gbHist.length - 1) * spW
+        const sy = spY + spH - (h.mse / maxMSE) * spH
+        if (i === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy)
+      })
       ctx.stroke()
-
-      // Minimum
-      ctx.fillStyle = c.green; ctx.globalAlpha = 0.25
-      ctx.beginPath(); ctx.arc(xOf(3), yOf(0.5), 6, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1
-      ctx.fillStyle = c.subtext; ctx.font = '11px sans-serif'; ctx.fillText('min', xOf(3), yOf(0.5) + 16)
-
-      // Path
-      const all = [...gdHist, { w: gdW, l: loss(gdW) }]
-      if (all.length > 1) {
-        for (let i = 0; i < all.length - 1; i++) {
-          ctx.strokeStyle = c.blue; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.4
-          ctx.beginPath(); ctx.moveTo(xOf(all[i].w), yOf(all[i].l)); ctx.lineTo(xOf(all[i + 1].w), yOf(all[i + 1].l)); ctx.stroke()
-          ctx.globalAlpha = 1; ctx.fillStyle = c.blue; ctx.globalAlpha = 0.3
-          ctx.beginPath(); ctx.arc(xOf(all[i].w), yOf(all[i].l), 3, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1
-        }
-      }
-      ctx.fillStyle = c.blue
-      ctx.beginPath(); ctx.arc(xOf(gdW), yOf(loss(gdW)), 7, 0, Math.PI * 2); ctx.fill()
-
-      // Step labels
-      ctx.font = '500 9px sans-serif'; ctx.fillStyle = c.subtext; ctx.textAlign = 'center'
-      for (let i = 0; i < Math.min(all.length, 10); i++) {
-        ctx.fillText(String(i), xOf(all[i].w), yOf(all[i].l) - 12)
-      }
-    } else {
-      // Draw GB view (bar chart)
-      const n = GB_ACTUAL.length
-      const p = { l: 50, r: 20, t: 20, b: 40 }
-      const pw = W - p.l - p.r
-      const ph = H - p.t - p.b
-      const maxVal = Math.max(...GB_ACTUAL) + 2
-      const barW = pw / (n * 3 + 1)
-      const gap = barW
-      const groupW = barW * 2 + 4
-      const totalW = n * groupW + (n - 1) * gap
-      const startX = p.l + (pw - totalW) / 2
-      const yOf = (v: number) => p.t + (1 - v / maxVal) * ph
-
-      // Axes
-      ctx.strokeStyle = c.axis; ctx.lineWidth = 0.5
-      ctx.beginPath(); ctx.moveTo(p.l, p.t); ctx.lineTo(p.l, H - p.b); ctx.lineTo(W - p.r, H - p.b); ctx.stroke()
-      ctx.fillStyle = c.subtext; ctx.font = '11px sans-serif'; ctx.textAlign = 'right'
-      for (let v = 0; v <= maxVal; v += 5) {
-        ctx.fillText(String(v), p.l - 6, yOf(v) + 4)
-        ctx.strokeStyle = c.grid; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.l, yOf(v)); ctx.lineTo(W - p.r, yOf(v)); ctx.stroke()
-      }
-      ctx.textAlign = 'center'; ctx.fillText('Value', p.l - 6, p.t - 6)
-
-      // Bars
-      for (let i = 0; i < n; i++) {
-        const x = startX + i * (groupW + gap)
-        const actual = GB_ACTUAL[i]
-        const pred = gbPreds[i]
-
-        // Actual bar
-        const ah = Math.max(0, (actual / maxVal) * ph)
-        ctx.fillStyle = c.barActual
-        ctx.fillRect(x, yOf(actual), barW, ah)
-        ctx.strokeStyle = c.subtext; ctx.lineWidth = 0.5; ctx.strokeRect(x, yOf(actual), barW, ah)
-
-        // Prediction bar
-        const predClamped = Math.max(0, Math.min(pred, maxVal))
-        const predH = Math.max(0, (predClamped / maxVal) * ph)
-        ctx.fillStyle = c.green + '44'
-        ctx.fillRect(x + barW + 4, yOf(predClamped), barW, predH)
-        ctx.strokeStyle = c.green; ctx.lineWidth = 1; ctx.strokeRect(x + barW + 4, yOf(predClamped), barW, predH)
-
-        // Residual line
-        const actualY = yOf(actual)
-        const predY = yOf(predClamped)
-        const midX = x + barW + 2
-        if (Math.abs(actual - predClamped) > 0.1) {
-          ctx.strokeStyle = c.red; ctx.lineWidth = 1.5; ctx.setLineDash([3, 3])
-          ctx.beginPath(); ctx.moveTo(midX, actualY); ctx.lineTo(midX, predY); ctx.stroke()
-          ctx.setLineDash([])
-          const resid = actual - pred
-          ctx.fillStyle = c.red; ctx.font = '500 10px sans-serif'; ctx.textAlign = 'center'
-          ctx.fillText((resid >= 0 ? '+' : '') + resid.toFixed(1), midX, (actualY + predY) / 2 + (resid > 0 ? -6 : 10))
-        }
-
-        // Label
-        ctx.fillStyle = c.subtext; ctx.font = '11px sans-serif'; ctx.textAlign = 'center'
-        ctx.fillText(GB_LABELS[i], x + groupW / 2, H - p.b + 14)
-      }
-
-      // Legend
-      ctx.font = '11px sans-serif'; ctx.textAlign = 'left'
-      const lgX = p.l + 8, lgY = p.t + 10
-      ctx.fillStyle = c.barActual; ctx.fillRect(lgX, lgY, 10, 10)
-      ctx.fillStyle = c.subtext; ctx.fillText('Actual', lgX + 14, lgY + 9)
-      ctx.fillStyle = c.green + '44'; ctx.fillRect(lgX + 60, lgY, 10, 10)
-      ctx.strokeStyle = c.green; ctx.lineWidth = 1; ctx.strokeRect(lgX + 60, lgY, 10, 10)
-      ctx.fillStyle = c.subtext; ctx.fillText('Prediction', lgX + 74, lgY + 9)
-      ctx.fillStyle = c.red; ctx.fillText('\u2190 residual', lgX + 140, lgY + 9)
-
-      // MSE sparkline
-      if (gbHist.length > 1) {
-        const spW = 100, spH = 40, spX = W - p.r - spW - 8, spY = p.t + 4
-        ctx.fillStyle = c.subtext; ctx.font = '10px sans-serif'; ctx.textAlign = 'right'
-        ctx.fillText('MSE', spX - 4, spY + spH / 2 + 3)
-        const maxMSE = gbHist[0].mse
-        ctx.strokeStyle = c.amber; ctx.lineWidth = 1.5; ctx.beginPath()
-        gbHist.forEach((h, i) => {
-          const sx = spX + i / (gbHist.length - 1) * spW
-          const sy = spY + spH - (h.mse / maxMSE) * spH
-          if (i === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy)
-        })
-        ctx.stroke()
-        ctx.fillStyle = c.amber; ctx.beginPath()
-        const lastH = gbHist[gbHist.length - 1]
-        const lsx = spX + (gbHist.length - 1) / (gbHist.length - 1) * spW
-        const lsy = spY + spH - (lastH.mse / maxMSE) * spH
-        ctx.arc(lsx, lsy, 3, 0, Math.PI * 2); ctx.fill()
-        ctx.fillStyle = c.subtext; ctx.font = '10px sans-serif'; ctx.textAlign = 'left'
-        ctx.fillText(lastH.mse.toFixed(2), lsx + 6, lsy + 3)
-      }
+      ctx.fillStyle = c.amber; ctx.beginPath()
+      const lastH = gbHist[gbHist.length - 1]
+      const lsx = spX + (gbHist.length - 1) / (gbHist.length - 1) * spW
+      const lsy = spY + spH - (lastH.mse / maxMSE) * spH
+      ctx.arc(lsx, lsy, 3, 0, Math.PI * 2); ctx.fill()
+      ctx.fillStyle = c.subtext; ctx.font = '10px sans-serif'; ctx.textAlign = 'left'
+      ctx.fillText(lastH.mse.toFixed(2), lsx + 6, lsy + 3)
     }
-  }, [mode, gdW, gdHist, gbPreds, gbHist])
+  }, [gbPreds, gbHist])
 
-  useEffect(() => { draw() }, [draw])
-  useDarkModeObserver(draw)
-  useCanvasResize(canvasRef, draw)
+  const drawAll = useCallback(() => { drawGD(); drawGB() }, [drawGD, drawGB])
 
-  // Metrics and insight
-  let metrics: React.ReactNode
+  useEffect(() => { drawAll() }, [drawAll])
+  useDarkModeObserver(drawAll)
+  useCanvasResize(gdCanvasRef, drawGD)
+  useCanvasResize(gbCanvasRef, drawGB)
+
+  // Metrics
+  const gdLoss = loss(gdW)
+  const gdGrad = grad(gdW)
+  const gbMse = gbMSE(gbPreds)
+  const gbResids = GB_ACTUAL.map((v, i) => v - gbPreds[i])
+  const gbMaxResid = Math.max(...gbResids.map(Math.abs))
+
+  // Insight text
   let insight: React.ReactNode
-
-  if (mode === 'gd') {
-    const cl = loss(gdW)
-    const cg = grad(gdW)
-    metrics = (
-      <div className="flex gap-2.5 flex-wrap my-2.5">
-        <MetricCard label="Step" value={String(gdHist.length)} />
-        <MetricCard label="w" value={gdW.toFixed(3)} colorClass={METRIC_COLORS.blue} />
-        <MetricCard label="Loss" value={cl.toFixed(3)} />
-        <MetricCard label="Gradient" value={`${cg >= 0 ? '+' : ''}${cg.toFixed(3)}`} colorClass={METRIC_COLORS.red} />
-      </div>
+  if (stepCount === 0) {
+    insight = (
+      <>
+        <strong>Side-by-side comparison.</strong> Hit {'\u201C'}1 step{'\u201D'} to advance both simultaneously.
+        GD adjusts a single parameter w to minimize loss. GB adds a tree to correct prediction errors.
+        Same {'\u03B7'}, same number of steps — watch both converge.
+      </>
     )
-    if (gdHist.length === 0) {
-      insight = (
-        <>
-          <strong>Gradient descent</strong> adjusts a parameter value to minimize loss. Each step: compute the gradient (slope), move opposite to it.
-          Hit {'\u201C'}1 step{'\u201D'} to watch — then toggle to Gradient Boosting to see the same mechanics in action.
-        </>
-      )
-    } else if (Math.abs(cg) < 0.05) {
-      insight = (
-        <>
-          <strong>Converged at step {gdHist.length}.</strong> w {'\u2248'} {gdW.toFixed(2)}, gradient {'\u2248'} 0.
-          Now toggle to Gradient Boosting and run the same number of steps with the same {'\u03B7'} — watch how predictions converge on actual values
-          the same way w converged on the minimum.
-        </>
-      )
-    } else {
-      insight = (
-        <>
-          <strong>Step {gdHist.length}:</strong> gradient = {cg >= 0 ? '+' : ''}{cg.toFixed(2)}, so w moves {cg > 0 ? 'left (\u2212)' : 'right (+)'}.
-          Loss: {cl.toFixed(2)}.
-        </>
-      )
-    }
+  } else if (Math.abs(gdGrad) < 0.05 && gbMse < 0.1) {
+    insight = (
+      <>
+        <strong>Both converged after {stepCount} steps.</strong> GD: w {'\u2248'} {gdW.toFixed(2)}, loss {'\u2248'} {gdLoss.toFixed(3)}.
+        GB: MSE {'\u2248'} {gbMse.toFixed(3)}. Same mechanics — subtract {'\u03B7'} {'\u00D7'} gradient from the current state.
+        GD adjusted one parameter, GB added {stepCount} trees.
+      </>
+    )
   } else {
-    const mse = gbMSE(gbPreds)
-    const resids = GB_ACTUAL.map((v, i) => v - gbPreds[i])
-    const maxResid = Math.max(...resids.map(Math.abs))
-    metrics = (
-      <div className="flex gap-2.5 flex-wrap my-2.5">
-        <MetricCard label="Trees added" value={String(gbStep)} colorClass={METRIC_COLORS.green} />
-        <MetricCard label="MSE" value={mse.toFixed(3)} colorClass={METRIC_COLORS.amber} />
-        <MetricCard label="Max |residual|" value={maxResid.toFixed(2)} colorClass={METRIC_COLORS.red} />
-        <MetricCard label={'\u03B7 (shrinkage)'} value={eta.toFixed(2)} />
-      </div>
+    insight = (
+      <>
+        <strong>After {stepCount} step{stepCount !== 1 ? 's' : ''}:</strong> GD loss = {gdLoss.toFixed(3)}, GB MSE = {gbMse.toFixed(3)}.
+        Both use the same {'\u03B7'} and same number of steps — GD adjusts one parameter, GB adds trees.
+      </>
     )
-    if (gbStep === 0) {
-      insight = (
-        <>
-          <strong>Gradient boosting</strong> starts with F{'\u2080'} = mean ({gbPreds[0].toFixed(1)} for all).
-          The red dashed lines are residuals — what each prediction gets wrong.
-          Hit {'\u201C'}1 step{'\u201D'} to add a tree that fits these residuals. Then toggle back to Gradient Descent and compare.
-        </>
-      )
-    } else if (mse < 0.1) {
-      insight = (
-        <>
-          <strong>Converged after {gbStep} trees!</strong> Predictions nearly match actuals. MSE {'\u2248'} {mse.toFixed(3)}.
-          Compare: in Gradient Descent mode, w converged on the minimum. Here, predictions converged on the actual values.
-          Same mechanics — subtract {'\u03B7'} {'\u00D7'} gradient from the current state.
-        </>
-      )
-    } else {
-      insight = (
-        <>
-          <strong>Tree {gbStep}:</strong> Each new tree fit the residuals (red dashes) and {'\u03B7'}={eta.toFixed(2)} scaled its correction.
-          MSE dropped from {gbHist.length > 1 ? gbHist[gbHist.length - 2].mse.toFixed(2) : '\u2014'} {'\u2192'} {mse.toFixed(2)}.
-          The residuals = negative gradients. This tree = one gradient descent step in function space.
-        </>
-      )
-    }
   }
 
   return (
     <section
       ref={sectionRef as React.RefObject<HTMLElement>}
       aria-labelledby="gd-vs-boosting"
-      className={`py-16 sm:py-20 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`py-8 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       <h2
         id="gd-vs-boosting"
@@ -1571,71 +1586,72 @@ function Section4() {
         GD vs Gradient Boosting
       </h2>
       <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
-        Same algorithm, different spaces. Toggle between modes — the controls, step mechanics, and learning rate are identical.
-        Watch how each {'\u201C'}step{'\u201D'} works.
+        Same algorithm, different spaces. Shared controls advance both simultaneously — watch how each {'\u201C'}step{'\u201D'} works side by side.
       </p>
 
-      {/* Mode toggle */}
-      <div className="flex gap-1.5 mb-3">
-        <button
-          type="button"
-          onClick={() => switchMode('gd')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
-            mode === 'gd'
-              ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
-              : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
-          }`}
-        >
-          <span className="w-2.5 h-2.5 rounded-full bg-sapphire dark:bg-sapphire-dark" />
-          Gradient descent
-        </button>
-        <button
-          type="button"
-          onClick={() => switchMode('gb')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
-            mode === 'gb'
-              ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
-              : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
-          }`}
-        >
-          <span className="w-2.5 h-2.5 rounded-full bg-green-500 dark:bg-green-400" />
-          Gradient boosting
-        </button>
+      {/* Equation boxes side by side */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+        <div className="rounded-lg bg-cream-dark/60 dark:bg-night-card/60 px-3 py-2">
+          <span className="font-[family-name:var(--font-mono)] text-[13px] text-sapphire dark:text-sapphire-dark">
+            w<sub>new</sub> = w<sub>old</sub> {'\u2212'} {'\u03B7'} {'\u00D7'} gradient
+          </span>
+          <span className="block text-[12px] text-ink-faint dark:text-night-muted mt-0.5">
+            Moving a parameter downhill
+          </span>
+        </div>
+        <div className="rounded-lg bg-cream-dark/60 dark:bg-night-card/60 px-3 py-2">
+          <span className="font-[family-name:var(--font-mono)] text-[13px] text-green-600 dark:text-green-400">
+            F<sub>new</sub> = F<sub>old</sub> + {'\u03B7'} {'\u00D7'} tree(residuals)
+          </span>
+          <span className="block text-[12px] text-ink-faint dark:text-night-muted mt-0.5">
+            Adding a tree that corrects errors
+          </span>
+        </div>
       </div>
 
-      {/* Equation box */}
-      <div className="rounded-lg bg-cream-dark/60 dark:bg-night-card/60 px-3 py-2 mb-3 flex flex-wrap items-center gap-3">
-        {mode === 'gd' ? (
-          <>
-            <span className="font-[family-name:var(--font-mono)] text-[13px] text-sapphire dark:text-sapphire-dark">
-              w<sub>new</sub> = w<sub>old</sub> {'\u2212'} {'\u03B7'} {'\u00D7'} gradient
-            </span>
-            <span className="text-[13px] text-ink-faint dark:text-night-muted">
-              Moving a parameter downhill on the loss curve
-            </span>
-          </>
-        ) : (
-          <>
-            <span className="font-[family-name:var(--font-mono)] text-[13px] text-green-600 dark:text-green-400">
-              F<sub>new</sub> = F<sub>old</sub> + {'\u03B7'} {'\u00D7'} tree(residuals)
-            </span>
-            <span className="text-[13px] text-ink-faint dark:text-night-muted">
-              Adding a tree that corrects the current errors
-            </span>
-          </>
-        )}
+      {/* Side-by-side canvases */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <div className="text-[13px] font-medium text-sapphire dark:text-sapphire-dark mb-1.5 flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-sapphire dark:bg-sapphire-dark" />
+            Gradient Descent
+          </div>
+          <canvas
+            ref={gdCanvasRef}
+            role="img"
+            aria-label="Loss curve showing gradient descent steps in parameter space"
+            className="w-full rounded-lg"
+            style={{ height: 300 }}
+          />
+          <div className="flex gap-2.5 flex-wrap my-2">
+            <MetricCard label="w" value={gdW.toFixed(3)} colorClass={METRIC_COLORS.blue} />
+            <MetricCard label="Loss" value={gdLoss.toFixed(3)} />
+            <MetricCard label="Gradient" value={`${gdGrad >= 0 ? '+' : ''}${gdGrad.toFixed(3)}`} colorClass={METRIC_COLORS.red} />
+          </div>
+        </div>
+        <div>
+          <div className="text-[13px] font-medium text-green-600 dark:text-green-400 mb-1.5 flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-green-500 dark:bg-green-400" />
+            Gradient Boosting
+          </div>
+          <canvas
+            ref={gbCanvasRef}
+            role="img"
+            aria-label="Bar chart comparing actual values to gradient boosting predictions with residual lines"
+            className="w-full rounded-lg"
+            style={{ height: 300 }}
+          />
+          <div className="flex gap-2.5 flex-wrap my-2">
+            <MetricCard label="MSE" value={gbMse.toFixed(3)} colorClass={METRIC_COLORS.amber} />
+            <MetricCard label="Max |residual|" value={gbMaxResid.toFixed(2)} colorClass={METRIC_COLORS.red} />
+          </div>
+        </div>
       </div>
 
-      <canvas
-        ref={canvasRef}
-        role="img"
-        aria-label={mode === 'gd'
-          ? 'Loss curve showing gradient descent steps in parameter space'
-          : 'Bar chart comparing actual values to gradient boosting predictions with residual lines'
-        }
-        className="w-full rounded-lg"
-        style={{ height: 300 }}
-      />
+      {/* Shared controls */}
+      <div className="flex gap-2.5 flex-wrap my-2.5 justify-center">
+        <MetricCard label="Step" value={String(stepCount)} />
+      </div>
 
       {/* Learning rate slider */}
       <div className="flex items-center gap-3 mt-2 mb-2">
@@ -1661,7 +1677,7 @@ function Section4() {
         </span>
       </div>
 
-      <div className="flex gap-1.5 flex-wrap my-2">
+      <div className="flex gap-1.5 flex-wrap my-2 justify-center">
         <button
           type="button"
           onClick={step}
@@ -1699,7 +1715,6 @@ function Section4() {
         </button>
       </div>
 
-      {metrics}
       <InsightBox>{insight}</InsightBox>
     </section>
   )
