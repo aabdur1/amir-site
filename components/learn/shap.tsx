@@ -49,10 +49,10 @@ function setupCanvas(canvas: HTMLCanvasElement, height: number): { ctx: CanvasRe
 // --- Shared sub-components ---
 function MetricCard({ label, value, colorClass }: { label: string; value: string; colorClass?: string }) {
   return (
-    <div className="flex-1 min-w-[80px] rounded-lg bg-cream-dark/60 dark:bg-night-card/60 px-3 py-2">
-      <div className="text-[10px] text-ink-subtle dark:text-night-muted">{label}</div>
+    <div className="flex-1 min-w-[90px] rounded-lg bg-cream-dark/60 dark:bg-night-card/60 px-4 py-2.5">
+      <div className="text-[13px] text-ink-subtle dark:text-night-muted">{label}</div>
       <div
-        className={`font-[family-name:var(--font-mono)] text-[15px] font-medium mt-0.5 ${colorClass ?? 'text-ink dark:text-night-text'}`}
+        className={`font-[family-name:var(--font-mono)] text-base font-medium mt-0.5 ${colorClass ?? 'text-ink dark:text-night-text'}`}
       >
         {value}
       </div>
@@ -70,7 +70,7 @@ const METRIC_COLORS = {
 
 function InsightBox({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mt-3 rounded-lg bg-sapphire/10 dark:bg-sapphire-dark/10 px-3 py-2.5 text-[12px] leading-relaxed text-sapphire dark:text-sapphire-dark">
+    <div className="mt-4 rounded-lg bg-sapphire/10 dark:bg-sapphire-dark/10 px-4 py-3 text-sm leading-relaxed text-sapphire dark:text-sapphire-dark">
       {children}
     </div>
   )
@@ -269,15 +269,15 @@ function Section1({ instances, regenerate }: { instances: Instance[]; regenerate
     <section
       ref={sectionRef as React.RefObject<HTMLElement>}
       aria-labelledby="shap-waterfall"
-      className={`transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`py-8 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       <h2
         id="shap-waterfall"
-        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-2"
+        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-3"
       >
         Waterfall Chart (Efficiency)
       </h2>
-      <p className="text-[13px] text-ink-subtle dark:text-night-muted mb-4">
+      <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
         The waterfall shows how one prediction builds from the baseline. Each bar = one feature{'\u2019'}s SHAP value
         pushing the prediction up or down. They always sum to exactly (prediction {'\u2212'} baseline). That{'\u2019'}s
         the efficiency property.
@@ -294,7 +294,7 @@ function Section1({ instances, regenerate }: { instances: Instance[]; regenerate
       <div className="flex items-center gap-3 mt-2 mb-2">
         <label
           htmlFor="shap-inst-slider"
-          className="text-[13px] text-ink-subtle dark:text-night-muted min-w-[90px]"
+          className="text-sm text-ink-subtle dark:text-night-muted min-w-[90px]"
         >
           Instance #
         </label>
@@ -309,7 +309,7 @@ function Section1({ instances, regenerate }: { instances: Instance[]; regenerate
           aria-valuetext={`Instance ${selInst}`}
           className="flex-1"
         />
-        <span className="font-[family-name:var(--font-mono)] text-[13px] font-medium min-w-[44px] text-right text-ink dark:text-night-text">
+        <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[44px] text-right text-ink dark:text-night-text">
           {selInst}
         </span>
       </div>
@@ -452,15 +452,15 @@ function Section2({ instances, regenerate }: { instances: Instance[]; regenerate
     <section
       ref={sectionRef as React.RefObject<HTMLElement>}
       aria-labelledby="shap-beeswarm"
-      className={`py-16 sm:py-20 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`py-8 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       <h2
         id="shap-beeswarm"
-        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-2"
+        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-3"
       >
         Beeswarm Plot
       </h2>
-      <p className="text-[13px] text-ink-subtle dark:text-night-muted mb-4">
+      <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
         Each dot = one instance. X-axis = SHAP value (how much that feature pushed the prediction). Color = the
         feature{'\u2019'}s actual value (red = high, blue = low). If red dots cluster at positive SHAP, high feature
         value increases the prediction.
@@ -476,19 +476,19 @@ function Section2({ instances, regenerate }: { instances: Instance[]; regenerate
 
       {/* Gradient legend */}
       <div className="flex items-center gap-2 justify-center my-2">
-        <span className="text-[11px] text-sapphire dark:text-sapphire-dark">Low feature value</span>
+        <span className="text-[13px] text-sapphire dark:text-sapphire-dark">Low feature value</span>
         <div
           className="w-[120px] h-2.5 rounded-full"
           style={{ background: 'linear-gradient(90deg, #3B8BD4, #8a8a8a, #E24B4A)' }}
         />
-        <span className="text-[11px] text-red-600 dark:text-red-400">High feature value</span>
+        <span className="text-[13px] text-red-600 dark:text-red-400">High feature value</span>
       </div>
 
       <div className="flex gap-1.5 flex-wrap my-2">
         <button
           type="button"
           onClick={() => { regenerate(); setDrawKey(k => k + 1) }}
-          className="px-4 py-1.5 rounded-lg text-[12px] font-medium border border-cream-border dark:border-night-border
+          className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-cream-border dark:border-night-border
             text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60 transition-colors"
         >
           New data
@@ -571,15 +571,15 @@ function Section3({ instances, regenerate }: { instances: Instance[]; regenerate
     <section
       ref={sectionRef as React.RefObject<HTMLElement>}
       aria-labelledby="shap-global"
-      className={`transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`py-8 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       <h2
         id="shap-global"
-        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-2"
+        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-3"
       >
         Global Importance
       </h2>
-      <p className="text-[13px] text-ink-subtle dark:text-night-muted mb-4">
+      <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
         Mean |SHAP| averages the absolute SHAP values across all instances. This gives a global measure of feature
         importance {'\u2014'} how much each feature matters on average, regardless of direction.
       </p>
@@ -596,7 +596,7 @@ function Section3({ instances, regenerate }: { instances: Instance[]; regenerate
         <button
           type="button"
           onClick={() => { regenerate(); setDrawKey(k => k + 1) }}
-          className="px-4 py-1.5 rounded-lg text-[12px] font-medium border border-cream-border dark:border-night-border
+          className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-cream-border dark:border-night-border
             text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60 transition-colors"
         >
           New data
@@ -681,13 +681,13 @@ function MargTable({ name, margs, shapVal, colorClass, toyVals }: {
         <table className="w-full border-collapse text-[13px]">
           <thead>
             <tr>
-              <th className="text-left px-2 py-1 font-medium text-[11px] text-ink-subtle dark:text-night-muted border-b border-cream-border dark:border-night-border">
+              <th className="text-left px-2 py-1 font-medium text-[13px] text-ink-subtle dark:text-night-muted border-b border-cream-border dark:border-night-border">
                 Without {name}
               </th>
-              <th className="text-left px-2 py-1 font-medium text-[11px] text-ink-subtle dark:text-night-muted border-b border-cream-border dark:border-night-border">
+              <th className="text-left px-2 py-1 font-medium text-[13px] text-ink-subtle dark:text-night-muted border-b border-cream-border dark:border-night-border">
                 With {name}
               </th>
-              <th className="text-left px-2 py-1 font-medium text-[11px] text-ink-subtle dark:text-night-muted border-b border-cream-border dark:border-night-border">
+              <th className="text-left px-2 py-1 font-medium text-[13px] text-ink-subtle dark:text-night-muted border-b border-cream-border dark:border-night-border">
                 Marginal
               </th>
             </tr>
@@ -736,15 +736,15 @@ function Section4() {
     <section
       ref={sectionRef as React.RefObject<HTMLElement>}
       aria-labelledby="shap-math"
-      className={`py-16 sm:py-20 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`py-8 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       <h2
         id="shap-math"
-        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-2"
+        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-3"
       >
         Shapley Value Math
       </h2>
-      <p className="text-[13px] text-ink-subtle dark:text-night-muted mb-4">
+      <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
         A Shapley value is computed by checking each feature{'\u2019'}s marginal contribution across ALL possible subsets
         of other features. This toy example with 3 features shows how it works.
       </p>
@@ -778,7 +778,7 @@ function Section4() {
         <button
           type="button"
           onClick={() => setToyVals(generateToyValues())}
-          className="px-4 py-1.5 rounded-lg text-[12px] font-medium border border-cream-border dark:border-night-border
+          className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-cream-border dark:border-night-border
             text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60 transition-colors"
         >
           New values
@@ -808,9 +808,9 @@ export function SHAP() {
   }, [])
 
   return (
-    <div>
+    <div className="mx-auto max-w-5xl px-6 sm:px-10 lg:px-12">
       {/* Title */}
-      <div className="text-center mb-12">
+      <div className="text-center mb-16">
         <p className="font-[family-name:var(--font-mono)] text-[13px] tracking-[0.3em] uppercase mb-4 text-peach dark:text-peach-dark">
           06/
         </p>
@@ -826,30 +826,26 @@ export function SHAP() {
       {/* Section 1 */}
       <Section1 instances={instances} regenerate={regenerate} />
 
-      <div className="relative py-8">
+      <div className="py-12 [&>div]:mb-0">
         <SectionDivider absolute={false} />
       </div>
 
-      {/* Section 2 -- alternating bg */}
-      <div className="rounded-xl bg-cream-dark/50 dark:bg-night-card/40 px-4 sm:px-6 -mx-4 sm:-mx-6">
-        <Section2 instances={instances} regenerate={regenerate} />
-      </div>
+      {/* Section 2 */}
+      <Section2 instances={instances} regenerate={regenerate} />
 
-      <div className="relative py-8">
+      <div className="py-12 [&>div]:mb-0">
         <SectionDivider absolute={false} />
       </div>
 
       {/* Section 3 */}
       <Section3 instances={instances} regenerate={regenerate} />
 
-      <div className="relative py-8">
+      <div className="py-12 [&>div]:mb-0">
         <SectionDivider absolute={false} />
       </div>
 
-      {/* Section 4 -- alternating bg */}
-      <div className="rounded-xl bg-cream-dark/50 dark:bg-night-card/40 px-4 sm:px-6 -mx-4 sm:-mx-6">
-        <Section4 />
-      </div>
+      {/* Section 4 */}
+      <Section4 />
     </div>
   )
 }

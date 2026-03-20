@@ -49,10 +49,10 @@ function setupCanvas(canvas: HTMLCanvasElement, height: number): { ctx: CanvasRe
 // --- Shared sub-components ---
 function MetricCard({ label, value, colorClass }: { label: string; value: string; colorClass?: string }) {
   return (
-    <div className="flex-1 min-w-[80px] rounded-lg bg-cream-dark/60 dark:bg-night-card/60 px-3 py-2">
-      <div className="text-[10px] text-ink-subtle dark:text-night-muted">{label}</div>
+    <div className="flex-1 min-w-[90px] rounded-lg bg-cream-dark/60 dark:bg-night-card/60 px-4 py-2.5">
+      <div className="text-[13px] text-ink-subtle dark:text-night-muted">{label}</div>
       <div
-        className={`font-[family-name:var(--font-mono)] text-[15px] font-medium mt-0.5 ${colorClass ?? 'text-ink dark:text-night-text'}`}
+        className={`font-[family-name:var(--font-mono)] text-base font-medium mt-0.5 ${colorClass ?? 'text-ink dark:text-night-text'}`}
       >
         {value}
       </div>
@@ -70,7 +70,7 @@ const METRIC_COLORS = {
 
 function InsightBox({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mt-3 rounded-lg bg-sapphire/10 dark:bg-sapphire-dark/10 px-3 py-2.5 text-[12px] leading-relaxed text-sapphire dark:text-sapphire-dark">
+    <div className="mt-4 rounded-lg bg-sapphire/10 dark:bg-sapphire-dark/10 px-4 py-3 text-sm leading-relaxed text-sapphire dark:text-sapphire-dark">
       {children}
     </div>
   )
@@ -78,7 +78,7 @@ function InsightBox({ children }: { children: React.ReactNode }) {
 
 function WarnBox({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mt-3 rounded-lg bg-amber-100/60 dark:bg-amber-900/20 px-3 py-2.5 text-[12px] leading-relaxed text-amber-700 dark:text-amber-300">
+    <div className="mt-4 rounded-lg bg-amber-100/60 dark:bg-amber-900/20 px-4 py-3 text-sm leading-relaxed text-amber-700 dark:text-amber-300">
       {children}
     </div>
   )
@@ -307,15 +307,15 @@ function Section1() {
     <section
       ref={sectionRef as React.RefObject<HTMLElement>}
       aria-labelledby="ll-qq-plots"
-      className={`transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`py-8 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       <h2
         id="ll-qq-plots"
-        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-2"
+        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-3"
       >
         QQ Plots for Normality
       </h2>
-      <p className="text-[13px] text-ink-subtle dark:text-night-muted mb-4">
+      <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
         A QQ plot compares your data against a theoretical normal distribution. If data is normal, dots lie on the
         diagonal. Select different distributions to see what departures look like.
       </p>
@@ -327,14 +327,14 @@ function Section1() {
             key={v.key}
             type="button"
             onClick={() => switchDist(v.key)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium border transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
               distType === v.key
                 ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
                 : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
             }`}
           >
             {v.label}
-            <span className="text-[10px] text-ink-faint dark:text-night-muted">{v.desc}</span>
+            <span className="text-[12px] text-ink-faint dark:text-night-muted">{v.desc}</span>
           </button>
         ))}
       </div>
@@ -351,7 +351,7 @@ function Section1() {
         <button
           type="button"
           onClick={resample}
-          className="px-4 py-1.5 rounded-lg text-[12px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
+          className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
             bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark
             hover:bg-sapphire/20 dark:hover:bg-sapphire-dark/20 transition-colors"
         >
@@ -563,15 +563,15 @@ function Section2() {
     <section
       ref={sectionRef as React.RefObject<HTMLElement>}
       aria-labelledby="ll-log-loss"
-      className={`py-16 sm:py-20 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`py-8 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       <h2
         id="ll-log-loss"
-        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-2"
+        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-3"
       >
         Log Loss
       </h2>
-      <p className="text-[13px] text-ink-subtle dark:text-night-muted mb-4">
+      <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
         Log loss = {'\u2212'}log(p) when actual = 1, or {'\u2212'}log(1{'\u2212'}p) when actual = 0. Drag the predicted
         probability to see how the penalty grows {'\u2014'} confident wrong predictions are CATASTROPHICALLY expensive.
       </p>
@@ -581,7 +581,7 @@ function Section2() {
         <button
           type="button"
           onClick={() => setActualY(1)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium border transition-colors ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
             actualY === 1
               ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
               : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
@@ -592,7 +592,7 @@ function Section2() {
         <button
           type="button"
           onClick={() => setActualY(0)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium border transition-colors ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
             actualY === 0
               ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
               : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
@@ -613,7 +613,7 @@ function Section2() {
       <div className="flex items-center gap-3 mt-2 mb-2">
         <label
           htmlFor="ll-p-slider"
-          className="text-[13px] text-ink-subtle dark:text-night-muted min-w-[90px]"
+          className="text-sm text-ink-subtle dark:text-night-muted min-w-[90px]"
         >
           Predicted p
         </label>
@@ -628,7 +628,7 @@ function Section2() {
           aria-valuetext={`p = ${predP.toFixed(2)}`}
           className="flex-1"
         />
-        <span className="font-[family-name:var(--font-mono)] text-[13px] font-medium min-w-[44px] text-right text-ink dark:text-night-text">
+        <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[44px] text-right text-ink dark:text-night-text">
           {predP.toFixed(2)}
         </span>
       </div>
@@ -806,15 +806,15 @@ function Section3() {
     <section
       ref={sectionRef as React.RefObject<HTMLElement>}
       aria-labelledby="ll-entropy-gini"
-      className={`py-16 sm:py-20 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`py-8 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       <h2
         id="ll-entropy-gini"
-        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-2"
+        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-3"
       >
         Entropy {'&'} Gini
       </h2>
-      <p className="text-[13px] text-ink-subtle dark:text-night-muted mb-4">
+      <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
         Binary entropy measures uncertainty. A 50/50 split = maximum uncertainty. As one class dominates, uncertainty drops.
         You already know this from decision trees {'\u2014'} entropy is the impurity measure!
       </p>
@@ -830,7 +830,7 @@ function Section3() {
       <div className="flex items-center gap-3 mt-2 mb-2">
         <label
           htmlFor="ll-pclass-slider"
-          className="text-[13px] text-ink-subtle dark:text-night-muted min-w-[90px]"
+          className="text-sm text-ink-subtle dark:text-night-muted min-w-[90px]"
         >
           P(class 1)
         </label>
@@ -845,7 +845,7 @@ function Section3() {
           aria-valuetext={`P(class 1) = ${pClass1.toFixed(2)}`}
           className="flex-1"
         />
-        <span className="font-[family-name:var(--font-mono)] text-[13px] font-medium min-w-[44px] text-right text-ink dark:text-night-text">
+        <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[44px] text-right text-ink dark:text-night-text">
           {pClass1.toFixed(2)}
         </span>
       </div>
@@ -895,11 +895,11 @@ function Section4() {
     <section
       ref={sectionRef as React.RefObject<HTMLElement>}
       aria-labelledby="ll-unified-connection"
-      className={`py-16 sm:py-20 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`py-8 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       <h2
         id="ll-unified-connection"
-        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-2"
+        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-3"
       >
         The Unified Connection
       </h2>
@@ -921,7 +921,7 @@ function Section4() {
               </div>
             </div>
             {idx < arrows.length && (
-              <div className="pl-5 py-0.5 text-[11px] text-ink-faint dark:text-night-muted">
+              <div className="pl-5 py-0.5 text-[13px] text-ink-faint dark:text-night-muted">
                 {'\u2193'} {arrows[idx]}
               </div>
             )}
@@ -991,9 +991,9 @@ function Section4() {
 // ======================================================================
 export function LogLossCrossEntropy() {
   return (
-    <div>
+    <div className="mx-auto max-w-5xl px-6 sm:px-10 lg:px-12">
       {/* Title */}
-      <div className="text-center mb-12">
+      <div className="text-center mb-16">
         <p className="font-[family-name:var(--font-mono)] text-[13px] tracking-[0.3em] uppercase mb-4 text-peach dark:text-peach-dark">
           02/
         </p>
@@ -1009,30 +1009,26 @@ export function LogLossCrossEntropy() {
       {/* Section 1 */}
       <Section1 />
 
-      <div className="relative py-8">
+      <div className="py-12 [&>div]:mb-0">
         <SectionDivider absolute={false} />
       </div>
 
-      {/* Section 2 -- alternating bg */}
-      <div className="rounded-xl bg-cream-dark/50 dark:bg-night-card/40 px-4 sm:px-6 -mx-4 sm:-mx-6">
-        <Section2 />
-      </div>
+      {/* Section 2 */}
+      <Section2 />
 
-      <div className="relative py-8">
+      <div className="py-12 [&>div]:mb-0">
         <SectionDivider absolute={false} />
       </div>
 
       {/* Section 3 */}
       <Section3 />
 
-      <div className="relative py-8">
+      <div className="py-12 [&>div]:mb-0">
         <SectionDivider absolute={false} />
       </div>
 
-      {/* Section 4 -- alternating bg */}
-      <div className="rounded-xl bg-cream-dark/50 dark:bg-night-card/40 px-4 sm:px-6 -mx-4 sm:-mx-6">
-        <Section4 />
-      </div>
+      {/* Section 4 */}
+      <Section4 />
     </div>
   )
 }

@@ -49,10 +49,10 @@ function setupCanvas(canvas: HTMLCanvasElement, height: number): { ctx: CanvasRe
 // --- Shared sub-components ---
 function MetricCard({ label, value, colorClass }: { label: string; value: string; colorClass?: string }) {
   return (
-    <div className="flex-1 min-w-[80px] rounded-lg bg-cream-dark/60 dark:bg-night-card/60 px-3 py-2">
-      <div className="text-[10px] text-ink-subtle dark:text-night-muted">{label}</div>
+    <div className="flex-1 min-w-[90px] rounded-lg bg-cream-dark/60 dark:bg-night-card/60 px-4 py-2.5">
+      <div className="text-[13px] text-ink-subtle dark:text-night-muted">{label}</div>
       <div
-        className={`font-[family-name:var(--font-mono)] text-[15px] font-medium mt-0.5 ${colorClass ?? 'text-ink dark:text-night-text'}`}
+        className={`font-[family-name:var(--font-mono)] text-base font-medium mt-0.5 ${colorClass ?? 'text-ink dark:text-night-text'}`}
       >
         {value}
       </div>
@@ -70,7 +70,7 @@ const METRIC_COLORS = {
 
 function InsightBox({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mt-3 rounded-lg bg-sapphire/10 dark:bg-sapphire-dark/10 px-3 py-2.5 text-[12px] leading-relaxed text-sapphire dark:text-sapphire-dark">
+    <div className="mt-4 rounded-lg bg-sapphire/10 dark:bg-sapphire-dark/10 px-4 py-3 text-sm leading-relaxed text-sapphire dark:text-sapphire-dark">
       {children}
     </div>
   )
@@ -78,7 +78,7 @@ function InsightBox({ children }: { children: React.ReactNode }) {
 
 function WarnBox({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-lg bg-amber-100/60 dark:bg-amber-900/20 px-3 py-2.5 text-[12px] leading-relaxed text-amber-700 dark:text-amber-300">
+    <div className="rounded-lg bg-amber-100/60 dark:bg-amber-900/20 px-4 py-3 text-sm leading-relaxed text-amber-700 dark:text-amber-300">
       {children}
     </div>
   )
@@ -373,15 +373,15 @@ function Section1() {
     <section
       ref={sectionRef as React.RefObject<HTMLElement>}
       aria-labelledby="pca-what-finds"
-      className={`transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`py-8 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       <h2
         id="pca-what-finds"
-        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-2"
+        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-3"
       >
         What PCA Finds
       </h2>
-      <p className="text-[13px] text-ink-subtle dark:text-night-muted mb-4">
+      <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
         Drag the correlation slider to change how elongated the data cloud is. PCA finds the axes of this ellipse.
         When correlation is high, PC1 captures almost everything — that{"'"}s when dimensionality reduction works best.
       </p>
@@ -397,7 +397,7 @@ function Section1() {
       <div className="flex items-center gap-3 mt-2 mb-2">
         <label
           htmlFor="pca-corr-slider"
-          className="text-[13px] text-ink-subtle dark:text-night-muted min-w-[90px]"
+          className="text-sm text-ink-subtle dark:text-night-muted min-w-[90px]"
         >
           Correlation
         </label>
@@ -416,7 +416,7 @@ function Section1() {
           aria-valuetext={`correlation = ${corr.toFixed(2)}`}
           className="flex-1"
         />
-        <span className="font-[family-name:var(--font-mono)] text-[13px] font-medium min-w-[44px] text-right text-ink dark:text-night-text">
+        <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[44px] text-right text-ink dark:text-night-text">
           {corr.toFixed(2)}
         </span>
       </div>
@@ -425,7 +425,7 @@ function Section1() {
         <button
           type="button"
           onClick={() => setShowPC(prev => !prev)}
-          className="px-4 py-1.5 rounded-lg text-[12px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
+          className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
             bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark
             hover:bg-sapphire/20 dark:hover:bg-sapphire-dark/20 transition-colors"
         >
@@ -434,7 +434,7 @@ function Section1() {
         <button
           type="button"
           onClick={resample}
-          className="px-4 py-1.5 rounded-lg text-[12px] font-medium border border-cream-border dark:border-night-border
+          className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-cream-border dark:border-night-border
             text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60 transition-colors"
         >
           Resample
@@ -629,15 +629,15 @@ function Section2() {
     <section
       ref={sectionRef as React.RefObject<HTMLElement>}
       aria-labelledby="pca-how-many"
-      className={`py-16 sm:py-20 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`py-8 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       <h2
         id="pca-how-many"
-        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-2"
+        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-3"
       >
         How Many Components?
       </h2>
-      <p className="text-[13px] text-ink-subtle dark:text-night-muted mb-4">
+      <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
         The scree plot shows how much variance each PC captures. The cumulative line shows the running total.
         Drag {'\u201C'}keep{'\u201D'} to see how much information you retain vs discard.
       </p>
@@ -653,7 +653,7 @@ function Section2() {
       <div className="flex items-center gap-3 mt-2 mb-1">
         <label
           htmlFor="pca-dims-slider"
-          className="text-[13px] text-ink-subtle dark:text-night-muted min-w-[90px]"
+          className="text-sm text-ink-subtle dark:text-night-muted min-w-[90px]"
         >
           Dimensions
         </label>
@@ -674,7 +674,7 @@ function Section2() {
           aria-valuetext={`${dims} dimensions`}
           className="flex-1"
         />
-        <span className="font-[family-name:var(--font-mono)] text-[13px] font-medium min-w-[44px] text-right text-ink dark:text-night-text">
+        <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[44px] text-right text-ink dark:text-night-text">
           {dims}
         </span>
       </div>
@@ -682,7 +682,7 @@ function Section2() {
       <div className="flex items-center gap-3 mt-1 mb-2">
         <label
           htmlFor="pca-keep-slider"
-          className="text-[13px] text-ink-subtle dark:text-night-muted min-w-[90px]"
+          className="text-sm text-ink-subtle dark:text-night-muted min-w-[90px]"
         >
           Keep top k PCs
         </label>
@@ -697,7 +697,7 @@ function Section2() {
           aria-valuetext={`keep ${keep} of ${dims} PCs`}
           className="flex-1"
         />
-        <span className="font-[family-name:var(--font-mono)] text-[13px] font-medium min-w-[44px] text-right text-ink dark:text-night-text">
+        <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[44px] text-right text-ink dark:text-night-text">
           {keep}
         </span>
       </div>
@@ -706,7 +706,7 @@ function Section2() {
         <button
           type="button"
           onClick={() => setEigenvalues(genEigenvalues(dims))}
-          className="px-4 py-1.5 rounded-lg text-[12px] font-medium border border-cream-border dark:border-night-border
+          className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-cream-border dark:border-night-border
             text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60 transition-colors"
         >
           New eigenvalues
@@ -819,15 +819,15 @@ function Section3() {
     <section
       ref={sectionRef as React.RefObject<HTMLElement>}
       aria-labelledby="pca-standardize"
-      className={`py-16 sm:py-20 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`py-8 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       <h2
         id="pca-standardize"
-        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-2"
+        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-3"
       >
         Why Standardize?
       </h2>
-      <p className="text-[13px] text-ink-subtle dark:text-night-muted mb-4">
+      <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
         Without standardization, the variable with the largest scale dominates PC1.
         Toggle to see how standardization fixes this.
       </p>
@@ -836,7 +836,7 @@ function Section3() {
         <button
           type="button"
           onClick={() => setStandardized(false)}
-          className={`px-4 py-1.5 rounded-lg text-[12px] font-medium border transition-colors ${
+          className={`px-4 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
             !standardized
               ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
               : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
@@ -847,7 +847,7 @@ function Section3() {
         <button
           type="button"
           onClick={() => setStandardized(true)}
-          className={`px-4 py-1.5 rounded-lg text-[12px] font-medium border transition-colors ${
+          className={`px-4 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
             standardized
               ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
               : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
@@ -898,15 +898,15 @@ function Section4() {
     <section
       ref={sectionRef as React.RefObject<HTMLElement>}
       aria-labelledby="pca-score-calc"
-      className={`py-16 sm:py-20 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`py-8 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       <h2
         id="pca-score-calc"
-        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-2"
+        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-3"
       >
         PC Score Calculator
       </h2>
-      <p className="text-[13px] text-ink-subtle dark:text-night-muted mb-4">
+      <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
         A PC score is a weighted sum of original variables. The weights come from the eigenvector.
         Enter values to see the computation step by step.
       </p>
@@ -918,7 +918,7 @@ function Section4() {
         </p>
         <div className="flex gap-2 flex-wrap">
           <div className="flex-1 min-w-[100px]">
-            <label className="text-[11px] text-ink-subtle dark:text-night-muted" htmlFor="pca-w1">
+            <label className="text-[13px] text-ink-subtle dark:text-night-muted" htmlFor="pca-w1">
               w{'\u2081'} (calories)
             </label>
             <input
@@ -933,7 +933,7 @@ function Section4() {
             />
           </div>
           <div className="flex-1 min-w-[100px]">
-            <label className="text-[11px] text-ink-subtle dark:text-night-muted" htmlFor="pca-w2">
+            <label className="text-[13px] text-ink-subtle dark:text-night-muted" htmlFor="pca-w2">
               w{'\u2082'} (rating)
             </label>
             <input
@@ -957,7 +957,7 @@ function Section4() {
         </p>
         <div className="flex gap-2 flex-wrap">
           <div className="flex-1 min-w-[100px]">
-            <label className="text-[11px] text-ink-subtle dark:text-night-muted" htmlFor="pca-x1">
+            <label className="text-[13px] text-ink-subtle dark:text-night-muted" htmlFor="pca-x1">
               x{'\u2081'} (calories)
             </label>
             <input
@@ -972,7 +972,7 @@ function Section4() {
             />
           </div>
           <div className="flex-1 min-w-[100px]">
-            <label className="text-[11px] text-ink-subtle dark:text-night-muted" htmlFor="pca-x2">
+            <label className="text-[13px] text-ink-subtle dark:text-night-muted" htmlFor="pca-x2">
               x{'\u2082'} (rating)
             </label>
             <input
@@ -1250,11 +1250,11 @@ function Section5() {
     <section
       ref={sectionRef as React.RefObject<HTMLElement>}
       aria-labelledby="pca-recipes"
-      className={`py-16 sm:py-20 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`py-8 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       <h2
         id="pca-recipes"
-        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-2"
+        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-3"
       >
         PCs Are Recipes, Not Variables
       </h2>
@@ -1277,7 +1277,7 @@ function Section5() {
         <div className="flex items-center gap-3 mb-1">
           <label
             htmlFor="pca-wh-slider"
-            className="text-[13px] text-ink-subtle dark:text-night-muted min-w-[90px]"
+            className="text-sm text-ink-subtle dark:text-night-muted min-w-[90px]"
           >
             w<sub>height</sub>
           </label>
@@ -1292,14 +1292,14 @@ function Section5() {
             aria-valuetext={`weight for height = ${wH.toFixed(2)}`}
             className="flex-1"
           />
-          <span className="font-[family-name:var(--font-mono)] text-[13px] font-medium min-w-[44px] text-right text-ink dark:text-night-text">
+          <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[44px] text-right text-ink dark:text-night-text">
             {wH.toFixed(2)}
           </span>
         </div>
         <div className="flex items-center gap-3 mb-2">
           <label
             htmlFor="pca-ww-slider"
-            className="text-[13px] text-ink-subtle dark:text-night-muted min-w-[90px]"
+            className="text-sm text-ink-subtle dark:text-night-muted min-w-[90px]"
           >
             w<sub>weight</sub>
           </label>
@@ -1314,7 +1314,7 @@ function Section5() {
             aria-valuetext={`weight for weight = ${wW.toFixed(2)}`}
             className="flex-1"
           />
-          <span className="font-[family-name:var(--font-mono)] text-[13px] font-medium min-w-[44px] text-right text-ink dark:text-night-text">
+          <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[44px] text-right text-ink dark:text-night-text">
             {wW.toFixed(2)}
           </span>
         </div>
@@ -1336,7 +1336,7 @@ function Section5() {
           <button
             type="button"
             onClick={() => { setWH(0.71); setWW(0.71) }}
-            className="px-3 py-1.5 rounded-lg text-[12px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
+            className="px-3 py-1.5 rounded-lg text-[13px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
               bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark
               hover:bg-sapphire/20 dark:hover:bg-sapphire-dark/20 transition-colors"
           >
@@ -1345,7 +1345,7 @@ function Section5() {
           <button
             type="button"
             onClick={() => { setWH(0.71); setWW(-0.71) }}
-            className="px-3 py-1.5 rounded-lg text-[12px] font-medium border border-cream-border dark:border-night-border
+            className="px-3 py-1.5 rounded-lg text-[13px] font-medium border border-cream-border dark:border-night-border
               text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60 transition-colors"
           >
             PC2: tall-light vs short-heavy
@@ -1353,7 +1353,7 @@ function Section5() {
           <button
             type="button"
             onClick={() => { setWH(0.95); setWW(0.05) }}
-            className="px-3 py-1.5 rounded-lg text-[12px] font-medium border border-cream-border dark:border-night-border
+            className="px-3 py-1.5 rounded-lg text-[13px] font-medium border border-cream-border dark:border-night-border
               text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60 transition-colors"
           >
             Mostly height
@@ -1361,7 +1361,7 @@ function Section5() {
           <button
             type="button"
             onClick={() => { setWH(1); setWW(0) }}
-            className="px-3 py-1.5 rounded-lg text-[12px] font-medium border border-cream-border dark:border-night-border
+            className="px-3 py-1.5 rounded-lg text-[13px] font-medium border border-cream-border dark:border-night-border
               text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60 transition-colors"
           >
             Pure height (NOT a PC)
@@ -1417,7 +1417,7 @@ function Section5() {
           const wPct = Math.abs(s.wT) / totalAbs * 100
           return (
             <div key={s.name} className="mb-2">
-              <div className="flex justify-between text-[11px] text-ink-subtle dark:text-night-muted mb-1">
+              <div className="flex justify-between text-[13px] text-ink-subtle dark:text-night-muted mb-1">
                 <span className={personColorClasses[i]}>{s.name}</span>
                 <span>PC = {s.score.toFixed(1)}</span>
               </div>
@@ -1427,7 +1427,7 @@ function Section5() {
                   style={{ flex: hPct }}
                 >
                   {hPct > 15 && (
-                    <span className="absolute left-1.5 top-0 text-[10px] font-medium text-sapphire dark:text-sapphire-dark leading-[14px]">
+                    <span className="absolute left-1.5 top-0 text-[12px] font-medium text-sapphire dark:text-sapphire-dark leading-[14px]">
                       height {hPct.toFixed(0)}%
                     </span>
                   )}
@@ -1437,7 +1437,7 @@ function Section5() {
                   style={{ flex: wPct }}
                 >
                   {wPct > 15 && (
-                    <span className="absolute right-1.5 top-0 text-[10px] font-medium text-amber-600 dark:text-amber-300 leading-[14px]">
+                    <span className="absolute right-1.5 top-0 text-[12px] font-medium text-amber-600 dark:text-amber-300 leading-[14px]">
                       weight {wPct.toFixed(0)}%
                     </span>
                   )}
@@ -1476,9 +1476,9 @@ function Section5() {
 // ======================================================================
 export function PCA() {
   return (
-    <div>
+    <div className="mx-auto max-w-5xl px-6 sm:px-10 lg:px-12">
       {/* Title */}
-      <div className="text-center mb-12">
+      <div className="text-center mb-16">
         <p className="font-[family-name:var(--font-mono)] text-[13px] tracking-[0.3em] uppercase mb-4 text-peach dark:text-peach-dark">
           03/
         </p>
@@ -1494,32 +1494,28 @@ export function PCA() {
       {/* Section 1 */}
       <Section1 />
 
-      <div className="relative py-8">
+      <div className="py-12 [&>div]:mb-0">
         <SectionDivider absolute={false} />
       </div>
 
-      {/* Section 2 — alternating bg */}
-      <div className="rounded-xl bg-cream-dark/50 dark:bg-night-card/40 px-4 sm:px-6 -mx-4 sm:-mx-6">
-        <Section2 />
-      </div>
+      {/* Section 2 */}
+      <Section2 />
 
-      <div className="relative py-8">
+      <div className="py-12 [&>div]:mb-0">
         <SectionDivider absolute={false} />
       </div>
 
       {/* Section 3 */}
       <Section3 />
 
-      <div className="relative py-8">
+      <div className="py-12 [&>div]:mb-0">
         <SectionDivider absolute={false} />
       </div>
 
-      {/* Section 4 — alternating bg */}
-      <div className="rounded-xl bg-cream-dark/50 dark:bg-night-card/40 px-4 sm:px-6 -mx-4 sm:-mx-6">
-        <Section4 />
-      </div>
+      {/* Section 4 */}
+      <Section4 />
 
-      <div className="relative py-8">
+      <div className="py-12 [&>div]:mb-0">
         <SectionDivider absolute={false} />
       </div>
 

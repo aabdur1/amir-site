@@ -72,10 +72,10 @@ function computeErrors(lam: number) {
 // --- Shared sub-components ---
 function MetricCard({ label, value, colorClass }: { label: string; value: string; colorClass?: string }) {
   return (
-    <div className="flex-1 min-w-[80px] rounded-lg bg-cream-dark/60 dark:bg-night-card/60 px-3 py-2">
-      <div className="text-[10px] text-ink-subtle dark:text-night-muted">{label}</div>
+    <div className="flex-1 min-w-[90px] rounded-lg bg-cream-dark/60 dark:bg-night-card/60 px-4 py-2.5">
+      <div className="text-[13px] text-ink-subtle dark:text-night-muted">{label}</div>
       <div
-        className={`font-[family-name:var(--font-mono)] text-[15px] font-medium mt-0.5 ${colorClass ?? 'text-ink dark:text-night-text'}`}
+        className={`font-[family-name:var(--font-mono)] text-base font-medium mt-0.5 ${colorClass ?? 'text-ink dark:text-night-text'}`}
       >
         {value}
       </div>
@@ -93,7 +93,7 @@ const METRIC_COLORS = {
 
 function InsightBox({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mt-3 rounded-lg bg-sapphire/10 dark:bg-sapphire-dark/10 px-3 py-2.5 text-[12px] leading-relaxed text-sapphire dark:text-sapphire-dark">
+    <div className="mt-4 rounded-lg bg-sapphire/10 dark:bg-sapphire-dark/10 px-4 py-3 text-sm leading-relaxed text-sapphire dark:text-sapphire-dark">
       {children}
     </div>
   )
@@ -197,15 +197,15 @@ function Section1() {
     <section
       ref={sectionRef as React.RefObject<HTMLElement>}
       aria-labelledby="reg-shrinkage"
-      className={`transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`py-8 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       <h2
         id="reg-shrinkage"
-        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-2"
+        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-3"
       >
         Coefficient Shrinkage
       </h2>
-      <p className="text-[13px] text-ink-subtle dark:text-night-muted mb-4">
+      <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
         Toggle Ridge vs Lasso and drag {'\u03BB'} to see how each penalty shrinks coefficients differently.
       </p>
 
@@ -214,7 +214,7 @@ function Section1() {
         <button
           type="button"
           onClick={() => setPenaltyType('ridge')}
-          className={`px-3.5 py-1.5 rounded-lg text-[12px] font-medium transition-all duration-150
+          className={`px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-150
             border ${penaltyType === 'ridge'
               ? 'bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark border-sapphire/25 dark:border-sapphire-dark/25'
               : 'bg-white dark:bg-night-card/60 text-ink-subtle dark:text-night-muted border-ink/[0.08] dark:border-white/[0.08] hover:bg-cream-dark/60 dark:hover:bg-night-card/80'
@@ -225,7 +225,7 @@ function Section1() {
         <button
           type="button"
           onClick={() => setPenaltyType('lasso')}
-          className={`px-3.5 py-1.5 rounded-lg text-[12px] font-medium transition-all duration-150
+          className={`px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-150
             border ${penaltyType === 'lasso'
               ? 'bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark border-sapphire/25 dark:border-sapphire-dark/25'
               : 'bg-white dark:bg-night-card/60 text-ink-subtle dark:text-night-muted border-ink/[0.08] dark:border-white/[0.08] hover:bg-cream-dark/60 dark:hover:bg-night-card/80'
@@ -239,7 +239,7 @@ function Section1() {
       <div className="flex items-center gap-3 mt-2 mb-1">
         <label
           htmlFor="lambda-slider"
-          className="text-[13px] text-ink-subtle dark:text-night-muted min-w-[20px]"
+          className="text-sm text-ink-subtle dark:text-night-muted min-w-[20px]"
         >
           {'\u03BB'}
         </label>
@@ -254,11 +254,11 @@ function Section1() {
           aria-valuetext={`lambda = ${lambda.toFixed(2)}`}
           className="flex-1"
         />
-        <span className="font-[family-name:var(--font-mono)] text-[13px] font-medium min-w-[44px] text-right text-ink dark:text-night-text">
+        <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[44px] text-right text-ink dark:text-night-text">
           {lambda.toFixed(2)}
         </span>
       </div>
-      <div className="flex justify-between text-[11px] text-ink-faint dark:text-night-muted/60 px-[23px] pr-[56px] mb-4">
+      <div className="flex justify-between text-[13px] text-ink-faint dark:text-night-muted/60 px-[23px] pr-[56px] mb-4">
         <span>0 (no penalty)</span>
         <span>heavy penalty</span>
       </div>
@@ -281,7 +281,7 @@ function Section1() {
               : 'var(--color-red, #d20f39)'
           return (
             <div key={feat} className="flex-1 min-w-[70px] max-w-[120px]">
-              <div className="text-[11px] text-ink-subtle dark:text-night-muted text-center mb-1">
+              <div className="text-[13px] text-ink-subtle dark:text-night-muted text-center mb-1">
                 {feat}
               </div>
               <div className="h-[120px] bg-cream-dark/60 dark:bg-night-card/60 rounded-lg relative overflow-hidden flex items-end justify-center">
@@ -301,7 +301,7 @@ function Section1() {
                 />
               </div>
               <div
-                className={`font-[family-name:var(--font-mono)] text-[11px] text-center mt-1 ${
+                className={`font-[family-name:var(--font-mono)] text-[13px] text-center mt-1 ${
                   isZero
                     ? 'text-amber-600 dark:text-amber-300 font-medium'
                     : 'text-ink-subtle dark:text-night-muted'
@@ -316,7 +316,7 @@ function Section1() {
 
       {/* Zero note */}
       {zeroNote && (
-        <p className="text-[11px] text-amber-600 dark:text-amber-300 mt-1">
+        <p className="text-[13px] text-amber-600 dark:text-amber-300 mt-1">
           {zeroNote}
         </p>
       )}
@@ -533,11 +533,11 @@ function Section2() {
     >
       <h2
         id="reg-bias-variance"
-        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-2"
+        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-3"
       >
         Bias-Variance Tradeoff
       </h2>
-      <p className="text-[13px] text-ink-subtle dark:text-night-muted mb-4">
+      <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
         As {'\u03BB'} increases, bias rises and variance falls. The test error curve reveals the optimal balance.
       </p>
 
@@ -572,7 +572,7 @@ function Section2() {
       <div className="flex items-center gap-3 mt-4 mb-1">
         <label
           htmlFor="bv-lambda-slider"
-          className="text-[13px] text-ink-subtle dark:text-night-muted min-w-[20px]"
+          className="text-sm text-ink-subtle dark:text-night-muted min-w-[20px]"
         >
           {'\u03BB'}
         </label>
@@ -587,11 +587,11 @@ function Section2() {
           aria-valuetext={`lambda = ${lambda.toFixed(2)}`}
           className="flex-1"
         />
-        <span className="font-[family-name:var(--font-mono)] text-[13px] font-medium min-w-[44px] text-right text-ink dark:text-night-text">
+        <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[44px] text-right text-ink dark:text-night-text">
           {lambda.toFixed(2)}
         </span>
       </div>
-      <div className="flex justify-between text-[11px] text-ink-faint dark:text-night-muted/60 px-[23px] pr-[56px] mb-3">
+      <div className="flex justify-between text-[13px] text-ink-faint dark:text-night-muted/60 px-[23px] pr-[56px] mb-3">
         <span>0 (no penalty)</span>
         <span>heavy penalty</span>
       </div>
@@ -614,9 +614,9 @@ function Section2() {
 // ======================================================================
 export function Regularization() {
   return (
-    <div>
+    <div className="mx-auto max-w-5xl px-6 sm:px-10 lg:px-12">
       {/* Title */}
-      <div className="text-center mb-12">
+      <div className="text-center mb-16">
         <p className="font-[family-name:var(--font-mono)] text-[13px] tracking-[0.3em] uppercase mb-4 text-peach dark:text-peach-dark">
           04/
         </p>
@@ -632,14 +632,12 @@ export function Regularization() {
       {/* Section 1 */}
       <Section1 />
 
-      <div className="relative py-8">
+      <div className="py-12 [&>div]:mb-0">
         <SectionDivider absolute={false} />
       </div>
 
-      {/* Section 2 — alternating bg */}
-      <div className="rounded-xl bg-cream-dark/50 dark:bg-night-card/40 px-4 sm:px-6 -mx-4 sm:-mx-6">
-        <Section2 />
-      </div>
+      {/* Section 2 */}
+      <Section2 />
     </div>
   )
 }

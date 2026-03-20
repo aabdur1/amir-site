@@ -104,10 +104,10 @@ function setupCanvas(canvas: HTMLCanvasElement, height: number): { ctx: CanvasRe
 // --- Shared sub-components ---
 function MetricCard({ label, value, colorClass }: { label: string; value: string; colorClass?: string }) {
   return (
-    <div className="flex-1 min-w-[80px] rounded-lg bg-cream-dark/60 dark:bg-night-card/60 px-3 py-2">
-      <div className="text-[10px] text-ink-subtle dark:text-night-muted">{label}</div>
+    <div className="flex-1 min-w-[90px] rounded-lg bg-cream-dark/60 dark:bg-night-card/60 px-4 py-2.5">
+      <div className="text-[13px] text-ink-subtle dark:text-night-muted">{label}</div>
       <div
-        className={`font-[family-name:var(--font-mono)] text-[15px] font-medium mt-0.5 ${colorClass ?? 'text-ink dark:text-night-text'}`}
+        className={`font-[family-name:var(--font-mono)] text-base font-medium mt-0.5 ${colorClass ?? 'text-ink dark:text-night-text'}`}
       >
         {value}
       </div>
@@ -125,7 +125,7 @@ const METRIC_COLORS = {
 
 function InsightBox({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mt-3 rounded-lg bg-sapphire/10 dark:bg-sapphire-dark/10 px-3 py-2.5 text-[12px] leading-relaxed text-sapphire dark:text-sapphire-dark">
+    <div className="mt-4 rounded-lg bg-sapphire/10 dark:bg-sapphire-dark/10 px-4 py-3 text-sm leading-relaxed text-sapphire dark:text-sapphire-dark">
       {children}
     </div>
   )
@@ -176,7 +176,7 @@ function ShapeButtons({ shape, setShape }: { shape: ShapeKey; setShape: (s: Shap
           key={s.key}
           type="button"
           onClick={() => setShape(s.key)}
-          className={`px-3 py-1.5 rounded-lg text-[12px] font-medium border transition-colors ${
+          className={`px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
             shape === s.key
               ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
               : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
@@ -195,7 +195,7 @@ function ActionButton({ onClick, children }: { onClick: () => void; children: Re
     <button
       type="button"
       onClick={onClick}
-      className="px-4 py-1.5 rounded-lg text-[12px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
+      className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
         bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark
         hover:bg-sapphire/20 dark:hover:bg-sapphire-dark/20 transition-colors"
     >
@@ -209,7 +209,7 @@ function SecondaryButton({ onClick, children }: { onClick: () => void; children:
     <button
       type="button"
       onClick={onClick}
-      className="px-4 py-1.5 rounded-lg text-[12px] font-medium border border-cream-border dark:border-night-border
+      className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-cream-border dark:border-night-border
         text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60 transition-colors"
     >
       {children}
@@ -747,15 +747,15 @@ function Section1() {
     <section
       ref={sectionRef as React.RefObject<HTMLElement>}
       aria-labelledby="cl-kmeans"
-      className={`transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`py-8 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       <h2
         id="cl-kmeans"
-        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-2"
+        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-3"
       >
         K-Means / K-Medoids
       </h2>
-      <p className="text-[13px] text-ink-subtle dark:text-night-muted mb-4">
+      <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
         K-means uses the mean as centroid. K-medoids uses an actual data point {'\u2014'} less sensitive to outliers. Toggle to compare.
       </p>
 
@@ -771,14 +771,14 @@ function Section1() {
             key={v.key}
             type="button"
             onClick={() => handleModeChange(v.key)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium border transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
               mode === v.key
                 ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
                 : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
             }`}
           >
             <span className="font-medium">{v.label}</span>
-            <span className="text-[10px] text-ink-faint dark:text-night-muted">{v.desc}</span>
+            <span className="text-[12px] text-ink-faint dark:text-night-muted">{v.desc}</span>
           </button>
         ))}
       </div>
@@ -795,7 +795,7 @@ function Section1() {
       <div className="flex items-center gap-3 mt-2 mb-2">
         <label
           htmlFor="km-k-slider"
-          className="text-[13px] text-ink-subtle dark:text-night-muted min-w-[50px]"
+          className="text-sm text-ink-subtle dark:text-night-muted min-w-[50px]"
         >
           k =
         </label>
@@ -810,7 +810,7 @@ function Section1() {
           aria-valuetext={`k = ${k}`}
           className="flex-1"
         />
-        <span className="font-[family-name:var(--font-mono)] text-[13px] font-medium min-w-[36px] text-right text-ink dark:text-night-text">
+        <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[36px] text-right text-ink dark:text-night-text">
           {k}
         </span>
       </div>
@@ -851,7 +851,7 @@ function Section1() {
               className="w-full rounded-lg"
               style={{ height: 180 }}
             />
-            <p className="text-[10px] text-ink-faint dark:text-night-muted text-center mt-1">Elbow {'\u2014'} look for the bend</p>
+            <p className="text-[12px] text-ink-faint dark:text-night-muted text-center mt-1">Elbow {'\u2014'} look for the bend</p>
           </div>
           <div className="flex-1 min-w-[200px]">
             <canvas
@@ -861,7 +861,7 @@ function Section1() {
               className="w-full rounded-lg"
               style={{ height: 180 }}
             />
-            <p className="text-[10px] text-ink-faint dark:text-night-muted text-center mt-1">Silhouette {'\u2014'} higher is better</p>
+            <p className="text-[12px] text-ink-faint dark:text-night-muted text-center mt-1">Silhouette {'\u2014'} higher is better</p>
           </div>
         </div>
         <InsightBox>{elbowInsight}</InsightBox>
@@ -1034,15 +1034,15 @@ function Section2() {
     <section
       ref={sectionRef as React.RefObject<HTMLElement>}
       aria-labelledby="cl-hierarchical"
-      className={`py-16 sm:py-20 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`py-8 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       <h2
         id="cl-hierarchical"
-        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-2"
+        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-3"
       >
         Hierarchical Clustering
       </h2>
-      <p className="text-[13px] text-ink-subtle dark:text-night-muted mb-4">
+      <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
         Agglomerative clustering builds a tree (dendrogram) of all merges. The height shows how far apart clusters were when merged. Drag the cut line to pick k.
       </p>
 
@@ -1055,7 +1055,7 @@ function Section2() {
         className="w-full rounded-lg"
         style={{ height: 260 }}
       />
-      <p className="text-[11px] text-ink-faint dark:text-night-muted text-center my-1">
+      <p className="text-[13px] text-ink-faint dark:text-night-muted text-center my-1">
         Dendrogram {'\u2014'} taller merges = more dissimilar clusters
       </p>
 
@@ -1066,7 +1066,7 @@ function Section2() {
         className="w-full rounded-lg"
         style={{ height: 260 }}
       />
-      <p className="text-[11px] text-ink-faint dark:text-night-muted text-center my-1">
+      <p className="text-[13px] text-ink-faint dark:text-night-muted text-center my-1">
         Scatter plot {'\u2014'} colored by cut
       </p>
 
@@ -1074,7 +1074,7 @@ function Section2() {
       <div className="flex items-center gap-3 mt-2 mb-2">
         <label
           htmlFor="hc-k-slider"
-          className="text-[13px] text-ink-subtle dark:text-night-muted min-w-[80px]"
+          className="text-sm text-ink-subtle dark:text-night-muted min-w-[80px]"
         >
           Cut into k =
         </label>
@@ -1089,7 +1089,7 @@ function Section2() {
           aria-valuetext={`k = ${cutK}`}
           className="flex-1"
         />
-        <span className="font-[family-name:var(--font-mono)] text-[13px] font-medium min-w-[36px] text-right text-ink dark:text-night-text">
+        <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[36px] text-right text-ink dark:text-night-text">
           {cutK}
         </span>
       </div>
@@ -1239,15 +1239,15 @@ function Section3() {
     <section
       ref={sectionRef as React.RefObject<HTMLElement>}
       aria-labelledby="cl-dbscan"
-      className={`py-16 sm:py-20 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`py-8 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       <h2
         id="cl-dbscan"
-        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-2"
+        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-3"
       >
         DBSCAN
       </h2>
-      <p className="text-[13px] text-ink-subtle dark:text-night-muted mb-4">
+      <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
         DBSCAN finds dense regions. Core points (filled) have {'\u2265'} minPts neighbors within eps. Border points (rings) are near a core point. Gray {'\u00D7'} = noise. Try the shapes K-means failed on!
       </p>
 
@@ -1265,7 +1265,7 @@ function Section3() {
       <div className="flex items-center gap-3 mt-2 mb-2">
         <label
           htmlFor="db-eps-slider"
-          className="text-[13px] text-ink-subtle dark:text-night-muted min-w-[50px]"
+          className="text-sm text-ink-subtle dark:text-night-muted min-w-[50px]"
         >
           eps
         </label>
@@ -1280,7 +1280,7 @@ function Section3() {
           aria-valuetext={`eps = ${eps.toFixed(3)}`}
           className="flex-1"
         />
-        <span className="font-[family-name:var(--font-mono)] text-[13px] font-medium min-w-[44px] text-right text-ink dark:text-night-text">
+        <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[44px] text-right text-ink dark:text-night-text">
           {eps.toFixed(3)}
         </span>
       </div>
@@ -1289,7 +1289,7 @@ function Section3() {
       <div className="flex items-center gap-3 mt-2 mb-2">
         <label
           htmlFor="db-minpts-slider"
-          className="text-[13px] text-ink-subtle dark:text-night-muted min-w-[50px]"
+          className="text-sm text-ink-subtle dark:text-night-muted min-w-[50px]"
         >
           minPts
         </label>
@@ -1304,7 +1304,7 @@ function Section3() {
           aria-valuetext={`minPts = ${minPts}`}
           className="flex-1"
         />
-        <span className="font-[family-name:var(--font-mono)] text-[13px] font-medium min-w-[36px] text-right text-ink dark:text-night-text">
+        <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[36px] text-right text-ink dark:text-night-text">
           {minPts}
         </span>
       </div>
@@ -1331,9 +1331,9 @@ function Section3() {
 // ======================================================================
 export function Clustering() {
   return (
-    <div>
+    <div className="mx-auto max-w-5xl px-6 sm:px-10 lg:px-12">
       {/* Title */}
-      <div className="text-center mb-12">
+      <div className="text-center mb-16">
         <p className="font-[family-name:var(--font-mono)] text-[13px] tracking-[0.3em] uppercase mb-4 text-peach dark:text-peach-dark">
           05/
         </p>
@@ -1349,16 +1349,14 @@ export function Clustering() {
       {/* Section 1 */}
       <Section1 />
 
-      <div className="relative py-8">
+      <div className="py-12 [&>div]:mb-0">
         <SectionDivider absolute={false} />
       </div>
 
-      {/* Section 2 — alternating bg */}
-      <div className="rounded-xl bg-cream-dark/50 dark:bg-night-card/40 px-4 sm:px-6 -mx-4 sm:-mx-6">
-        <Section2 />
-      </div>
+      {/* Section 2 */}
+      <Section2 />
 
-      <div className="relative py-8">
+      <div className="py-12 [&>div]:mb-0">
         <SectionDivider absolute={false} />
       </div>
 
