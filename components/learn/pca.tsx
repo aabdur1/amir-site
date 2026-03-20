@@ -928,7 +928,7 @@ function Section4() {
               value={w1}
               onChange={(e) => setW1(parseFloat(e.target.value) || 0)}
               className="w-full mt-1 px-2 py-1 rounded border border-cream-border dark:border-night-border
-                bg-cream dark:bg-night-base text-ink dark:text-night-text
+                bg-cream dark:bg-night text-ink dark:text-night-text
                 font-[family-name:var(--font-mono)] text-[13px]"
             />
           </div>
@@ -943,7 +943,7 @@ function Section4() {
               value={w2}
               onChange={(e) => setW2(parseFloat(e.target.value) || 0)}
               className="w-full mt-1 px-2 py-1 rounded border border-cream-border dark:border-night-border
-                bg-cream dark:bg-night-base text-ink dark:text-night-text
+                bg-cream dark:bg-night text-ink dark:text-night-text
                 font-[family-name:var(--font-mono)] text-[13px]"
             />
           </div>
@@ -967,7 +967,7 @@ function Section4() {
               value={x1}
               onChange={(e) => setX1(parseFloat(e.target.value) || 0)}
               className="w-full mt-1 px-2 py-1 rounded border border-cream-border dark:border-night-border
-                bg-cream dark:bg-night-base text-ink dark:text-night-text
+                bg-cream dark:bg-night text-ink dark:text-night-text
                 font-[family-name:var(--font-mono)] text-[13px]"
             />
           </div>
@@ -982,7 +982,7 @@ function Section4() {
               value={x2}
               onChange={(e) => setX2(parseFloat(e.target.value) || 0)}
               className="w-full mt-1 px-2 py-1 rounded border border-cream-border dark:border-night-border
-                bg-cream dark:bg-night-base text-ink dark:text-night-text
+                bg-cream dark:bg-night text-ink dark:text-night-text
                 font-[family-name:var(--font-mono)] text-[13px]"
             />
           </div>
@@ -990,7 +990,7 @@ function Section4() {
       </div>
 
       {/* Step-by-step computation */}
-      <div className="rounded-xl border border-cream-border dark:border-night-border bg-cream dark:bg-night-base p-4">
+      <div className="rounded-xl border border-cream-border dark:border-night-border bg-cream dark:bg-night p-4">
         <p className="text-[12px] font-medium text-ink dark:text-night-text mb-2">
           Step-by-step computation:
         </p>
@@ -1265,7 +1265,7 @@ function Section5() {
       </WarnBox>
 
       {/* Recipe formula card */}
-      <div className="mt-4 rounded-xl border border-cream-border dark:border-night-border bg-cream dark:bg-night-base p-4">
+      <div className="mt-4 rounded-xl border border-cream-border dark:border-night-border bg-cream dark:bg-night p-4">
         <p className="text-[14px] font-medium text-ink dark:text-night-text mb-2">
           PCs are recipes that blend all variables
         </p>
@@ -1370,7 +1370,7 @@ function Section5() {
       </div>
 
       {/* People cards */}
-      <div className="mt-4 rounded-xl border border-cream-border dark:border-night-border bg-cream dark:bg-night-base p-4">
+      <div className="mt-4 rounded-xl border border-cream-border dark:border-night-border bg-cream dark:bg-night p-4">
         <p className="text-[14px] font-medium text-ink dark:text-night-text mb-3">
           Three people, same data, different scores
         </p>
@@ -1407,7 +1407,7 @@ function Section5() {
       </div>
 
       {/* Contribution bars */}
-      <div className="mt-4 rounded-xl border border-cream-border dark:border-night-border bg-cream dark:bg-night-base p-4">
+      <div className="mt-4 rounded-xl border border-cream-border dark:border-night-border bg-cream dark:bg-night p-4">
         <p className="text-[14px] font-medium text-ink dark:text-night-text mb-3">
           What{"'"}s driving each score?
         </p>
@@ -1449,7 +1449,7 @@ function Section5() {
       </div>
 
       {/* Scatter plot */}
-      <div className="mt-4 rounded-xl border border-cream-border dark:border-night-border bg-cream dark:bg-night-base p-4">
+      <div className="mt-4 rounded-xl border border-cream-border dark:border-night-border bg-cream dark:bg-night p-4">
         <p className="text-[14px] font-medium text-ink dark:text-night-text mb-1">
           The PC axis in original variable space
         </p>

@@ -71,6 +71,7 @@ Order follows conceptual progression: foundational optimization → loss functio
 ### Artifact page navigation
 
 - **Top:** "← Back to Learn" text link
+- **Tab bar:** Horizontal row of pill links for all 6 artifacts below the back link. Current artifact highlighted with mauve accent. Horizontally scrollable on mobile with hidden scrollbar. Rendered in `page.tsx` as a server component (just links, no client state needed).
 - **Bottom:** Prev/next links with artifact titles. First artifact has no prev, last has no next. Links derived from the metadata array order.
 
 ## Index Page (`/learn`)
@@ -111,7 +112,7 @@ Former tabs become scrollable sections:
   - Interactive Canvas area + controls (sliders, buttons, toggles)
   - Insight/explanation text below or beside the Canvas
 - Scroll reveal on each section (staggered `fade-in-up`)
-- Alternating section backgrounds (transparent → `bg-cream-dark/50 dark:bg-night-card/40` → transparent)
+- No alternating section backgrounds — single background with diamond dividers between sections (alternating bg was removed because divider placement didn't align visually with bg transitions)
 - Wrapped in `<PageTransition>` (matching gallery and homepage convention)
 
 ### Canvas rendering

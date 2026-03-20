@@ -66,7 +66,8 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 
 **Utility classes:** `btn-lift` (hover lift with spring overshoot), `card-hover` (hover lift + elevated shadow). Spring easing: `cubic-bezier(0.34, 1.56, 0.64, 1)` for hover entry, `cubic-bezier(0.22, 1, 0.36, 1)` for settle-back.
 
-**CSS-based nav animations:** `.nav-wordmark::after` (mauve underline sweep), `.nav-gallery-pill::before` (sapphire fill sweep), `.hero-line` (gradient vertical line). All use CSS `transform: scaleX()` transitions.
+**CSS-based nav animations:** `.nav-wordmark::after` (mauve underline sweep), `.nav-gallery-pill::before` (sapphire fill sweep), `.nav-learn-pill::before` (mauve fill sweep), `.hero-line` (gradient vertical line). All use CSS `transform: scaleX()` transitions.
+- **Learn artifact tab bar.** Horizontal row of pill links on each `/learn/[slug]` page, rendered in `app/learn/[slug]/page.tsx` (server component). Shows all 6 artifacts, current one highlighted with mauve accent. Horizontally scrollable on mobile with hidden scrollbar (`scrollbar-none` utility).
 
 ## Mobile & Accessibility
 
