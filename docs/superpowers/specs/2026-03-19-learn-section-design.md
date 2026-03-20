@@ -29,8 +29,7 @@ app/learn/
   page.tsx                    # Index page — card grid of all 6 artifacts
   opengraph-image.tsx         # Branded OG image for /learn (Catppuccin Mocha, 1200x630)
   [slug]/
-    page.tsx                  # Dynamic route — resolves slug, renders artifact component
-    layout.tsx                # Shared layout: back link, scroll reveal, prev/next nav
+    page.tsx                  # Dynamic route — back link, artifact component, prev/next nav
 components/learn/
   learn-card.tsx              # Index page card (illustration + number + title + tags)
   learn-nav.tsx               # Prev/next navigation component
@@ -67,7 +66,7 @@ Order follows conceptual progression: foundational optimization → loss functio
 
 ### Nav integration
 
-"Learn" appears as a nav pill alongside "Gallery," styled with the same fill-sweep hover pattern but with a distinct accent color (mauve or peach). Nav order: **wordmark | Learn | Gallery**.
+"Learn" appears as a nav pill alongside "Gallery," styled with the same fill-sweep hover pattern using **mauve** accent (consistent with mauve's "structural" role in the design system — rules, underlines, active nav). Gallery keeps sapphire. Nav order: **wordmark | Learn | Gallery**.
 
 ### Artifact page navigation
 
@@ -95,26 +94,25 @@ Order follows conceptual progression: foundational optimization → loss functio
 - `card-hover` lift effect on hover
 - Scroll reveal with staggered `fade-in-up` animation
 - Each card links to `/learn/[slug]`
+- Entire page wrapped in `<PageTransition>` (matching gallery and homepage convention)
 
 ## Individual Artifact Pages
 
-### Layout (shared)
+### Layout & navigation
 
-Handled by `app/learn/[slug]/layout.tsx`:
-- Back link at top
-- Content area for the artifact component
-- Prev/next nav at bottom (via `learn-nav.tsx`)
+The back link and prev/next nav live inside `app/learn/[slug]/page.tsx`, not in a layout. This avoids the App Router layout persistence issue — layouts don't re-render when navigating between sibling dynamic routes, so prev/next links would show stale data in a layout. Instead, `page.tsx` renders the back link at top, the artifact component in the middle, and `<LearnNav>` at the bottom, all with fresh props from `generateStaticParams`.
 
 ### Artifact component structure
 
 Former tabs become scrollable sections:
-- **Page header:** mono label (e.g. `01/ GRADIENT DESCENT`), display font full title, brief description, mauve accent rule
+- **Page header:** mono label (e.g. `01/ GRADIENT DESCENT`), display font full title, brief description, mauve accent rule. Uses `SectionHeader` for the page-level heading only.
 - **Sections** separated by `SectionDivider` (diamond ornament), each with:
-  - Section subheading (DM Serif Display)
+  - Section subheading — plain `<h2>` or `<h3>` (DM Serif Display) with a unique ID (e.g. `id="gd-learning-rate"`). Parent `<section>` references this via `aria-labelledby`.
   - Interactive Canvas area + controls (sliders, buttons, toggles)
   - Insight/explanation text below or beside the Canvas
 - Scroll reveal on each section (staggered `fade-in-up`)
 - Alternating section backgrounds (transparent → `bg-cream-dark/50 dark:bg-night-card/40` → transparent)
+- Wrapped in `<PageTransition>` (matching gallery and homepage convention)
 
 ### Canvas rendering
 
@@ -124,12 +122,15 @@ Former tabs become scrollable sections:
 - Sliders and buttons are React-controlled (`useState`) styled with Catppuccin tokens
 - Animation loops via `requestAnimationFrame`, cleaned up in `useEffect` return
 - `prefers-reduced-motion` respected — static renders instead of animations
+- Slider controls use native `<input type="range">` (touch-friendly)
+- Canvas interactions use pointer events (`onPointerDown/Move/Up`) for cross-device compatibility
 
 ### Dark mode
 
 - Uses `.dark` class toggle (not `prefers-color-scheme` like the originals)
 - Canvas colors swap between Latte and Mocha palettes
-- Colors read from CSS custom properties or a theme-aware hook
+- Canvas colors read from CSS custom properties via `getComputedStyle(document.documentElement).getPropertyValue('--color-mauve')` etc., since Catppuccin tokens are already defined as CSS variables in `globals.css`
+- Theme changes detected via `MutationObserver` on the `<html>` class list, triggering Canvas re-draw with updated colors
 
 ### Accessibility
 
@@ -147,7 +148,7 @@ Former tabs become scrollable sections:
 Add to `app/sitemap.ts`:
 - `/learn` — priority 0.8, changeFrequency monthly
 - Each `/learn/[slug]` — priority 0.7, changeFrequency monthly
-- Slugs derived from the metadata array
+- Slugs derived from the metadata array — import `ARTIFACTS` from `lib/learn/artifacts.ts` and `.map()` to generate entries, appended to the existing hardcoded array
 
 ### Page metadata
 
@@ -157,7 +158,7 @@ Add to `app/sitemap.ts`:
 ### OG images
 
 - `app/learn/opengraph-image.tsx` — branded 1200x630 Catppuccin Mocha image with "Data Mining Concepts" + "Interactive Explainers"
-- Individual artifact pages inherit the learn OG image (no per-artifact OG images in initial scope)
+- `app/learn/[slug]/opengraph-image.tsx` — re-exports or duplicates the learn OG image so artifact pages get it via auto-injection (Next.js `opengraph-image.tsx` is scoped to its route segment — without this file, artifact pages would fall back to the root OG image instead of the learn one)
 
 ### JSON-LD: LearningResource schema
 
@@ -170,6 +171,22 @@ Each artifact page includes a `LearningResource` JSON-LD object generated from a
 - `url` — canonical URL
 
 This auto-generates from the metadata array, so future artifacts get it for free.
+
+### Static generation
+
+`app/learn/[slug]/page.tsx` exports `generateStaticParams()` returning all slugs from the metadata array. This ensures all artifact pages are statically generated at build time (important for Netlify deployment performance).
+
+### Security headers
+
+No CSP changes needed. The source artifacts use only Canvas 2D drawing and standard DOM APIs — no eval, dynamic code execution, blob workers, or dynamic script injection. The existing `script-src 'self' 'sha256-...'` policy in `netlify.toml` is sufficient.
+
+### Client/server component boundaries
+
+- `app/learn/page.tsx` — server component (index page, renders card grid)
+- `app/learn/[slug]/page.tsx` — server component (resolves slug, imports client artifact component)
+- `components/learn/learn-card.tsx` — client component (`"use client"`, uses `useScrollReveal`)
+- `components/learn/learn-nav.tsx` — server component (receives prev/next data as props)
+- All 6 artifact components — client components (`"use client"`, heavy use of `useState`, `useEffect`, `useRef`, Canvas APIs)
 
 ## Out of Scope
 
