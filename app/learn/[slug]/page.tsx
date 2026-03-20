@@ -98,35 +98,37 @@ export default async function LearnArtifactPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <article className="mx-auto max-w-5xl px-6 sm:px-10 lg:px-12 pt-12 pb-24">
+      <article className="pt-12 pb-24">
         {/* Back link */}
-        <Link
-          href="/learn"
-          className="inline-flex items-center gap-2 text-ink-subtle dark:text-night-muted
-            hover:text-mauve dark:hover:text-mauve-dark transition-colors mb-10
-            font-[family-name:var(--font-mono)] text-[12px] tracking-wide uppercase"
-        >
-          <svg
-            aria-hidden="true"
-            focusable="false"
-            viewBox="0 0 12 12"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-3 w-3"
+        <div className="mx-auto max-w-5xl px-6 sm:px-10 lg:px-12">
+          <Link
+            href="/learn"
+            className="inline-flex items-center gap-2 text-ink-subtle dark:text-night-muted
+              hover:text-mauve dark:hover:text-mauve-dark transition-colors mb-10
+              font-[family-name:var(--font-mono)] text-[12px] tracking-wide uppercase"
           >
-            <path d="M10 6H2M5 9L2 6l3-3" />
-          </svg>
-          Back to Learn
-        </Link>
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              viewBox="0 0 12 12"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-3 w-3"
+            >
+              <path d="M10 6H2M5 9L2 6l3-3" />
+            </svg>
+            Back to Learn
+          </Link>
+        </div>
 
-        {/* Artifact content */}
+        {/* Artifact content — full-width, component manages its own max-w */}
         {ArtifactComponent ? (
           <ArtifactComponent />
         ) : (
-          <div className="text-center py-20 text-ink-subtle dark:text-night-muted">
+          <div className="mx-auto max-w-5xl px-6 sm:px-10 lg:px-12 text-center py-20 text-ink-subtle dark:text-night-muted">
             <p className="font-[family-name:var(--font-mono)] text-[13px] tracking-[0.3em] uppercase mb-4 text-peach dark:text-peach-dark">
               {artifact.number}/
             </p>
@@ -139,7 +141,9 @@ export default async function LearnArtifactPage({
         )}
 
         {/* Prev/Next navigation */}
-        <LearnNav prev={prev} next={next} />
+        <div className="mx-auto max-w-5xl px-6 sm:px-10 lg:px-12">
+          <LearnNav prev={prev} next={next} />
+        </div>
       </article>
     </PageTransition>
   )

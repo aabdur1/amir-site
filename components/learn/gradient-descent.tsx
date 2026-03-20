@@ -1454,11 +1454,13 @@ function Section4() {
 // ======================================================================
 // MAIN EXPORT
 // ======================================================================
+const CONTENT_CONTAINER = "mx-auto max-w-5xl px-6 sm:px-10 lg:px-12"
+
 export function GradientDescent() {
   return (
-    <div className="-mx-6 sm:-mx-10 lg:-mx-12">
+    <div>
       {/* Title */}
-      <div className="text-center mb-16 px-6 sm:px-10 lg:px-12">
+      <div className={`${CONTENT_CONTAINER} text-center mb-16`}>
         <p className="font-[family-name:var(--font-mono)] text-[13px] tracking-[0.3em] uppercase mb-4 text-peach dark:text-peach-dark">
           01/
         </p>
@@ -1472,40 +1474,40 @@ export function GradientDescent() {
       </div>
 
       {/* Section 1 */}
-      <div className="px-6 sm:px-10 lg:px-12">
+      <div className={CONTENT_CONTAINER}>
         <Section1 />
       </div>
 
       {/* Divider */}
-      <div className="py-12 flex items-center justify-center [&>div]:mb-0">
+      <div className={`${CONTENT_CONTAINER} py-12 [&>div]:mb-0`}>
         <SectionDivider absolute={false} />
       </div>
 
       {/* Section 2 — full-width alternating bg */}
-      <div className="bg-cream-dark/50 dark:bg-night-card/40 py-2">
-        <div className="px-6 sm:px-10 lg:px-12">
+      <div className="bg-cream-dark/50 dark:bg-night-card/40">
+        <div className={CONTENT_CONTAINER}>
           <Section2 />
         </div>
       </div>
 
       {/* Divider */}
-      <div className="py-12 flex items-center justify-center [&>div]:mb-0">
+      <div className={`${CONTENT_CONTAINER} py-12 [&>div]:mb-0`}>
         <SectionDivider absolute={false} />
       </div>
 
       {/* Section 3 */}
-      <div className="px-6 sm:px-10 lg:px-12">
+      <div className={CONTENT_CONTAINER}>
         <Section3 />
       </div>
 
       {/* Divider */}
-      <div className="py-12 flex items-center justify-center [&>div]:mb-0">
+      <div className={`${CONTENT_CONTAINER} py-12 [&>div]:mb-0`}>
         <SectionDivider absolute={false} />
       </div>
 
       {/* Section 4 — full-width alternating bg */}
-      <div className="bg-cream-dark/50 dark:bg-night-card/40 py-2">
-        <div className="px-6 sm:px-10 lg:px-12">
+      <div className="bg-cream-dark/50 dark:bg-night-card/40">
+        <div className={CONTENT_CONTAINER}>
           <Section4 />
         </div>
       </div>
