@@ -10,7 +10,7 @@ import dynamic from 'next/dynamic'
 
 // Lazy-loaded artifact components — uncomment as each is built
 const GradientDescent = dynamic(() => import('@/components/learn/gradient-descent').then(m => ({ default: m.GradientDescent })))
-// const LogLossCrossEntropy = dynamic(() => import('@/components/learn/log-loss-cross-entropy').then(m => ({ default: m.LogLossCrossEntropy })))
+const LogLossCrossEntropy = dynamic(() => import('@/components/learn/log-loss-cross-entropy').then(m => ({ default: m.LogLossCrossEntropy })))
 // const PCA = dynamic(() => import('@/components/learn/pca').then(m => ({ default: m.PCA })))
 // const Regularization = dynamic(() => import('@/components/learn/regularization').then(m => ({ default: m.Regularization })))
 // const Clustering = dynamic(() => import('@/components/learn/clustering').then(m => ({ default: m.Clustering })))
@@ -56,7 +56,7 @@ export async function generateMetadata({
 // Using next/dynamic ensures each artifact is code-split per route
 const ARTIFACT_COMPONENTS: Record<string, React.ComponentType> = {
   'gradient-descent': GradientDescent,
-  // 'log-loss-cross-entropy': LogLossCrossEntropy,
+  'log-loss-cross-entropy': LogLossCrossEntropy,
   // 'pca': PCA,
   // 'regularization': Regularization,
   // 'clustering': Clustering,
