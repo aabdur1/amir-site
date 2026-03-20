@@ -193,6 +193,15 @@ h1, h2 {
   animation: moon-glow 0.6s ease-in-out;
 }
 
+/* Scrollbar hide utility */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 /* Interaction utilities */
 .btn-lift {
   transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 200ms cubic-bezier(0.22, 1, 0.36, 1);

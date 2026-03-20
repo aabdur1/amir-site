@@ -124,6 +124,25 @@ export default async function LearnArtifactPage({
           </Link>
         </div>
 
+        {/* Artifact tab bar */}
+        <nav aria-label="All explainers" className="mx-auto max-w-5xl px-6 sm:px-10 lg:px-12 mb-10">
+          <div className="flex gap-2 overflow-x-auto pb-2 -mb-2 scrollbar-none">
+            {ARTIFACTS.map((a) => (
+              <Link
+                key={a.slug}
+                href={`/learn/${a.slug}`}
+                className={`shrink-0 px-3.5 py-1.5 rounded-full text-[13px] font-[family-name:var(--font-mono)] tracking-wide border transition-colors ${
+                  a.slug === slug
+                    ? 'bg-mauve/10 dark:bg-mauve-dark/10 border-mauve/40 dark:border-mauve-dark/40 text-mauve dark:text-mauve-dark'
+                    : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:border-mauve/40 dark:hover:border-mauve-dark/40 hover:text-ink dark:hover:text-night-text'
+                }`}
+              >
+                {a.shortTitle}
+              </Link>
+            ))}
+          </div>
+        </nav>
+
         {/* Artifact content — full-width, component manages its own max-w */}
         {ArtifactComponent ? (
           <ArtifactComponent />
