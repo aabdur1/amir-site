@@ -1454,13 +1454,11 @@ function Section4() {
 // ======================================================================
 // MAIN EXPORT
 // ======================================================================
-const CONTENT_CONTAINER = "mx-auto max-w-5xl px-6 sm:px-10 lg:px-12"
-
 export function GradientDescent() {
   return (
-    <div>
+    <div className="mx-auto max-w-5xl px-6 sm:px-10 lg:px-12">
       {/* Title */}
-      <div className={`${CONTENT_CONTAINER} text-center mb-16`}>
+      <div className="text-center mb-16">
         <p className="font-[family-name:var(--font-mono)] text-[13px] tracking-[0.3em] uppercase mb-4 text-peach dark:text-peach-dark">
           01/
         </p>
@@ -1473,44 +1471,25 @@ export function GradientDescent() {
         <div className="mt-4 h-px w-16 mx-auto bg-mauve dark:bg-mauve-dark" />
       </div>
 
-      {/* Section 1 */}
-      <div className={CONTENT_CONTAINER}>
-        <Section1 />
-      </div>
+      <Section1 />
 
-      {/* Divider */}
-      <div className={`${CONTENT_CONTAINER} py-12 [&>div]:mb-0`}>
+      <div className="py-12 [&>div]:mb-0">
         <SectionDivider absolute={false} />
       </div>
 
-      {/* Section 2 — full-width alternating bg */}
-      <div className="bg-cream-dark/50 dark:bg-night-card/40">
-        <div className={CONTENT_CONTAINER}>
-          <Section2 />
-        </div>
-      </div>
+      <Section2 />
 
-      {/* Divider */}
-      <div className={`${CONTENT_CONTAINER} py-12 [&>div]:mb-0`}>
+      <div className="py-12 [&>div]:mb-0">
         <SectionDivider absolute={false} />
       </div>
 
-      {/* Section 3 */}
-      <div className={CONTENT_CONTAINER}>
-        <Section3 />
-      </div>
+      <Section3 />
 
-      {/* Divider */}
-      <div className={`${CONTENT_CONTAINER} py-12 [&>div]:mb-0`}>
+      <div className="py-12 [&>div]:mb-0">
         <SectionDivider absolute={false} />
       </div>
 
-      {/* Section 4 — full-width alternating bg */}
-      <div className="bg-cream-dark/50 dark:bg-night-card/40">
-        <div className={CONTENT_CONTAINER}>
-          <Section4 />
-        </div>
-      </div>
+      <Section4 />
     </div>
   )
 }
