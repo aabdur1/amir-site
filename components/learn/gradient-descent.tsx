@@ -66,10 +66,10 @@ function setupCanvas(canvas: HTMLCanvasElement, height: number): { ctx: CanvasRe
 // --- Shared sub-components ---
 function MetricCard({ label, value, colorClass }: { label: string; value: string; colorClass?: string }) {
   return (
-    <div className="flex-1 min-w-[80px] rounded-lg bg-cream-dark/60 dark:bg-night-card/60 px-3 py-2">
-      <div className="text-[10px] text-ink-subtle dark:text-night-muted">{label}</div>
+    <div className="flex-1 min-w-[90px] rounded-lg bg-cream-dark/60 dark:bg-night-card/60 px-4 py-2.5">
+      <div className="text-[13px] text-ink-subtle dark:text-night-muted">{label}</div>
       <div
-        className={`font-[family-name:var(--font-mono)] text-[15px] font-medium mt-0.5 ${colorClass ?? 'text-ink dark:text-night-text'}`}
+        className={`font-[family-name:var(--font-mono)] text-base font-medium mt-0.5 ${colorClass ?? 'text-ink dark:text-night-text'}`}
       >
         {value}
       </div>
@@ -88,7 +88,7 @@ const METRIC_COLORS = {
 
 function InsightBox({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mt-3 rounded-lg bg-sapphire/10 dark:bg-sapphire-dark/10 px-3 py-2.5 text-[12px] leading-relaxed text-sapphire dark:text-sapphire-dark">
+    <div className="mt-4 rounded-lg bg-sapphire/10 dark:bg-sapphire-dark/10 px-4 py-3 text-sm leading-relaxed text-sapphire dark:text-sapphire-dark">
       {children}
     </div>
   )
@@ -257,7 +257,7 @@ function Section1() {
     insight = (
       <>
         <strong>Gradient = +{g.toFixed(1)}</strong> — slope goes UP to the right. Negative gradient points LEFT.{' '}
-        <code className="font-[family-name:var(--font-mono)] text-[11px]">
+        <code className="font-[family-name:var(--font-mono)] text-[13px]">
           w_new = {wPos.toFixed(1)} {'\u2212'} {'\u03B7'}{'\u00D7'}{g.toFixed(1)}
         </code>{' '}
         moves w left. That{"'"}s downhill.
@@ -267,7 +267,7 @@ function Section1() {
     insight = (
       <>
         <strong>Gradient = {g.toFixed(1)}</strong> — slope goes UP to the left. Negative gradient points RIGHT.{' '}
-        <code className="font-[family-name:var(--font-mono)] text-[11px]">
+        <code className="font-[family-name:var(--font-mono)] text-[13px]">
           w_new = {wPos.toFixed(1)} {'\u2212'} {'\u03B7'}{'\u00D7'}({g.toFixed(1)})
         </code>{' '}
         moves w right. Subtracting a negative = adding. That{"'"}s downhill.
@@ -279,15 +279,15 @@ function Section1() {
     <section
       ref={sectionRef as React.RefObject<HTMLElement>}
       aria-labelledby="gd-why-gradients"
-      className={`transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`py-8 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       <h2
         id="gd-why-gradients"
-        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-2"
+        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-3"
       >
         Why Gradients Point Downhill
       </h2>
-      <p className="text-[13px] text-ink-subtle dark:text-night-muted mb-4">
+      <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
         This is a loss curve — height = error. Drag the slider to place yourself on the curve and see what the gradient tells you.
       </p>
 
@@ -302,7 +302,7 @@ function Section1() {
       <div className="flex items-center gap-3 mt-2 mb-2">
         <label
           htmlFor="w-slider"
-          className="text-[13px] text-ink-subtle dark:text-night-muted min-w-[90px]"
+          className="text-sm text-ink-subtle dark:text-night-muted min-w-[90px]"
         >
           Your position (w)
         </label>
@@ -317,7 +317,7 @@ function Section1() {
           aria-valuetext={`w = ${wPos.toFixed(1)}`}
           className="flex-1"
         />
-        <span className="font-[family-name:var(--font-mono)] text-[13px] font-medium min-w-[44px] text-right text-ink dark:text-night-text">
+        <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[44px] text-right text-ink dark:text-night-text">
           {wPos.toFixed(1)}
         </span>
       </div>
@@ -494,11 +494,11 @@ function Section2() {
     >
       <h2
         id="gd-learning-rate"
-        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-2"
+        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-3"
       >
         Learning Rate
       </h2>
-      <p className="text-[13px] text-ink-subtle dark:text-night-muted mb-4">
+      <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
         Watch gradient descent step by step. Adjust {'\u03B7'} to see overshooting vs slow convergence.
       </p>
 
@@ -513,7 +513,7 @@ function Section2() {
       <div className="flex items-center gap-3 mt-2 mb-2">
         <label
           htmlFor="eta-slider"
-          className="text-[13px] text-ink-subtle dark:text-night-muted min-w-[90px]"
+          className="text-sm text-ink-subtle dark:text-night-muted min-w-[90px]"
         >
           Learning rate ({'\u03B7'})
         </label>
@@ -528,7 +528,7 @@ function Section2() {
           aria-valuetext={`eta = ${eta.toFixed(2)}`}
           className="flex-1"
         />
-        <span className="font-[family-name:var(--font-mono)] text-[13px] font-medium min-w-[44px] text-right text-ink dark:text-night-text">
+        <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[44px] text-right text-ink dark:text-night-text">
           {eta.toFixed(2)}
         </span>
       </div>
@@ -537,7 +537,7 @@ function Section2() {
         <button
           type="button"
           onClick={step}
-          className="px-4 py-1.5 rounded-lg text-[12px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
+          className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
             bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark
             hover:bg-sapphire/20 dark:hover:bg-sapphire-dark/20 transition-colors"
         >
@@ -546,7 +546,7 @@ function Section2() {
         <button
           type="button"
           onClick={() => stepN(5)}
-          className="px-4 py-1.5 rounded-lg text-[12px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
+          className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
             bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark
             hover:bg-sapphire/20 dark:hover:bg-sapphire-dark/20 transition-colors"
         >
@@ -555,7 +555,7 @@ function Section2() {
         <button
           type="button"
           onClick={() => stepN(20)}
-          className="px-4 py-1.5 rounded-lg text-[12px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
+          className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
             bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark
             hover:bg-sapphire/20 dark:hover:bg-sapphire-dark/20 transition-colors"
         >
@@ -564,7 +564,7 @@ function Section2() {
         <button
           type="button"
           onClick={reset}
-          className="px-4 py-1.5 rounded-lg text-[12px] font-medium border border-cream-border dark:border-night-border
+          className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-cream-border dark:border-night-border
             text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60 transition-colors"
         >
           Reset
@@ -877,11 +877,11 @@ function Section3() {
     >
       <h2
         id="gd-batch-variants"
-        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-2"
+        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-3"
       >
         Batch vs SGD vs Mini-batch
       </h2>
-      <p className="text-[13px] text-ink-subtle dark:text-night-muted mb-4">
+      <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
         Select a variant and run it. Each starts from the same point (top-right) heading to the minimum (center).
         Run them one at a time to clearly see the difference.
       </p>
@@ -901,7 +901,7 @@ function Section3() {
               key={v.key}
               type="button"
               onClick={() => setActive(v.key)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium border transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
                 isActive
                   ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
                   : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
@@ -909,7 +909,7 @@ function Section3() {
             >
               <span className={`w-2.5 h-2.5 rounded-full ${colorMap[v.key]} ${hasPath ? 'opacity-100' : 'opacity-30'}`} />
               {v.label}
-              <span className="text-[10px] text-ink-faint dark:text-night-muted">{v.desc}</span>
+              <span className="text-[13px] text-ink-faint dark:text-night-muted">{v.desc}</span>
             </button>
           )
         })}
@@ -927,7 +927,7 @@ function Section3() {
         <button
           type="button"
           onClick={runSelected}
-          className="px-4 py-1.5 rounded-lg text-[12px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
+          className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
             bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark
             hover:bg-sapphire/20 dark:hover:bg-sapphire-dark/20 transition-colors"
         >
@@ -936,7 +936,7 @@ function Section3() {
         <button
           type="button"
           onClick={runAll}
-          className="px-4 py-1.5 rounded-lg text-[12px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
+          className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
             bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark
             hover:bg-sapphire/20 dark:hover:bg-sapphire-dark/20 transition-colors"
         >
@@ -945,7 +945,7 @@ function Section3() {
         <button
           type="button"
           onClick={clearAll}
-          className="px-4 py-1.5 rounded-lg text-[12px] font-medium border border-cream-border dark:border-night-border
+          className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-cream-border dark:border-night-border
             text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60 transition-colors"
         >
           Clear all
@@ -1312,11 +1312,11 @@ function Section4() {
     >
       <h2
         id="gd-vs-boosting"
-        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-2"
+        className="font-[family-name:var(--font-display)] text-2xl sm:text-3xl text-ink dark:text-night-text mb-3"
       >
         GD vs Gradient Boosting
       </h2>
-      <p className="text-[13px] text-ink-subtle dark:text-night-muted mb-4">
+      <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
         Same algorithm, different spaces. Toggle between modes — the controls, step mechanics, and learning rate are identical.
         Watch how each {'\u201C'}step{'\u201D'} works.
       </p>
@@ -1326,7 +1326,7 @@ function Section4() {
         <button
           type="button"
           onClick={() => switchMode('gd')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium border transition-colors ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
             mode === 'gd'
               ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
               : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
@@ -1338,7 +1338,7 @@ function Section4() {
         <button
           type="button"
           onClick={() => switchMode('gb')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium border transition-colors ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
             mode === 'gb'
               ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
               : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
@@ -1356,7 +1356,7 @@ function Section4() {
             <span className="font-[family-name:var(--font-mono)] text-[13px] text-sapphire dark:text-sapphire-dark">
               w<sub>new</sub> = w<sub>old</sub> {'\u2212'} {'\u03B7'} {'\u00D7'} gradient
             </span>
-            <span className="text-[12px] text-ink-faint dark:text-night-muted">
+            <span className="text-[13px] text-ink-faint dark:text-night-muted">
               Moving a parameter downhill on the loss curve
             </span>
           </>
@@ -1365,7 +1365,7 @@ function Section4() {
             <span className="font-[family-name:var(--font-mono)] text-[13px] text-green-600 dark:text-green-400">
               F<sub>new</sub> = F<sub>old</sub> + {'\u03B7'} {'\u00D7'} tree(residuals)
             </span>
-            <span className="text-[12px] text-ink-faint dark:text-night-muted">
+            <span className="text-[13px] text-ink-faint dark:text-night-muted">
               Adding a tree that corrects the current errors
             </span>
           </>
@@ -1387,7 +1387,7 @@ function Section4() {
       <div className="flex items-center gap-3 mt-2 mb-2">
         <label
           htmlFor="t4-eta-slider"
-          className="text-[13px] text-ink-subtle dark:text-night-muted min-w-[90px]"
+          className="text-sm text-ink-subtle dark:text-night-muted min-w-[90px]"
         >
           Learning rate ({'\u03B7'})
         </label>
@@ -1402,7 +1402,7 @@ function Section4() {
           aria-valuetext={`eta = ${eta.toFixed(2)}`}
           className="flex-1"
         />
-        <span className="font-[family-name:var(--font-mono)] text-[13px] font-medium min-w-[44px] text-right text-ink dark:text-night-text">
+        <span className="font-[family-name:var(--font-mono)] text-sm font-medium min-w-[44px] text-right text-ink dark:text-night-text">
           {eta.toFixed(2)}
         </span>
       </div>
@@ -1411,7 +1411,7 @@ function Section4() {
         <button
           type="button"
           onClick={step}
-          className="px-4 py-1.5 rounded-lg text-[12px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
+          className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
             bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark
             hover:bg-sapphire/20 dark:hover:bg-sapphire-dark/20 transition-colors"
         >
@@ -1420,7 +1420,7 @@ function Section4() {
         <button
           type="button"
           onClick={() => stepN(5)}
-          className="px-4 py-1.5 rounded-lg text-[12px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
+          className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
             bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark
             hover:bg-sapphire/20 dark:hover:bg-sapphire-dark/20 transition-colors"
         >
@@ -1429,7 +1429,7 @@ function Section4() {
         <button
           type="button"
           onClick={() => stepN(15)}
-          className="px-4 py-1.5 rounded-lg text-[12px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
+          className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
             bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark
             hover:bg-sapphire/20 dark:hover:bg-sapphire-dark/20 transition-colors"
         >
@@ -1438,7 +1438,7 @@ function Section4() {
         <button
           type="button"
           onClick={reset}
-          className="px-4 py-1.5 rounded-lg text-[12px] font-medium border border-cream-border dark:border-night-border
+          className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-cream-border dark:border-night-border
             text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60 transition-colors"
         >
           Reset
@@ -1456,47 +1456,58 @@ function Section4() {
 // ======================================================================
 export function GradientDescent() {
   return (
-    <div>
+    <div className="-mx-6 sm:-mx-10 lg:-mx-12">
       {/* Title */}
-      <div className="text-center mb-12">
+      <div className="text-center mb-16 px-6 sm:px-10 lg:px-12">
         <p className="font-[family-name:var(--font-mono)] text-[13px] tracking-[0.3em] uppercase mb-4 text-peach dark:text-peach-dark">
           01/
         </p>
         <h1 className="font-[family-name:var(--font-display)] text-3xl sm:text-4xl text-ink dark:text-night-text mb-4">
           Gradient Descent
         </h1>
-        <p className="text-[15px] text-ink-subtle dark:text-night-muted">
+        <p className="text-base text-ink-subtle dark:text-night-muted">
           4 concepts {'\u00B7'} Drag sliders and run simulations
         </p>
         <div className="mt-4 h-px w-16 mx-auto bg-mauve dark:bg-mauve-dark" />
       </div>
 
       {/* Section 1 */}
-      <Section1 />
+      <div className="px-6 sm:px-10 lg:px-12">
+        <Section1 />
+      </div>
 
-      <div className="relative py-8">
+      {/* Divider */}
+      <div className="py-12 flex items-center justify-center [&>div]:mb-0">
         <SectionDivider absolute={false} />
       </div>
 
-      {/* Section 2 — alternating bg */}
-      <div className="rounded-xl bg-cream-dark/50 dark:bg-night-card/40 px-4 sm:px-6 -mx-4 sm:-mx-6">
-        <Section2 />
+      {/* Section 2 — full-width alternating bg */}
+      <div className="bg-cream-dark/50 dark:bg-night-card/40 py-2">
+        <div className="px-6 sm:px-10 lg:px-12">
+          <Section2 />
+        </div>
       </div>
 
-      <div className="relative py-8">
+      {/* Divider */}
+      <div className="py-12 flex items-center justify-center [&>div]:mb-0">
         <SectionDivider absolute={false} />
       </div>
 
       {/* Section 3 */}
-      <Section3 />
+      <div className="px-6 sm:px-10 lg:px-12">
+        <Section3 />
+      </div>
 
-      <div className="relative py-8">
+      {/* Divider */}
+      <div className="py-12 flex items-center justify-center [&>div]:mb-0">
         <SectionDivider absolute={false} />
       </div>
 
-      {/* Section 4 — alternating bg */}
-      <div className="rounded-xl bg-cream-dark/50 dark:bg-night-card/40 px-4 sm:px-6 -mx-4 sm:-mx-6">
-        <Section4 />
+      {/* Section 4 — full-width alternating bg */}
+      <div className="bg-cream-dark/50 dark:bg-night-card/40 py-2">
+        <div className="px-6 sm:px-10 lg:px-12">
+          <Section4 />
+        </div>
       </div>
     </div>
   )
