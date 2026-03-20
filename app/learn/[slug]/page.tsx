@@ -6,6 +6,7 @@ import { LearnNav } from '@/components/learn/learn-nav'
 import { PageTransition } from '@/components/page-transition'
 import Link from 'next/link'
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import dynamic from 'next/dynamic'
 
 // Lazy-loaded artifact components — uncomment as each is built
