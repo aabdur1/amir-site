@@ -132,12 +132,12 @@ components/
   learn/
     learn-card.tsx        # Index page card (illustration + number + title + accent pills)
     learn-nav.tsx         # Prev/next navigation between artifacts (server component)
-    gradient-descent.tsx  # 01/ Gradient Descent (4 Canvas sections)
-    log-loss-cross-entropy.tsx # 02/ Log Loss & Cross-Entropy (4 Canvas sections)
-    pca.tsx               # 03/ PCA / Dimensionality Reduction (5 Canvas sections)
-    regularization.tsx    # 04/ Regularization / Bias-Variance (2 Canvas sections)
-    clustering.tsx        # 05/ Clustering: K-means, Hierarchical, DBSCAN (3 Canvas sections)
-    shap.tsx              # 06/ SHAP / Interpretability (4 Canvas sections)
+    gradient-descent.tsx  # 01/ Gradient Descent (4 sections: tangent line + drag, sparkline + compare, noise slider + smoothness, side-by-side GD vs GB)
+    log-loss-cross-entropy.tsx # 02/ Log Loss & Cross-Entropy (4 sections: QQ + Shapiro-Wilk, sweep + multi-sample, info gain calc, hover-linked chain)
+    pca.tsx               # 03/ PCA (5 sections: reconstruction + sweep, Kaiser criterion, before/after scatter, projection canvas, preset weights)
+    regularization.tsx    # 04/ Regularization (2 sections: side-by-side Ridge/Lasso + sweep, bias-variance decomposition + canvas drag, linked lambda)
+    clustering.tsx        # 05/ Clustering (3 sections: centroid trail + click-to-place, linkage toggle, interactive eps + cluster sparkline)
+    shap.tsx              # 06/ SHAP (4 sections: feature value waterfall, click-highlight + correlation arrows, cumulative importance, subset lattice)
 lib/
   hooks.ts                # Shared hooks: useHydrated(), useScrollReveal()
   styles.ts               # Shared accent style map (ACCENT_STYLES)
