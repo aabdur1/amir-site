@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "command": "file=\"$CLAUDE_FILE_PATHS\"; if [ -n \"$file\" ] && echo \"$file\" | grep -qE '\\.(tsx?|jsx?|css)$'; then npx eslint --no-error-on-unmatched-pattern \"$file\" 2>/dev/null | grep -v 'interactive-headshot' | grep -v '0 problems' | head -5 || true; fi"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit",
+        "command": "file=\"$CLAUDE_FILE_PATHS\"; if echo \"$file\" | grep -q 'layout.tsx'; then echo '⚠️  Editing layout.tsx — if you change the inline dark-mode script, update the CSP SHA-256 hash in netlify.toml'; fi; if echo \"$file\" | grep -q 'netlify.toml'; then echo '⚠️  Editing netlify.toml — ensure CSP hash still matches the inline script in layout.tsx'; fi"
+      }
+    ]
+  }
+}
