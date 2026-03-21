@@ -124,14 +124,10 @@ export default function Nav() {
     }
 
     const pill = activeRef.current
-    const container = indicatorContainerRef.current
-    if (!container) return
-    const containerRect = container.getBoundingClientRect()
-    const pillRect = pill.getBoundingClientRect()
 
     indicator.style.opacity = '1'
-    indicator.style.width = `${pillRect.width}px`
-    indicator.style.transform = `translateX(${pillRect.left - containerRect.left}px)`
+    indicator.style.width = `${pill.offsetWidth}px`
+    indicator.style.transform = `translateX(${pill.offsetLeft}px)`
 
     // Color: sapphire for Gallery, mauve for Learn
     const accent = isGallery ? 'var(--color-sapphire)' : 'var(--color-mauve)'
