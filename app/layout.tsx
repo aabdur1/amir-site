@@ -103,8 +103,8 @@ export default function RootLayout({
         </a>
         <ScrollProgress />
         <Nav />
-        <main id="main-content" className="relative z-[35]">{children}</main>
-        <div className="relative z-[35]"><Footer /></div>
+        <main id="main-content">{children}</main>
+        <Footer />
       </body>
     </html>
   );
