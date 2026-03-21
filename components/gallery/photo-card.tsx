@@ -89,7 +89,7 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
       type="button"
       onClick={onClick}
       aria-label={`Open photo taken on ${photo.date} with ${photo.camera}`}
-      className={`mb-4 break-inside-avoid cursor-zoom-in rounded-lg text-left w-full ${
+      className={`mb-4 break-inside-avoid cursor-zoom-in rounded-lg text-left w-full relative z-[35] ${
         entryDone
           ? 'group transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]'
           : ''
