@@ -118,26 +118,33 @@ export default function Nav() {
     const activeRef = isLearn ? learnPillRef : isGallery ? galleryPillRef : null
 
     if (!activeRef?.current) {
-      // No active pill (homepage) — hide indicator
       indicator.style.opacity = '0'
       return
     }
 
     const pill = activeRef.current
 
-    indicator.style.opacity = '1'
-    indicator.style.width = `${pill.offsetWidth}px`
-    indicator.style.transform = `translateX(${pill.offsetLeft}px)`
-
     // Color: sapphire for Gallery, mauve for Learn
     const accent = isGallery ? 'var(--color-sapphire)' : 'var(--color-mauve)'
     indicator.style.backgroundColor = `color-mix(in srgb, ${accent} 12%, transparent)`
     indicator.style.borderColor = `color-mix(in srgb, ${accent} 40%, transparent)`
 
-    // After first positioning, enable transitions
-    if (!indicatorMounted) {
-      requestAnimationFrame(() => setIndicatorMounted(true))
+    // Delay measurement — pill arrow animates in via transition-all duration-300,
+    // so offsetWidth/offsetLeft are unstable until the transition settles
+    const measure = () => {
+      indicator.style.opacity = '1'
+      indicator.style.width = `${pill.offsetWidth}px`
+      indicator.style.transform = `translateX(${pill.offsetLeft}px)`
     }
+
+    // Measure after transitions settle
+    const timerId = setTimeout(measure, 320)
+
+    if (!indicatorMounted) {
+      setTimeout(() => setIndicatorMounted(true), 350)
+    }
+
+    return () => clearTimeout(timerId)
   }, [pathname, isLearn, isGallery, indicatorMounted])
 
   return (
