@@ -78,10 +78,14 @@ function CountUp({ target }: { target: number }) {
   return <span ref={spanRef}>0</span>
 }
 
+const BATCH_SIZE = 12
+
 export function MasonryGrid({ photos }: { photos: Photo[] }) {
   const [sortBy, setSortBy] = useState<SortBy>('date')
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
+  const [visibleCount, setVisibleCount] = useState(BATCH_SIZE)
+  const sentinelRef = useRef<HTMLDivElement>(null)
 
   const sortedPhotos = useMemo(() => [...photos].sort((a, b) => {
     if (sortBy === 'date') return b.date.localeCompare(a.date) // newest first
@@ -89,6 +93,29 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
     if (sortBy === 'lens') return a.lens.localeCompare(b.lens)
     return 0
   }), [photos, sortBy])
+
+  // Reset visible count when sort changes
+  useEffect(() => {
+    setVisibleCount(BATCH_SIZE)
+  }, [sortBy])
+
+  // Infinite scroll — load more when sentinel enters viewport
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisibleCount(prev => Math.min(prev + BATCH_SIZE, sortedPhotos.length))
+        }
+      },
+      { rootMargin: '400px' }
+    )
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [sortedPhotos.length])
+
+  const visiblePhotos = sortedPhotos.slice(0, visibleCount)
 
   const photoByUrl = useMemo(
     () => Object.fromEntries(sortedPhotos.map(p => [p.url, p])),
@@ -128,8 +155,8 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
 
       {/* Masonry grid */}
       <div className="px-4 sm:px-6 pb-16 max-w-7xl mx-auto">
-        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
-          {sortedPhotos.map((photo, i) => (
+        <div className="columns-1 sm:columns-2 xl:columns-3 gap-5">
+          {visiblePhotos.map((photo, i) => (
             <PhotoCard
               key={photo.url}
               photo={photo}
@@ -141,6 +168,10 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
             />
           ))}
         </div>
+        {/* Sentinel for infinite scroll */}
+        {visibleCount < sortedPhotos.length && (
+          <div ref={sentinelRef} className="h-px" />
+        )}
       </div>
 
       <Lightbox

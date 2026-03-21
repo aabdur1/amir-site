@@ -163,7 +163,7 @@ export default function Nav() {
             {/* Morphing indicator */}
             <div
               ref={indicatorRef}
-              className="absolute top-0 left-0 h-full rounded-full bg-mauve/8 dark:bg-mauve-dark/8 border border-mauve/25 dark:border-mauve-dark/25 pointer-events-none"
+              className="absolute top-0 left-0 h-full rounded-full bg-mauve/10 dark:bg-mauve-dark/10 border border-mauve/40 dark:border-mauve-dark/40 pointer-events-none"
               style={{
                 transition: indicatorMounted
                   ? 'transform 500ms var(--ease-spring), width 500ms var(--ease-spring), opacity 300ms ease'
@@ -180,7 +180,7 @@ export default function Nav() {
               px-4 py-2 rounded-full border overflow-hidden
               transition-all duration-300
               ${isLearn
-                ? "nav-learn-active border-mauve dark:border-mauve-dark text-ink dark:text-night-text"
+                ? "nav-learn-active border-transparent text-ink dark:text-night-text"
                 : "border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:border-mauve/60 dark:hover:border-mauve-dark/60 hover:text-ink dark:hover:text-night-text"
               }`}
           >
@@ -215,7 +215,7 @@ export default function Nav() {
               px-4 py-2 rounded-full border overflow-hidden
               transition-all duration-300
               ${isGallery
-                ? "nav-gallery-active border-mauve dark:border-mauve-dark text-ink dark:text-night-text"
+                ? "nav-gallery-active border-transparent text-ink dark:text-night-text"
                 : "border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:border-sapphire/60 dark:hover:border-sapphire-dark/60 hover:text-ink dark:hover:text-night-text"
               }`}
           >

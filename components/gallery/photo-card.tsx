@@ -91,7 +91,7 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
       aria-label={`Open photo taken on ${photo.date} with ${photo.camera}`}
       className={`mb-4 break-inside-avoid cursor-zoom-in rounded-lg text-left w-full ${
         entryDone
-          ? 'group transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] hover:scale-[1.02] hover:shadow-[0_8px_40px_rgba(0,0,0,0.12)]'
+          ? 'group transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]'
           : ''
       }`}
       style={
@@ -114,11 +114,10 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
             alt={`Photograph by Amir Abdur-Rahim, ${photo.date} — ${photo.camera}, ${photo.lens}`}
             width={800}
             height={600}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            quality={80}
+            unoptimized
             onLoad={() => setIsLoaded(true)}
-            className={`w-full h-auto transition-[filter,transform] duration-700 ease-out group-hover:scale-[1.04] group-hover:duration-[2s] ${
-              isLoaded ? 'blur-0 scale-100' : 'blur-[20px] scale-110'
+            className={`w-full h-auto transition-[filter] duration-700 ease-out ${
+              isLoaded ? 'blur-0' : 'blur-[20px]'
             }`}
           />
         </div>
