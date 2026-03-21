@@ -138,7 +138,7 @@ export function Hero() {
             {/* Name — editorial scale */}
             <h1
               ref={nameRef}
-              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-[0.9] tracking-tight
+              className="text-[length:var(--step-5)] leading-[0.9] tracking-tight
                 text-ink dark:text-night-text font-[family-name:var(--font-display)] will-change-transform"
             >
               <AnimatedText text="Amir" />
@@ -160,7 +160,7 @@ export function Hero() {
             {/* Tagline — editorial italic serif */}
             <p
               ref={taglineRef}
-              className="text-xl sm:text-2xl md:text-[1.7rem] mt-5 sm:mt-6 max-w-lg
+              className="text-[length:var(--step-1)] mt-5 sm:mt-6 max-w-lg
                 font-[family-name:var(--font-badge)] italic
                 text-ink-subtle dark:text-night-muted leading-relaxed"
               style={{
@@ -245,7 +245,7 @@ export function Hero() {
                       hover:text-ink dark:hover:text-night-text`}
                     style={{
                       opacity: 0,
-                      transition: "transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 250ms cubic-bezier(0.34, 1.56, 0.64, 1), border-color 300ms ease, color 200ms ease",
+                      transition: "transform 250ms var(--ease-spring), box-shadow 250ms var(--ease-spring), border-color 300ms ease, color 200ms ease",
                       ...(mounted
                         ? {
                             animation: `fade-in-up 0.5s ease-out ${1600 + i * 100}ms forwards`,

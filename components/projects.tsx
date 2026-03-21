@@ -138,7 +138,7 @@ export function Projects() {
             const sharedStyle = {
               opacity: 0,
               transition:
-                "transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 300ms cubic-bezier(0.34, 1.56, 0.64, 1), border-color 300ms ease",
+                "transform 300ms var(--ease-spring), box-shadow 300ms var(--ease-spring), border-color 300ms ease",
               ...(visible
                 ? {
                     animation: `fade-in-up 0.5s ease-out ${200 + i * 100}ms forwards`,

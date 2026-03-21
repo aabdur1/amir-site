@@ -16,7 +16,7 @@ export function SectionHeader({ number, label, title, visible }: SectionHeaderPr
         <span className="mx-2 text-cream-border dark:text-night-border">/</span>
         {label}
       </p>
-      <h2 id={`section-${number}`} className="text-3xl sm:text-4xl font-[family-name:var(--font-display)] text-ink dark:text-night-text">
+      <h2 id={`section-${number}`} className="text-[length:var(--step-3)] font-[family-name:var(--font-display)] text-ink dark:text-night-text">
         {title}
       </h2>
       <div

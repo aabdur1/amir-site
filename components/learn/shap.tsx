@@ -650,7 +650,6 @@ function Section3({ instances, regenerate }: { instances: Instance[]; regenerate
       cumSum += meanAbs[fi]
       const pct = cumSum / totalImportance
       const y = pad.t + row * rowH + rowH / 2
-      const x = W - pad.r - (1 - pct) * 50  // map 0-100% across right 50px area
       cumPoints.push({ x: pad.l + (pct) * pw, y, pct })
     })
 
@@ -687,7 +686,6 @@ function Section3({ instances, regenerate }: { instances: Instance[]; regenerate
       for (let r = 0; r <= row; r++) cs += meanAbs[order[r]]
       const pct = cs / totalImportance
       const cy = pad.t + ph * (1 - pct)
-      const cx = pad.l + ((meanAbs[fi] / maxMA) * pw) // x at end of bar
       // Center x on bar midpoint for the row
       const rowCx = pad.l + pw * 0.5 + (row / (FEATURES.length - 1)) * pw * 0.3
       return { x: Math.min(rowCx, rightX - 10), y: cy, pct }
@@ -962,7 +960,7 @@ function Section4() {
     if (!canvas) return
     const result = setupCanvas(canvas, 250)
     if (!result) return
-    const { ctx, W, H } = result
+    const { ctx, W } = result
     const c = getThemeColors()
 
     const featureColors: Record<string, string> = { A: c.red, B: c.blue, C: c.green }

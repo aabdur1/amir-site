@@ -58,6 +58,8 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <meta name="theme-color" content="#eff1f5" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#1e1e2e" media="(prefers-color-scheme: dark)" />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})()`,

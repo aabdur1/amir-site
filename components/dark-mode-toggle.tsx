@@ -23,6 +23,7 @@ export default function DarkModeToggle() {
   const dark = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const swapKeyRef = useRef(0);
   const iconRef = useRef<HTMLSpanElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     let stored: string | null = null;
@@ -43,30 +44,59 @@ export default function DarkModeToggle() {
 
   const toggle = useCallback(() => {
     const html = document.documentElement;
-    const next = !html.classList.contains("dark");
-    // Only animate theme transition if user hasn't opted out of motion
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!prefersReduced) {
-      html.classList.add("theme-transitioning");
-      setTimeout(() => html.classList.remove("theme-transitioning"), 350);
+
+    // Calculate toggle button position for clip-path origin
+    const btn = buttonRef.current;
+    if (btn) {
+      const rect = btn.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+      html.style.setProperty("--toggle-x", `${x}px`);
+      html.style.setProperty("--toggle-y", `${y}px`);
     }
-    html.classList.toggle("dark", next);
-    try {
-      localStorage.setItem("theme", next ? "dark" : "light");
-    } catch {
-      // localStorage may be full or unavailable
-    }
-    // Trigger the swap animation by bumping the key
-    swapKeyRef.current += 1;
-    if (iconRef.current) {
-      iconRef.current.classList.remove("dark-toggle-swap-enter");
-      void iconRef.current.offsetWidth;
-      iconRef.current.classList.add("dark-toggle-swap-enter");
+
+    const applyTheme = () => {
+      const next = !html.classList.contains("dark");
+      html.classList.toggle("dark", next);
+      try {
+        localStorage.setItem("theme", next ? "dark" : "light");
+      } catch {}
+      // Trigger icon swap animation
+      swapKeyRef.current += 1;
+      if (iconRef.current) {
+        iconRef.current.classList.remove("dark-toggle-swap-enter");
+        void iconRef.current.offsetWidth;
+        iconRef.current.classList.add("dark-toggle-swap-enter");
+      }
+    };
+
+    // Use View Transitions API if available and motion is OK
+    if (document.startViewTransition && !prefersReduced) {
+      try {
+        // Level 2: pass transition types for CSS scoping
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (document.startViewTransition as any)({
+          update: applyTheme,
+          types: ["theme-toggle"],
+        });
+      } catch {
+        // Level 1 fallback (no types support)
+        document.startViewTransition(applyTheme);
+      }
+    } else {
+      // No View Transitions: use flat crossfade
+      if (!prefersReduced) {
+        html.classList.add("theme-transitioning");
+        setTimeout(() => html.classList.remove("theme-transitioning"), 350);
+      }
+      applyTheme();
     }
   }, []);
 
   return (
     <button
+      ref={buttonRef}
       type="button"
       onClick={toggle}
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}

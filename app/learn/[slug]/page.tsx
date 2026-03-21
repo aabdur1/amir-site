@@ -3,18 +3,19 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { ARTIFACTS, getArtifact, getAdjacentArtifacts } from '@/lib/learn/artifacts'
 import { LearnNav } from '@/components/learn/learn-nav'
+import { ArtifactErrorBoundary } from '@/components/learn/artifact-error-boundary'
 import { PageTransition } from '@/components/page-transition'
 import Link from 'next/link'
 
 import dynamic from 'next/dynamic'
 
-// Lazy-loaded artifact components — uncomment as each is built
+// Lazy-loaded artifact components
 const GradientDescent = dynamic(() => import('@/components/learn/gradient-descent').then(m => ({ default: m.GradientDescent })))
-const LogLossCrossEntropy = dynamic(() => import('@/components/learn/log-loss-cross-entropy').then(m => ({ default: m.LogLossCrossEntropy })))
-const PCA = dynamic(() => import('@/components/learn/pca').then(m => ({ default: m.PCA })))
 const Regularization = dynamic(() => import('@/components/learn/regularization').then(m => ({ default: m.Regularization })))
-const Clustering = dynamic(() => import('@/components/learn/clustering').then(m => ({ default: m.Clustering })))
-const SHAP = dynamic(() => import('@/components/learn/shap').then(m => ({ default: m.SHAP })))
+
+// These 4 use Math.random() in useState initializers — loaded via client
+// wrapper with ssr: false to avoid hydration mismatches
+import { LogLossCrossEntropy, PCA, Clustering, SHAP } from '@/components/learn/dynamic-artifacts'
 
 export function generateStaticParams() {
   return ARTIFACTS.map((a) => ({ slug: a.slug }))
@@ -145,7 +146,9 @@ export default async function LearnArtifactPage({
 
         {/* Artifact content — full-width, component manages its own max-w */}
         {ArtifactComponent ? (
-          <ArtifactComponent />
+          <ArtifactErrorBoundary>
+            <ArtifactComponent />
+          </ArtifactErrorBoundary>
         ) : (
           <div className="mx-auto max-w-5xl px-6 sm:px-10 lg:px-12 text-center py-20 text-ink-subtle dark:text-night-muted">
             <p className="font-[family-name:var(--font-mono)] text-[13px] tracking-[0.3em] uppercase mb-4 text-peach dark:text-peach-dark">
