@@ -4,6 +4,10 @@
       {
         "matcher": "Edit|Write",
         "command": "file=\"$CLAUDE_FILE_PATHS\"; if [ -n \"$file\" ] && echo \"$file\" | grep -qE '\\.(tsx?|jsx?|css)$'; then npx eslint --no-error-on-unmatched-pattern \"$file\" 2>/dev/null | grep -v 'interactive-headshot' | grep -v '0 problems' | head -5 || true; fi"
+      },
+      {
+        "matcher": "Edit|Write",
+        "command": "file=\"$CLAUDE_FILE_PATHS\"; if [ -n \"$file\" ] && echo \"$file\" | grep -qE '\\.tsx?$'; then npx tsc --noEmit 2>&1 | grep -E '^[^ ].*error TS' | head -5 || true; fi"
       }
     ],
     "PreToolUse": [
