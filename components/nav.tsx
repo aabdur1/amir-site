@@ -135,11 +135,23 @@ export default function Nav() {
       indicator.style.transform = `translateX(${pill.offsetLeft}px)`
     }
 
+    // Instant re-measure (no spring bounce) for resize events
+    const measureInstant = () => {
+      indicator.style.transition = 'none'
+      measure()
+      // Re-enable transition after paint
+      requestAnimationFrame(() => {
+        indicator.style.transition = indicatorMounted
+          ? 'transform 500ms var(--ease-spring), width 500ms var(--ease-spring), opacity 300ms ease'
+          : 'none'
+      })
+    }
+
     // Initial measurement after pill arrow transition settles
     const timerId = setTimeout(measure, 320)
 
     // Re-measure whenever ANY pill resizes (e.g. hover expands arrow on sibling)
-    const ro = new ResizeObserver(measure)
+    const ro = new ResizeObserver(measureInstant)
     if (learnPillRef.current) ro.observe(learnPillRef.current)
     if (galleryPillRef.current) ro.observe(galleryPillRef.current)
 
