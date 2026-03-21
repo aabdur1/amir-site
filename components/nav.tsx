@@ -78,6 +78,7 @@ export default function Nav() {
   const learnPillRef = useRef<HTMLAnchorElement>(null);
   const galleryPillRef = useRef<HTMLAnchorElement>(null);
   const indicatorRef = useRef<HTMLDivElement>(null);
+  const indicatorContainerRef = useRef<HTMLDivElement>(null);
   const [indicatorMounted, setIndicatorMounted] = useState(false);
 
   const updateOpacity = useCallback(() => {
@@ -123,12 +124,19 @@ export default function Nav() {
     }
 
     const pill = activeRef.current
-    const containerRect = pill.parentElement!.getBoundingClientRect()
+    const container = indicatorContainerRef.current
+    if (!container) return
+    const containerRect = container.getBoundingClientRect()
     const pillRect = pill.getBoundingClientRect()
 
     indicator.style.opacity = '1'
     indicator.style.width = `${pillRect.width}px`
     indicator.style.transform = `translateX(${pillRect.left - containerRect.left}px)`
+
+    // Color: sapphire for Gallery, mauve for Learn
+    const accent = isGallery ? 'var(--color-sapphire)' : 'var(--color-mauve)'
+    indicator.style.backgroundColor = `color-mix(in srgb, ${accent} 12%, transparent)`
+    indicator.style.borderColor = `color-mix(in srgb, ${accent} 40%, transparent)`
 
     // After first positioning, enable transitions
     if (!indicatorMounted) {
@@ -159,11 +167,11 @@ export default function Nav() {
 
         {/* Right: Nav links + Dark mode toggle */}
         <div className="flex items-center gap-5">
-          <div className="relative flex items-center gap-2">
+          <div ref={indicatorContainerRef} className="relative flex items-center gap-2">
             {/* Morphing indicator */}
             <div
               ref={indicatorRef}
-              className="absolute top-0 left-0 h-full rounded-full bg-mauve/10 dark:bg-mauve-dark/10 border border-mauve/40 dark:border-mauve-dark/40 pointer-events-none"
+              className="absolute top-0 left-0 h-full rounded-full border pointer-events-none"
               style={{
                 transition: indicatorMounted
                   ? 'transform 500ms var(--ease-spring), width 500ms var(--ease-spring), opacity 300ms ease'
