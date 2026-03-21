@@ -129,22 +129,28 @@ export default function Nav() {
     indicator.style.backgroundColor = `color-mix(in srgb, ${accent} 12%, transparent)`
     indicator.style.borderColor = `color-mix(in srgb, ${accent} 40%, transparent)`
 
-    // Delay measurement — pill arrow animates in via transition-all duration-300,
-    // so offsetWidth/offsetLeft are unstable until the transition settles
     const measure = () => {
       indicator.style.opacity = '1'
       indicator.style.width = `${pill.offsetWidth}px`
       indicator.style.transform = `translateX(${pill.offsetLeft}px)`
     }
 
-    // Measure after transitions settle
+    // Initial measurement after pill arrow transition settles
     const timerId = setTimeout(measure, 320)
+
+    // Re-measure whenever ANY pill resizes (e.g. hover expands arrow on sibling)
+    const ro = new ResizeObserver(measure)
+    if (learnPillRef.current) ro.observe(learnPillRef.current)
+    if (galleryPillRef.current) ro.observe(galleryPillRef.current)
 
     if (!indicatorMounted) {
       setTimeout(() => setIndicatorMounted(true), 350)
     }
 
-    return () => clearTimeout(timerId)
+    return () => {
+      clearTimeout(timerId)
+      ro.disconnect()
+    }
   }, [pathname, isLearn, isGallery, indicatorMounted])
 
   return (
