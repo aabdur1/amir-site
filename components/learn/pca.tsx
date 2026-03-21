@@ -512,24 +512,31 @@ function Section1() {
       <div className="flex gap-1.5 flex-wrap my-2">
         <button
           type="button"
-          onClick={() => setShowPC(prev => !prev)}
+          onClick={() => {
+            setShowPC(prev => {
+              if (prev) setShowReconstruction(false)
+              return !prev
+            })
+          }}
           className="px-4 py-1.5 rounded-lg text-[13px] font-medium border border-sapphire/30 dark:border-sapphire-dark/30
             bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark
             hover:bg-sapphire/20 dark:hover:bg-sapphire-dark/20 transition-colors"
         >
           {showPC ? 'Hide' : 'Show'} PC axes
         </button>
-        <button
-          type="button"
-          onClick={() => setShowReconstruction(prev => !prev)}
-          className={`px-4 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
-            showReconstruction
-              ? 'border-amber-400/30 dark:border-amber-300/30 bg-amber-100/60 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 font-semibold'
-              : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
-          }`}
-        >
-          {showReconstruction ? 'Hide' : 'Show'} reconstruction
-        </button>
+        {showPC && (
+          <button
+            type="button"
+            onClick={() => setShowReconstruction(prev => !prev)}
+            className={`px-4 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
+              showReconstruction
+                ? 'border-amber-400/30 dark:border-amber-300/30 bg-amber-100/60 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 font-semibold'
+                : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
+            }`}
+          >
+            {showReconstruction ? 'Hide' : 'Show'} reconstruction
+          </button>
+        )}
         <button
           type="button"
           onClick={startSweep}
@@ -557,7 +564,7 @@ function Section1() {
         <MetricCard label="PC1 variance" value={`${varExplained1.toFixed(1)}%`} colorClass={METRIC_COLORS.red} />
         <MetricCard label="PC2 variance" value={`${varExplained2.toFixed(1)}%`} colorClass={METRIC_COLORS.green} />
         <MetricCard label="Total" value="100%" />
-        {showReconstruction && (
+        {showPC && showReconstruction && (
           <MetricCard label="Recon. error" value={reconstructionError.toFixed(3)} colorClass={METRIC_COLORS.amber} />
         )}
       </div>
