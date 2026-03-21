@@ -62,10 +62,10 @@ function shrink(b: number, lam: number, type: 'ridge' | 'lasso'): number {
 }
 
 function computeErrors(lam: number) {
-  const bias = 0.12 + 0.88 * (1 - Math.exp(-lam * 0.8))
-  const variance = 0.9 * Math.exp(-lam * 0.6) + 0.05
+  const bias = 0.05 + 0.95 * (1 - Math.exp(-lam * 1.2))
+  const variance = 0.85 * Math.exp(-lam * 1.8) + 0.02
   const trainErr = bias
-  const testErr = bias + variance * 0.5
+  const testErr = bias + variance
   return { trainErr, testErr, bias, variance }
 }
 
@@ -395,6 +395,8 @@ function Section1({ lambdaRaw, setLambdaRaw }: { lambdaRaw: number; setLambdaRaw
 function Section2({ lambdaRaw, setLambdaRaw }: { lambdaRaw: number; setLambdaRaw: (v: number) => void }) {
   const [sectionRef, visible] = useScrollReveal()
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const draggingRef = useRef(false)
+  const layoutRef = useRef<{ padL: number; pw: number } | null>(null)
 
   const lambda = (lambdaRaw / 100) * 3.0
   const { trainErr, testErr, bias, variance } = computeErrors(lambda)
@@ -417,6 +419,9 @@ function Section2({ lambdaRaw, setLambdaRaw }: { lambdaRaw: number; setLambdaRaw
     const pw = W - pad.l - pad.r
     const ph = H - pad.t - pad.b
     const maxLam = 3.0
+
+    // Cache layout for pointer events
+    layoutRef.current = { padL: pad.l, pw }
     const maxErr = 1.2
 
     function xPos(lam: number) { return pad.l + (lam / maxLam) * pw }
@@ -464,7 +469,7 @@ function Section2({ lambdaRaw, setLambdaRaw }: { lambdaRaw: number; setLambdaRaw
       trainPts.push({ x: xPos(l), y: yPos(errs.trainErr) })
       testPts.push({ x: xPos(l), y: yPos(errs.testErr) })
       biasPts.push({ x: xPos(l), y: yPos(errs.bias) })
-      variancePts.push({ x: xPos(l), y: yPos(errs.variance * 0.5) })
+      variancePts.push({ x: xPos(l), y: yPos(errs.variance) })
     }
 
     // Gap shading between curves
@@ -593,6 +598,37 @@ function Section2({ lambdaRaw, setLambdaRaw }: { lambdaRaw: number; setLambdaRaw
   useDarkModeObserver(draw)
   useCanvasResize(canvasRef, draw)
 
+  // --- Direct canvas dragging ---
+  const pxToLambdaRaw = useCallback((clientX: number) => {
+    const canvas = canvasRef.current
+    const layout = layoutRef.current
+    if (!canvas || !layout) return null
+    const rect = canvas.getBoundingClientRect()
+    const px = clientX - rect.left - layout.padL
+    const lam = (px / layout.pw) * 3.0
+    const clamped = Math.max(0, Math.min(3.0, lam))
+    return Math.round((clamped / 3.0) * 100)
+  }, [])
+
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    const raw = pxToLambdaRaw(e.clientX)
+    if (raw !== null) {
+      draggingRef.current = true
+      setLambdaRaw(raw)
+      ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+    }
+  }, [pxToLambdaRaw, setLambdaRaw])
+
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    if (!draggingRef.current) return
+    const raw = pxToLambdaRaw(e.clientX)
+    if (raw !== null) setLambdaRaw(raw)
+  }, [pxToLambdaRaw, setLambdaRaw])
+
+  const handlePointerUp = useCallback(() => {
+    draggingRef.current = false
+  }, [])
+
   // Jump to optimal
   const jumpToOptimal = useCallback(() => {
     const raw = Math.round((optimal.lambda / 3.0) * 100)
@@ -608,28 +644,28 @@ function Section2({ lambdaRaw, setLambdaRaw }: { lambdaRaw: number; setLambdaRaw
   if (lambda < 0.05) {
     insight = (
       <>
-        <strong>{'\u03BB'} {'\u2248'} 0:</strong> No regularization. Bias = {bias.toFixed(3)} ({biasLabel}), Variance = {(variance * 0.5).toFixed(3)} ({varianceLabel}).
+        <strong>{'\u03BB'} {'\u2248'} 0:</strong> No regularization. Bias = {bias.toFixed(3)} ({biasLabel}), Variance = {variance.toFixed(3)} ({varianceLabel}).
         The gap between train and test error is large (overfitting). Test error = bias + variance.
       </>
     )
   } else if (lambda < 0.6) {
     insight = (
       <>
-        <strong>Sweet spot:</strong> Bias = {bias.toFixed(3)} ({biasLabel}), Variance = {(variance * 0.5).toFixed(3)} ({varianceLabel}).
+        <strong>Sweet spot:</strong> Bias = {bias.toFixed(3)} ({biasLabel}), Variance = {variance.toFixed(3)} ({varianceLabel}).
         Variance reduction outweighs the bias increase. Test error = bias + variance is near its minimum.
       </>
     )
   } else if (lambda < 1.5) {
     insight = (
       <>
-        <strong>Moderate {'\u03BB'}:</strong> Bias = {bias.toFixed(3)} ({biasLabel}), Variance = {(variance * 0.5).toFixed(3)} ({varianceLabel}).
+        <strong>Moderate {'\u03BB'}:</strong> Bias = {bias.toFixed(3)} ({biasLabel}), Variance = {variance.toFixed(3)} ({varianceLabel}).
         Both errors are rising — the model is too constrained. Test error = bias + variance.
       </>
     )
   } else {
     insight = (
       <>
-        <strong>Heavy {'\u03BB'}:</strong> Bias = {bias.toFixed(3)} ({biasLabel}), Variance = {(variance * 0.5).toFixed(3)} ({varianceLabel}).
+        <strong>Heavy {'\u03BB'}:</strong> Bias = {bias.toFixed(3)} ({biasLabel}), Variance = {variance.toFixed(3)} ({varianceLabel}).
         Very high bias dominates. Both errors are high and nearly equal. The model underfits.
       </>
     )
@@ -656,9 +692,13 @@ function Section2({ lambdaRaw, setLambdaRaw }: { lambdaRaw: number; setLambdaRaw
         <canvas
           ref={canvasRef}
           role="img"
-          aria-label="Bias-variance tradeoff chart showing train error, test error, bias, and variance curves against lambda"
-          className="w-full rounded"
-          style={{ height: 220 }}
+          aria-label="Bias-variance tradeoff chart showing train error, test error, bias, and variance curves against lambda — drag to adjust lambda"
+          className="w-full rounded cursor-grab active:cursor-grabbing"
+          style={{ height: 220, touchAction: 'none' }}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
         />
       </div>
 
@@ -730,8 +770,8 @@ function Section2({ lambdaRaw, setLambdaRaw }: { lambdaRaw: number; setLambdaRaw
         <MetricCard label="Active features" value={`${activeCount}/${FEATURES.length}`} />
       </div>
       <div className="flex gap-2.5 flex-wrap mb-2.5">
-        <MetricCard label="Bias\u00B2" value={bias.toFixed(3)} colorClass={METRIC_COLORS.amber} />
-        <MetricCard label="Variance" value={(variance * 0.5).toFixed(3)} colorClass={METRIC_COLORS.green} />
+        <MetricCard label={`Bias\u00B2`} value={bias.toFixed(3)} colorClass={METRIC_COLORS.amber} />
+        <MetricCard label="Variance" value={variance.toFixed(3)} colorClass={METRIC_COLORS.green} />
       </div>
 
       <InsightBox>{insight}</InsightBox>
