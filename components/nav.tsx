@@ -1,9 +1,70 @@
 "use client";
 
-import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import DarkModeToggle from "@/components/dark-mode-toggle";
+
+function useMagnetic(ref: React.RefObject<HTMLAnchorElement | null>) {
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    // Skip on touch devices
+    if (!window.matchMedia('(pointer: fine)').matches) return
+
+    let targetX = 0, targetY = 0
+    let currentX = 0, currentY = 0
+    let rafId: number | null = null
+    const MAX = 4 // max displacement in px
+    const LERP = 0.15
+
+    const animate = () => {
+      currentX += (targetX - currentX) * LERP
+      currentY += (targetY - currentY) * LERP
+      el.style.transform = `translate(${currentX}px, ${currentY}px)`
+
+      if (Math.abs(targetX - currentX) > 0.1 || Math.abs(targetY - currentY) > 0.1) {
+        rafId = requestAnimationFrame(animate)
+      } else {
+        el.style.transform = `translate(${targetX}px, ${targetY}px)`
+        rafId = null
+      }
+    }
+
+    const onMove = (e: MouseEvent) => {
+      const rect = el.getBoundingClientRect()
+      const cx = rect.left + rect.width / 2
+      const cy = rect.top + rect.height / 2
+      const dx = e.clientX - cx
+      const dy = e.clientY - cy
+      const dist = Math.sqrt(dx * dx + dy * dy)
+      const maxDist = Math.max(rect.width, rect.height)
+      const factor = Math.max(0, 1 - dist / maxDist)
+      targetX = dx * factor * (MAX / maxDist * 2)
+      targetY = dy * factor * (MAX / maxDist * 2)
+      // Clamp
+      targetX = Math.max(-MAX, Math.min(MAX, targetX))
+      targetY = Math.max(-MAX, Math.min(MAX, targetY))
+      if (!rafId) rafId = requestAnimationFrame(animate)
+    }
+
+    const onLeave = () => {
+      targetX = 0
+      targetY = 0
+      if (!rafId) rafId = requestAnimationFrame(animate)
+    }
+
+    el.addEventListener('mousemove', onMove)
+    el.addEventListener('mouseleave', onLeave)
+
+    return () => {
+      el.removeEventListener('mousemove', onMove)
+      el.removeEventListener('mouseleave', onLeave)
+      if (rafId) cancelAnimationFrame(rafId)
+      el.style.transform = ''
+    }
+  }, [ref])
+}
 
 export default function Nav() {
   const pathname = usePathname();
@@ -14,6 +75,10 @@ export default function Nav() {
   // Direct ref mutation avoids re-rendering the nav tree on every scroll frame
   const nameRef = useRef<HTMLAnchorElement>(null);
   const rafRef = useRef<number>(0);
+  const learnPillRef = useRef<HTMLAnchorElement>(null);
+  const galleryPillRef = useRef<HTMLAnchorElement>(null);
+  const indicatorRef = useRef<HTMLDivElement>(null);
+  const [indicatorMounted, setIndicatorMounted] = useState(false);
 
   const updateOpacity = useCallback(() => {
     const progress = Math.min(window.scrollY / 300, 1);
@@ -41,6 +106,36 @@ export default function Nav() {
     };
   }, [isHome, handleScroll, updateOpacity]);
 
+  useMagnetic(learnPillRef);
+  useMagnetic(galleryPillRef);
+
+  // Position the morphing indicator behind the active pill
+  useEffect(() => {
+    const indicator = indicatorRef.current
+    if (!indicator) return
+
+    const activeRef = isLearn ? learnPillRef : isGallery ? galleryPillRef : null
+
+    if (!activeRef?.current) {
+      // No active pill (homepage) — hide indicator
+      indicator.style.opacity = '0'
+      return
+    }
+
+    const pill = activeRef.current
+    const containerRect = pill.parentElement!.getBoundingClientRect()
+    const pillRect = pill.getBoundingClientRect()
+
+    indicator.style.opacity = '1'
+    indicator.style.width = `${pillRect.width}px`
+    indicator.style.transform = `translateX(${pillRect.left - containerRect.left}px)`
+
+    // After first positioning, enable transitions
+    if (!indicatorMounted) {
+      requestAnimationFrame(() => setIndicatorMounted(true))
+    }
+  }, [pathname, isLearn, isGallery, indicatorMounted])
+
   return (
     <nav
       className="sticky top-0 z-40 bg-cream/70 dark:bg-night/70 backdrop-blur-lg
@@ -64,8 +159,21 @@ export default function Nav() {
 
         {/* Right: Nav links + Dark mode toggle */}
         <div className="flex items-center gap-5">
+          <div className="relative flex items-center gap-2">
+            {/* Morphing indicator */}
+            <div
+              ref={indicatorRef}
+              className="absolute top-0 left-0 h-full rounded-full bg-mauve/8 dark:bg-mauve-dark/8 border border-mauve/25 dark:border-mauve-dark/25 pointer-events-none"
+              style={{
+                transition: indicatorMounted
+                  ? 'transform 500ms var(--ease-spring), width 500ms var(--ease-spring), opacity 300ms ease'
+                  : 'none',
+                opacity: 0,
+              }}
+            />
           {/* Learn — pill with arrow that expands on hover */}
           <Link
+            ref={learnPillRef}
             href="/learn"
             className={`nav-learn-pill group relative font-[family-name:var(--font-mono)] text-[13px]
               tracking-[0.15em] uppercase
@@ -100,6 +208,7 @@ export default function Nav() {
 
           {/* Gallery — pill with arrow that expands on hover */}
           <Link
+            ref={galleryPillRef}
             href="/gallery"
             className={`nav-gallery-pill group relative font-[family-name:var(--font-mono)] text-[13px]
               tracking-[0.15em] uppercase
@@ -132,6 +241,7 @@ export default function Nav() {
               </svg>
             </span>
           </Link>
+          </div>
 
           <DarkModeToggle />
         </div>

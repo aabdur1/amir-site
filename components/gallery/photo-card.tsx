@@ -15,6 +15,7 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
   const [isInView, setIsInView] = useState(false)
   const [entryDone, setEntryDone] = useState(false)
   const cardRef = useRef<HTMLButtonElement>(null)
+  const imgWrapperRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const el = cardRef.current
@@ -42,6 +43,46 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
     return () => clearTimeout(timer)
   }, [isInView, index])
 
+  // Scroll parallax — images scroll slightly slower than the page
+  useEffect(() => {
+    if (!entryDone) return
+    const card = cardRef.current
+    const imgWrapper = imgWrapperRef.current
+    if (!card || !imgWrapper) return
+
+    // Skip on touch devices or reduced motion
+    const isTouch = !window.matchMedia('(pointer: fine)').matches
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (isTouch || prefersReduced) return
+
+    // Set base scale for parallax (slightly zoomed to allow movement room)
+    imgWrapper.style.transform = 'scale(1.08) translateY(0px)'
+
+    let rafId: number | null = null
+    const FACTOR = 0.08 // parallax intensity
+
+    const onScroll = () => {
+      if (rafId) return
+      rafId = requestAnimationFrame(() => {
+        rafId = null
+        const rect = card.getBoundingClientRect()
+        const viewH = window.innerHeight
+        // How far the card center is from viewport center, normalized
+        const cardCenter = rect.top + rect.height / 2
+        const offset = (cardCenter - viewH / 2) * FACTOR
+        imgWrapper.style.transform = `scale(1.08) translateY(${-offset}px)`
+      })
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll() // initial position
+
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      if (rafId) cancelAnimationFrame(rafId)
+    }
+  }, [entryDone])
+
   return (
     <button
       ref={cardRef}
@@ -67,17 +108,20 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
       }
     >
       <div className="overflow-hidden rounded-lg">
-        <Image
-          src={photo.url}
-          alt={`Photograph by Amir Abdur-Rahim, ${photo.date} — ${photo.camera}, ${photo.lens}`}
-          width={800}
-          height={600}
-          unoptimized
-          onLoad={() => setIsLoaded(true)}
-          className={`w-full h-auto transition-[filter,transform] duration-700 ease-out group-hover:scale-[1.04] group-hover:duration-[2s] ${
-            isLoaded ? 'blur-0 scale-100' : 'blur-[20px] scale-110'
-          }`}
-        />
+        <div ref={imgWrapperRef} className="will-change-transform">
+          <Image
+            src={photo.url}
+            alt={`Photograph by Amir Abdur-Rahim, ${photo.date} — ${photo.camera}, ${photo.lens}`}
+            width={800}
+            height={600}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            quality={80}
+            onLoad={() => setIsLoaded(true)}
+            className={`w-full h-auto transition-[filter,transform] duration-700 ease-out group-hover:scale-[1.04] group-hover:duration-[2s] ${
+              isLoaded ? 'blur-0 scale-100' : 'blur-[20px] scale-110'
+            }`}
+          />
+        </div>
       </div>
     </button>
   )

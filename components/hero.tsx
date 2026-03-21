@@ -1,11 +1,45 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
-import { AnimatedText } from "@/components/animated-text";
+import { useEffect, useRef, useCallback, useSyncExternalStore } from "react";
 import { HeroSpeckles } from "@/components/hero-speckles";
 import { InteractiveHeadshot } from "@/components/interactive-headshot";
 import { useHydrated } from "@/lib/hooks";
 import { ACCENT_STYLES } from "@/lib/styles";
+
+const reducedMotionSubscribe = (cb: () => void) => {
+  const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+  mql.addEventListener("change", cb);
+  return () => mql.removeEventListener("change", cb);
+};
+
+function RevealText({ text, baseDelay, mounted }: { text: string; baseDelay: number; mounted: boolean }) {
+  const prefersReduced = useSyncExternalStore(
+    reducedMotionSubscribe,
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    () => false,
+  );
+
+  return (
+    <span className="inline-block overflow-hidden align-bottom">
+      {text.split("").map((char, i) => (
+        <span
+          key={i}
+          className="inline-block"
+          style={
+            !mounted || prefersReduced
+              ? {}
+              : {
+                  animation: `char-reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${baseDelay + i * 0.04}s forwards`,
+                  transform: "translateY(110%)",
+                }
+          }
+        >
+          {char === " " ? "\u00A0" : char}
+        </span>
+      ))}
+    </span>
+  );
+}
 
 const badges = [
   { text: "1st Place — AWS National Cloud Quest", accent: "sapphire" },
@@ -141,9 +175,9 @@ export function Hero() {
               className="text-[length:var(--step-5)] leading-[0.9] tracking-tight
                 text-ink dark:text-night-text font-[family-name:var(--font-display)] will-change-transform"
             >
-              <AnimatedText text="Amir" />
+              <RevealText text="Amir" baseDelay={0.3} mounted={mounted} />
               <br />
-              <AnimatedText text="Abdur-Rahim" delay={200} />
+              <RevealText text="Abdur-Rahim" baseDelay={0.5} mounted={mounted} />
             </h1>
 
             {/* Gold accent rule */}
