@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { useScrollReveal } from '@/lib/hooks'
 import { SectionDivider } from '@/components/section-divider'
 
@@ -341,7 +341,9 @@ interface HCMerge {
   rightPts: number[]
 }
 
-function buildDendrogram(pts: number[][]): HCMerge[] {
+type LinkageType = 'single' | 'complete' | 'average'
+
+function buildDendrogram(pts: number[][], linkage: LinkageType = 'average'): HCMerge[] {
   const n = pts.length
   const clusters: Array<{ id: number; pts: number[] }> = pts.map((_, i) => ({ id: i, pts: [i] }))
   let nextId = n
@@ -350,14 +352,33 @@ function buildDendrogram(pts: number[][]): HCMerge[] {
     let bestI = 0, bestJ = 1, bestD = Infinity
     for (let i = 0; i < clusters.length; i++) {
       for (let j = i + 1; j < clusters.length; j++) {
-        let totalD = 0, count = 0
-        for (const pi of clusters[i].pts) {
-          for (const pj of clusters[j].pts) {
-            totalD += dist(pts[pi], pts[pj]); count++
+        let d: number
+        if (linkage === 'single') {
+          d = Infinity
+          for (const pi of clusters[i].pts) {
+            for (const pj of clusters[j].pts) {
+              const dd = dist(pts[pi], pts[pj])
+              if (dd < d) d = dd
+            }
           }
+        } else if (linkage === 'complete') {
+          d = 0
+          for (const pi of clusters[i].pts) {
+            for (const pj of clusters[j].pts) {
+              const dd = dist(pts[pi], pts[pj])
+              if (dd > d) d = dd
+            }
+          }
+        } else {
+          let totalD = 0, count = 0
+          for (const pi of clusters[i].pts) {
+            for (const pj of clusters[j].pts) {
+              totalD += dist(pts[pi], pts[pj]); count++
+            }
+          }
+          d = totalD / count
         }
-        const avgD = totalD / count
-        if (avgD < bestD) { bestD = avgD; bestI = i; bestJ = j }
+        if (d < bestD) { bestD = d; bestI = i; bestJ = j }
       }
     }
     const merged = { id: nextId++, pts: [...clusters[bestI].pts, ...clusters[bestJ].pts] }
@@ -443,6 +464,13 @@ function Section1() {
   const [converged, setConverged] = useState(false)
   const [elbowData, setElbowData] = useState<Array<{ k: number; wss: number; sil: number }> | null>(null)
 
+  // Centroid trail: array of centroid snapshots at each step
+  const [centroidTrail, setCentroidTrail] = useState<number[][][]>([])
+
+  // Click-to-place mode
+  const [placingMode, setPlacingMode] = useState(false)
+  const [placedCentroids, setPlacedCentroids] = useState<number[][]>([])
+
   // Reset is called from event handlers only (not effects)
   const resetWithParams = useCallback((s: ShapeKey, kVal: number) => {
     let newPts: number[][]
@@ -456,10 +484,15 @@ function Section1() {
     setAssigns(new Array(newPts.length).fill(-1))
     setStep(0)
     setConverged(false)
+    setCentroidTrail([])
+    setPlacingMode(false)
+    setPlacedCentroids([])
   }, [])
 
   const doStep = useCallback(() => {
     if (converged) return
+    // Record current centroid positions before stepping
+    setCentroidTrail(prev => [...prev, centroids.map(c => [...c])])
     const { assigns: newAssigns, changed } = kmAssignCheck(pts, centroids, assigns)
     const newStep = step + 1
     if (!changed) {
@@ -481,7 +514,9 @@ function Section1() {
     let curCentroids = centroids.map(c => [...c])
     let curStep = step
     let curConverged = converged
+    const trail: number[][][] = []
     for (let i = 0; i < 50 && !curConverged; i++) {
+      trail.push(curCentroids.map(c => [...c]))
       const { assigns: newAssigns, changed } = kmAssignCheck(pts, curCentroids, curAssigns)
       curStep++
       if (!changed) { curAssigns = newAssigns; curConverged = true; break }
@@ -490,6 +525,7 @@ function Section1() {
         ? kmUpdateMeans(pts, curAssigns, k)
         : kmUpdateMedoids(pts, curAssigns, curCentroids)
     }
+    setCentroidTrail(prev => [...prev, ...trail])
     setAssigns(curAssigns)
     setCentroids(curCentroids)
     setStep(curStep)
@@ -512,6 +548,33 @@ function Section1() {
   const wss = step > 0 ? computeWSS(pts, assigns, centroids) : 0
   const sil = converged ? computeSilhouette(pts, assigns, k) : 0
 
+  // Canvas click handler for placing centroids
+  const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!placingMode) return
+    if (placedCentroids.length >= k) return
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const rect = canvas.getBoundingClientRect()
+    const pad = 20
+    const pw = rect.width - pad * 2
+    const ph = 340 - pad * 2
+    const px = e.clientX - rect.left
+    const py = e.clientY - rect.top
+    const dataX = (px - pad) / pw
+    const dataY = 1 - (py - pad) / ph
+    const clamped = [Math.max(0, Math.min(1, dataX)), Math.max(0, Math.min(1, dataY))]
+    const newPlaced = [...placedCentroids, clamped]
+    setPlacedCentroids(newPlaced)
+    if (newPlaced.length === k) {
+      // All centroids placed — apply them
+      setCentroids(newPlaced.map(c => [...c]))
+      setAssigns(new Array(pts.length).fill(-1))
+      setStep(0)
+      setConverged(false)
+      setCentroidTrail([])
+    }
+  }, [placingMode, placedCentroids, k, pts.length])
+
   // Draw main canvas
   const draw = useCallback(() => {
     const canvas = canvasRef.current
@@ -524,6 +587,45 @@ function Section1() {
     const xOf = (v: number) => pad + v * pw
     const yOf = (v: number) => pad + (1 - v) * ph
 
+    // Centroid trail — faded previous positions connected by lines
+    if (centroidTrail.length > 0) {
+      for (let ci = 0; ci < k; ci++) {
+        const col = c.clusters[ci % c.clusters.length]
+        // Draw trail lines
+        ctx.strokeStyle = col
+        ctx.lineWidth = 1
+        ctx.globalAlpha = 0.25
+        ctx.beginPath()
+        let started = false
+        for (let t = 0; t < centroidTrail.length; t++) {
+          if (centroidTrail[t][ci]) {
+            const tx = xOf(centroidTrail[t][ci][0])
+            const ty = yOf(centroidTrail[t][ci][1])
+            if (!started) { ctx.moveTo(tx, ty); started = true }
+            else ctx.lineTo(tx, ty)
+          }
+        }
+        // Connect to current centroid
+        if (started && centroids[ci]) {
+          ctx.lineTo(xOf(centroids[ci][0]), yOf(centroids[ci][1]))
+        }
+        ctx.stroke()
+
+        // Draw trail dots
+        for (let t = 0; t < centroidTrail.length; t++) {
+          if (centroidTrail[t][ci]) {
+            const alpha = 0.2 + 0.2 * (t / centroidTrail.length)
+            ctx.globalAlpha = alpha
+            ctx.fillStyle = col
+            ctx.beginPath()
+            ctx.arc(xOf(centroidTrail[t][ci][0]), yOf(centroidTrail[t][ci][1]), 3, 0, Math.PI * 2)
+            ctx.fill()
+          }
+        }
+      }
+      ctx.globalAlpha = 1
+    }
+
     // Points
     pts.forEach((p, i) => {
       const ci = assigns[i]
@@ -532,6 +634,24 @@ function Section1() {
       ctx.arc(xOf(p[0]), yOf(p[1]), 4, 0, Math.PI * 2)
       ctx.fill()
     })
+
+    // Placed centroids (during placement mode, before all are placed)
+    if (placingMode && placedCentroids.length < k) {
+      placedCentroids.forEach((cent, i) => {
+        const x = xOf(cent[0]), y = yOf(cent[1])
+        ctx.fillStyle = c.clusters[i % c.clusters.length]
+        ctx.globalAlpha = 0.6
+        ctx.beginPath()
+        ctx.arc(x, y, 7, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.globalAlpha = 1
+        ctx.strokeStyle = c.clusters[i % c.clusters.length]
+        ctx.lineWidth = 2
+        ctx.beginPath()
+        ctx.arc(x, y, 7, 0, Math.PI * 2)
+        ctx.stroke()
+      })
+    }
 
     // Centroids
     centroids.forEach((cent, i) => {
@@ -570,7 +690,15 @@ function Section1() {
     ctx.font = '11px sans-serif'
     ctx.textAlign = 'left'
     ctx.fillText(mode === 'means' ? '\u00D7 = mean centroid' : '\u25C6 = medoid (actual data point)', pad + 4, pad + 14)
-  }, [pts, assigns, centroids, mode])
+
+    // Placement mode label
+    if (placingMode && placedCentroids.length < k) {
+      ctx.fillStyle = c.peach
+      ctx.font = '500 12px sans-serif'
+      ctx.textAlign = 'right'
+      ctx.fillText(`Click to place: ${placedCentroids.length}/${k}`, W - pad - 4, pad + 14)
+    }
+  }, [pts, assigns, centroids, mode, centroidTrail, k, placingMode, placedCentroids])
 
   // Draw elbow chart
   const drawElbow = useCallback(() => {
@@ -695,7 +823,26 @@ function Section1() {
     for (let i = 0; i < k; i++) newCentroids.push([0.1 + Math.random() * 0.8, 0.1 + Math.random() * 0.8])
     setCentroids(newCentroids)
     setAssigns(new Array(pts.length).fill(-1))
+    setCentroidTrail([])
+    setPlacingMode(false)
+    setPlacedCentroids([])
   }, [k, pts.length])
+
+  const togglePlacingMode = useCallback(() => {
+    if (placingMode) {
+      // Cancel placement mode
+      setPlacingMode(false)
+      setPlacedCentroids([])
+    } else {
+      // Enter placement mode — reset algorithm state
+      setPlacingMode(true)
+      setPlacedCentroids([])
+      setAssigns(new Array(pts.length).fill(-1))
+      setStep(0)
+      setConverged(false)
+      setCentroidTrail([])
+    }
+  }, [placingMode, pts.length])
 
   // Insight text
   let insight: React.ReactNode
@@ -787,8 +934,9 @@ function Section1() {
         ref={canvasRef}
         role="img"
         aria-label="Scatter plot showing data points colored by cluster assignment with centroid or medoid markers and radius circles"
-        className="w-full rounded-lg"
+        className={`w-full rounded-lg ${placingMode && placedCentroids.length < k ? 'cursor-crosshair' : ''}`}
         style={{ height: 340 }}
+        onClick={handleCanvasClick}
       />
 
       {/* k slider */}
@@ -819,6 +967,17 @@ function Section1() {
       <div className="flex gap-1.5 flex-wrap my-2">
         <ActionButton onClick={doStep}>1 step</ActionButton>
         <ActionButton onClick={runToConvergence}>Run to convergence</ActionButton>
+        <button
+          type="button"
+          onClick={togglePlacingMode}
+          className={`px-4 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
+            placingMode
+              ? 'border-peach/30 dark:border-peach-dark/30 bg-peach/10 dark:bg-peach-dark/10 text-peach dark:text-peach-dark font-semibold'
+              : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
+          }`}
+        >
+          {placingMode ? `Placing: ${placedCentroids.length}/${k}` : 'Place centroids'}
+        </button>
         <SecondaryButton onClick={() => resetWithParams(shape, k)}>Reset</SecondaryButton>
       </div>
 
@@ -879,21 +1038,29 @@ function Section2() {
   const scatterCanvasRef = useRef<HTMLCanvasElement>(null)
 
   const [shape, setShape] = useState<ShapeKey>('blobs')
+  const [linkage, setLinkage] = useState<LinkageType>('average')
   const [{ pts, merges }, setHCData] = useState(() => {
     const initPts = genBlobs(3, 8, 0.05)
-    return { pts: initPts, merges: buildDendrogram(initPts) }
+    return { pts: initPts, merges: buildDendrogram(initPts, 'average') }
   })
   const [cutK, setCutK] = useState(3)
 
-  const resetData = useCallback((s?: ShapeKey) => {
+  const resetData = useCallback((s?: ShapeKey, l?: LinkageType) => {
     const shapeToUse = s ?? shape
+    const linkageToUse = l ?? linkage
     let newPts: number[][]
     if (shapeToUse === 'blobs') newPts = genBlobs(3, 8, 0.05)
     else if (shapeToUse === 'moons') newPts = genMoons(15)
     else newPts = genRing(20)
-    setHCData({ pts: newPts, merges: buildDendrogram(newPts) })
+    setHCData({ pts: newPts, merges: buildDendrogram(newPts, linkageToUse) })
     setCutK(3)
-  }, [shape])
+  }, [shape, linkage])
+
+  // Rebuild dendrogram when linkage changes (same data)
+  const handleLinkageChange = useCallback((l: LinkageType) => {
+    setLinkage(l)
+    setHCData(prev => ({ pts: prev.pts, merges: buildDendrogram(prev.pts, l) }))
+  }, [])
 
   // Draw dendrogram
   const drawDendro = useCallback(() => {
@@ -1016,18 +1183,37 @@ function Section2() {
   useCanvasResize(dendroCanvasRef, drawDendro)
   useCanvasResize(scatterCanvasRef, drawScatter)
 
-  // Insight
+  // Insight — linkage-aware
   let insight: React.ReactNode
   if (cutK <= 2) {
     insight = <>Cutting into 2 clusters {'\u2014'} only the very last (highest) merge is split. Everything below that merge stays together.</>
   } else if (cutK >= pts.length - 2) {
     insight = <>Many small clusters {'\u2014'} you{"'"}ve cut very low on the dendrogram, so almost no merges are kept.</>
   } else {
+    const linkageDesc = linkage === 'single'
+      ? 'Single linkage tends to produce elongated, chain-like clusters.'
+      : linkage === 'complete'
+        ? 'Complete linkage tends to produce compact, similarly-sized clusters.'
+        : 'Average linkage tends to produce balanced, similar-sized clusters.'
     insight = (
       <>
-        <strong>Cut into {cutK} clusters.</strong> The red dashed line crosses the dendrogram at a height where {cutK} branches remain. Tall gaps between merge heights = natural cluster boundaries. Average linkage tends to produce balanced, similar-sized clusters.
+        <strong>Cut into {cutK} clusters.</strong> The red dashed line crosses the dendrogram at a height where {cutK} branches remain. Tall gaps between merge heights = natural cluster boundaries. {linkageDesc}
       </>
     )
+  }
+
+  // Linkage + shape contextual insight
+  let linkageInsight: React.ReactNode = null
+  if (linkage === 'single' && shape === 'moons') {
+    linkageInsight = <InsightBox><strong>Single linkage handles non-convex shapes well</strong> {'\u2014'} it chains nearby points, following the crescent shape of each moon.</InsightBox>
+  } else if (linkage === 'complete' && shape === 'moons') {
+    linkageInsight = <InsightBox><strong>Complete linkage struggles with moons</strong> {'\u2014'} it prefers compact, spherical clusters and will split crescents unnaturally.</InsightBox>
+  } else if (linkage === 'average') {
+    linkageInsight = <InsightBox>Average linkage is a compromise between single and complete {'\u2014'} it balances chain-sensitivity with compactness preference.</InsightBox>
+  } else if (linkage === 'single' && shape === 'ring') {
+    linkageInsight = <InsightBox><strong>Single linkage can chain</strong> the ring into one long cluster, separating it from the dense core {'\u2014'} good for concentric shapes.</InsightBox>
+  } else if (linkage === 'complete' && shape === 'ring') {
+    linkageInsight = <InsightBox><strong>Complete linkage</strong> will try to keep clusters compact {'\u2014'} it may split the ring into segments rather than separating ring from core.</InsightBox>
   }
 
   return (
@@ -1046,7 +1232,25 @@ function Section2() {
         Agglomerative clustering builds a tree (dendrogram) of all merges. The height shows how far apart clusters were when merged. Drag the cut line to pick k.
       </p>
 
-      <ShapeButtons shape={shape} setShape={(s) => { setShape(s); resetData(s) }} />
+      <ShapeButtons shape={shape} setShape={(s) => { setShape(s); resetData(s, linkage) }} />
+
+      {/* Linkage toggle */}
+      <div className="flex gap-1.5 flex-wrap mb-3">
+        {(['single', 'complete', 'average'] as const).map(l => (
+          <button
+            key={l}
+            type="button"
+            onClick={() => handleLinkageChange(l)}
+            className={`px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
+              linkage === l
+                ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
+                : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:bg-cream-dark/60 dark:hover:bg-night-card/60'
+            }`}
+          >
+            {l.charAt(0).toUpperCase() + l.slice(1)} linkage
+          </button>
+        ))}
+      </div>
 
       <canvas
         ref={dendroCanvasRef}
@@ -1095,10 +1299,11 @@ function Section2() {
       </div>
 
       <div className="flex gap-1.5 flex-wrap my-2">
-        <SecondaryButton onClick={resetData}>New data</SecondaryButton>
+        <SecondaryButton onClick={() => resetData()}>New data</SecondaryButton>
       </div>
 
       <InsightBox>{insight}</InsightBox>
+      {linkageInsight}
     </section>
   )
 }
@@ -1109,12 +1314,16 @@ function Section2() {
 function Section3() {
   const [sectionRef, visible] = useScrollReveal()
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const sparklineCanvasRef = useRef<HTMLCanvasElement>(null)
 
   const [shape, setShape] = useState<ShapeKey>('moons')
   const [eps, setEps] = useState(0.06)
   const [minPts, setMinPts] = useState(4)
   const [pts, setPts] = useState<number[][]>(() => genMoons(60))
   const [labels, setLabels] = useState<number[]>(() => runDBSCAN(genMoons(60), 0.06, 4))
+
+  // Interactive eps click — index of the clicked point
+  const [clickedPt, setClickedPt] = useState<number | null>(null)
 
   const regenData = useCallback((s: ShapeKey, epsVal: number, minPtsVal: number) => {
     let newPts: number[][]
@@ -1123,7 +1332,55 @@ function Section3() {
     else newPts = genBlobs(3, 40, 0.06)
     setPts(newPts)
     setLabels(runDBSCAN(newPts, epsVal, minPtsVal))
+    setClickedPt(null)
   }, [])
+
+  // Canvas click handler — find nearest point
+  const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const rect = canvas.getBoundingClientRect()
+    const n = pts.length
+    if (n === 0) return
+    const pad = 20
+    const pw = rect.width - pad * 2
+    const ph = 360 - pad * 2
+    const px = e.clientX - rect.left
+    const py = e.clientY - rect.top
+    const dataX = (px - pad) / pw
+    const dataY = 1 - (py - pad) / ph
+
+    // Find closest point within 15px threshold
+    let bestIdx = -1, bestDist = Infinity
+    for (let i = 0; i < n; i++) {
+      const sx = pad + pts[i][0] * pw
+      const sy = pad + (1 - pts[i][1]) * ph
+      const d = Math.sqrt((px - sx) ** 2 + (py - sy) ** 2)
+      if (d < bestDist) { bestDist = d; bestIdx = i }
+    }
+    if (bestDist <= 15 && bestIdx >= 0) {
+      setClickedPt(prev => prev === bestIdx ? null : bestIdx)
+    } else {
+      setClickedPt(null)
+    }
+    // suppress unused variable lint — dataX/dataY used for threshold calc context
+    void dataX; void dataY
+  }, [pts])
+
+  // Sparkline data: cluster count + noise % vs eps
+  const sparklineData = useMemo(() => {
+    const steps = 50
+    const epsMin = 0.02, epsMax = 0.15
+    const data: Array<{ eps: number; clusters: number; noisePct: number }> = []
+    for (let i = 0; i <= steps; i++) {
+      const epsVal = epsMin + (epsMax - epsMin) * (i / steps)
+      const lbl = runDBSCAN(pts, epsVal, minPts)
+      const nClust = Math.max(0, ...lbl) + 1
+      const nNoise = lbl.filter(l => l === -2).length
+      data.push({ eps: epsVal, clusters: nClust, noisePct: pts.length > 0 ? nNoise / pts.length * 100 : 0 })
+    }
+    return data
+  }, [pts, minPts])
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current
@@ -1147,22 +1404,49 @@ function Section3() {
     }
     const isCore = pts.map((_, i) => regionQueryCount(i) >= minPts)
 
-    // Draw eps radius for a few core points
-    let shown = 0
-    pts.forEach((p, i) => {
-      if (isCore[i] && labels[i] >= 0 && shown < 6 && Math.random() < 0.3) {
-        ctx.strokeStyle = c.clusters[labels[i] % c.clusters.length] + '22'
-        ctx.lineWidth = 1
-        ctx.beginPath()
-        ctx.arc(xOf(p[0]), yOf(p[1]), eps * Math.min(pw, ph), 0, Math.PI * 2)
-        ctx.stroke()
-        shown++
+    // Clicked point neighborhood
+    const clickedNeighbors = new Set<number>()
+    let clickedNbrCount = 0
+    let clickedIsCore = false
+    if (clickedPt !== null && clickedPt < n) {
+      for (let j = 0; j < n; j++) {
+        if (dist(pts[clickedPt], pts[j]) <= eps) {
+          clickedNeighbors.add(j)
+        }
       }
-    })
+      clickedNbrCount = clickedNeighbors.size
+      clickedIsCore = clickedNbrCount >= minPts
+
+      // Draw eps circle for clicked point
+      const cx = xOf(pts[clickedPt][0]), cy = yOf(pts[clickedPt][1])
+      ctx.strokeStyle = c.peach
+      ctx.lineWidth = 2
+      ctx.setLineDash([4, 3])
+      ctx.beginPath()
+      ctx.arc(cx, cy, eps * Math.min(pw, ph), 0, Math.PI * 2)
+      ctx.stroke()
+      ctx.setLineDash([])
+
+      // Fill eps circle area with light tint
+      ctx.fillStyle = c.peach + '10'
+      ctx.beginPath()
+      ctx.arc(cx, cy, eps * Math.min(pw, ph), 0, Math.PI * 2)
+      ctx.fill()
+    }
 
     // Points
     pts.forEach((p, i) => {
       const x = xOf(p[0]), y = yOf(p[1])
+
+      // Neighbor highlight ring
+      if (clickedPt !== null && clickedNeighbors.has(i) && i !== clickedPt) {
+        ctx.strokeStyle = c.peach
+        ctx.lineWidth = 2
+        ctx.beginPath()
+        ctx.arc(x, y, 7, 0, Math.PI * 2)
+        ctx.stroke()
+      }
+
       if (labels[i] === -2) {
         // Noise: gray X
         ctx.strokeStyle = c.subtext
@@ -1184,11 +1468,117 @@ function Section3() {
         ctx.stroke()
       }
     })
-  }, [pts, labels, eps, minPts])
+
+    // Highlight clicked point
+    if (clickedPt !== null && clickedPt < n) {
+      const cx = xOf(pts[clickedPt][0]), cy = yOf(pts[clickedPt][1])
+      ctx.fillStyle = c.peach
+      ctx.beginPath()
+      ctx.arc(cx, cy, 6, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.strokeStyle = c.base
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.arc(cx, cy, 6, 0, Math.PI * 2)
+      ctx.stroke()
+
+      // Label
+      ctx.fillStyle = c.text
+      ctx.font = '500 11px sans-serif'
+      ctx.textAlign = 'left'
+      const labelX = cx + 12
+      const labelY = cy - 8
+      ctx.fillText(`Neighbors: ${clickedNbrCount}`, labelX, labelY)
+      ctx.fillStyle = clickedIsCore ? c.green : c.red
+      ctx.fillText(
+        clickedIsCore ? `Core (\u2265${minPts})` : `Not core (<${minPts})`,
+        labelX, labelY + 14
+      )
+    }
+  }, [pts, labels, eps, minPts, clickedPt])
+
+  // Draw sparkline
+  const drawSparkline = useCallback(() => {
+    const canvas = sparklineCanvasRef.current
+    if (!canvas) return
+    const result = setupCanvas(canvas, 80)
+    if (!result) return
+    const { ctx, W, H } = result
+    const c = getThemeColors()
+    const data = sparklineData
+    if (data.length === 0) return
+
+    const p = { l: 36, r: 36, t: 8, b: 18 }
+    const pw = W - p.l - p.r, ph = H - p.t - p.b
+    const maxC = Math.max(1, ...data.map(d => d.clusters))
+    const xOf = (epsVal: number) => p.l + ((epsVal - 0.02) / 0.13) * pw
+    const yOfC = (v: number) => p.t + (1 - v / maxC) * ph
+    const yOfN = (v: number) => p.t + (1 - v / 100) * ph
+
+    // Axes
+    ctx.strokeStyle = c.axis
+    ctx.lineWidth = 0.5
+    ctx.beginPath(); ctx.moveTo(p.l, p.t); ctx.lineTo(p.l, H - p.b); ctx.lineTo(W - p.r, H - p.b); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(W - p.r, p.t); ctx.lineTo(W - p.r, H - p.b); ctx.stroke()
+
+    // Labels
+    ctx.fillStyle = c.blue
+    ctx.font = '9px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.save(); ctx.translate(10, H / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('clusters', 0, 0); ctx.restore()
+    ctx.fillStyle = c.red
+    ctx.save(); ctx.translate(W - 6, H / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('noise %', 0, 0); ctx.restore()
+    ctx.fillStyle = c.subtext
+    ctx.font = '9px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText('eps', W / 2, H - 2)
+
+    // Cluster count line
+    ctx.strokeStyle = c.blue
+    ctx.lineWidth = 1.5
+    ctx.beginPath()
+    data.forEach((d, i) => {
+      if (i === 0) ctx.moveTo(xOf(d.eps), yOfC(d.clusters))
+      else ctx.lineTo(xOf(d.eps), yOfC(d.clusters))
+    })
+    ctx.stroke()
+
+    // Noise % line
+    ctx.strokeStyle = c.red
+    ctx.lineWidth = 1
+    ctx.setLineDash([3, 2])
+    ctx.beginPath()
+    data.forEach((d, i) => {
+      if (i === 0) ctx.moveTo(xOf(d.eps), yOfN(d.noisePct))
+      else ctx.lineTo(xOf(d.eps), yOfN(d.noisePct))
+    })
+    ctx.stroke()
+    ctx.setLineDash([])
+
+    // Current eps marker
+    const curX = xOf(eps)
+    ctx.strokeStyle = c.peach
+    ctx.lineWidth = 1
+    ctx.setLineDash([2, 2])
+    ctx.beginPath(); ctx.moveTo(curX, p.t); ctx.lineTo(curX, H - p.b); ctx.stroke()
+    ctx.setLineDash([])
+
+    // Find closest data point for current eps
+    let closestIdx = 0, closestDist = Infinity
+    data.forEach((d, i) => { const dd = Math.abs(d.eps - eps); if (dd < closestDist) { closestDist = dd; closestIdx = i } })
+    const curData = data[closestIdx]
+    ctx.fillStyle = c.peach
+    ctx.beginPath()
+    ctx.arc(curX, yOfC(curData.clusters), 4, 0, Math.PI * 2)
+    ctx.fill()
+  }, [sparklineData, eps])
 
   useEffect(() => { draw() }, [draw])
+  useEffect(() => { drawSparkline() }, [drawSparkline])
   useDarkModeObserver(draw)
+  useDarkModeObserver(drawSparkline)
   useCanvasResize(canvasRef, draw)
+  useCanvasResize(sparklineCanvasRef, drawSparkline)
 
   const nClusters = Math.max(0, ...labels) + 1
   const nNoise = labels.filter(l => l === -2).length
@@ -1248,7 +1638,7 @@ function Section3() {
         DBSCAN
       </h2>
       <p className="text-sm text-ink-subtle dark:text-night-muted mb-5 leading-relaxed">
-        DBSCAN finds dense regions. Core points (filled) have {'\u2265'} minPts neighbors within eps. Border points (rings) are near a core point. Gray {'\u00D7'} = noise. Try the shapes K-means failed on!
+        DBSCAN finds dense regions. Core points (filled) have {'\u2265'} minPts neighbors within eps. Border points (rings) are near a core point. Gray {'\u00D7'} = noise. Click any point to inspect its neighborhood.
       </p>
 
       <ShapeButtons shape={shape} setShape={handleNewShape} />
@@ -1256,10 +1646,25 @@ function Section3() {
       <canvas
         ref={canvasRef}
         role="img"
-        aria-label="Scatter plot showing DBSCAN clustering with core points as filled dots, border points as rings, and noise as X marks"
-        className="w-full rounded-lg"
+        aria-label="Scatter plot showing DBSCAN clustering with core points as filled dots, border points as rings, and noise as X marks. Click a point to inspect its eps-neighborhood."
+        className="w-full rounded-lg cursor-pointer"
         style={{ height: 360 }}
+        onClick={handleCanvasClick}
       />
+
+      {/* Sparkline: cluster count + noise % vs eps */}
+      <div className="mt-2 rounded-lg bg-cream-dark/50 dark:bg-night-card/40 px-3 py-2">
+        <p className="text-[12px] text-ink-faint dark:text-night-muted mb-1">
+          Clusters (solid) &amp; noise % (dashed) vs eps {'\u2014'} dot = current eps
+        </p>
+        <canvas
+          ref={sparklineCanvasRef}
+          role="img"
+          aria-label="Sparkline showing cluster count and noise percentage as eps varies from 0.02 to 0.15"
+          className="w-full rounded"
+          style={{ height: 80 }}
+        />
+      </div>
 
       {/* eps slider */}
       <div className="flex items-center gap-3 mt-2 mb-2">
@@ -1276,7 +1681,7 @@ function Section3() {
           max={0.15}
           step={0.005}
           value={eps}
-          onChange={(e) => { const v = parseFloat(e.target.value); setEps(v); setLabels(runDBSCAN(pts, v, minPts)) }}
+          onChange={(e) => { const v = parseFloat(e.target.value); setEps(v); setLabels(runDBSCAN(pts, v, minPts)); setClickedPt(null) }}
           aria-valuetext={`eps = ${eps.toFixed(3)}`}
           className="flex-1"
         />
@@ -1300,7 +1705,7 @@ function Section3() {
           max={10}
           step={1}
           value={minPts}
-          onChange={(e) => { const v = parseInt(e.target.value); setMinPts(v); setLabels(runDBSCAN(pts, eps, v)) }}
+          onChange={(e) => { const v = parseInt(e.target.value); setMinPts(v); setLabels(runDBSCAN(pts, eps, v)); setClickedPt(null) }}
           aria-valuetext={`minPts = ${minPts}`}
           className="flex-1"
         />
