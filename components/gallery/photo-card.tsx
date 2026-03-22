@@ -110,7 +110,7 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
       <div className="overflow-hidden rounded-lg">
         <div ref={imgWrapperRef} className="will-change-transform">
           <Image
-            src={photo.url}
+            src={photo.thumb || photo.url}
             alt={`Photograph by Amir Abdur-Rahim, ${photo.date} — ${photo.camera}, ${photo.lens}`}
             width={800}
             height={600}
