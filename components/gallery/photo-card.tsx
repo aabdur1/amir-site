@@ -59,7 +59,7 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
     imgWrapper.style.transform = 'scale(1.08) translateY(0px)'
 
     let rafId: number | null = null
-    const FACTOR = 0.08 // parallax intensity
+    const FACTOR = 0.15 // parallax intensity
 
     const onScroll = () => {
       if (rafId) return
@@ -115,6 +115,7 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
             width={800}
             height={600}
             unoptimized
+            {...(index < 4 ? { priority: true, loading: 'eager' as const } : {})}
             onLoad={() => setIsLoaded(true)}
             className={`w-full h-auto transition-[filter] duration-700 ease-out ${
               isLoaded ? 'blur-0' : 'blur-[20px]'
