@@ -43,8 +43,8 @@ const projects = [
     name: "CTF & Security Labs",
     subtitle: "Capture the Flag & Cloud Security",
     description:
-      "Network forensics, packet analysis, and AWS security labs covering KMS, VPC, S3, and IAM.",
-    pills: ["AWS", "KMS", "VPC", "Forensics"],
+      "Top 20 regionally in the SANS AWS Skills to Jobs CTF (7,498 pts). Network forensics, packet analysis, and AWS security labs covering KMS, VPC, S3, and IAM.",
+    pills: ["SANS CTF", "AWS", "KMS", "Forensics"],
     accent: "lavender" as const,
     url: null,
   },

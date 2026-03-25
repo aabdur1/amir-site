@@ -42,7 +42,7 @@ function RevealText({ text, baseDelay, mounted }: { text: string; baseDelay: num
 }
 
 const badges = [
-  { text: "1st Place — AWS National Cloud Quest", accent: "sapphire" },
+  { text: "Top 20 Regional — SANS AWS CTF", accent: "sapphire" },
   { text: "Zscaler Zero Trust Architect", accent: "mauve" },
   { text: "MS in MIS — UIC '26", accent: "peach" },
   { text: "AWS Cloud Security Builder", accent: "lavender" },

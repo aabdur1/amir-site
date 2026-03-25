@@ -44,6 +44,14 @@ const manualBadges: Badge[] = [
     date: "2026-03",
     url: "https://achieve.snowflake.com/b5d33342-5619-46ea-97ef-ca514f99cdb2#acc.9vlsqPTz",
   },
+  {
+    name: "SANS AWS Skills to Jobs CTF — Top 20 Regional",
+    shortName: "AWS CTF Top 20",
+    img: "/badges/sans-aws-ctf.png",
+    org: "SANS Institute",
+    date: "2026-03",
+    url: "https://www.sans.org/cyber-ranges/",
+  },
 ];
 
 const CREDLY_USER = "amir-abdur-rahim";
