@@ -175,8 +175,8 @@ export default function Nav() {
         <Link
           ref={nameRef}
           href="/"
-          className="nav-wordmark min-w-0 font-[family-name:var(--font-display)] text-lg sm:text-[length:var(--step-2)] text-ink dark:text-night-text
-            tracking-tight leading-none"
+          className="nav-wordmark min-w-0 font-[family-name:var(--font-display)] text-sm sm:text-[length:var(--step-2)] text-ink dark:text-night-text
+            tracking-tight leading-none truncate"
           style={{
             opacity: isHome ? 0.6 : 1,
             transform: isHome ? `translateY(${(1 - 0.6) * 4}px)` : "none",
