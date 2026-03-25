@@ -93,7 +93,7 @@ function CountUp({ target }: { target: number }) {
 const BATCH_SIZE = 12
 
 export function MasonryGrid({ photos }: { photos: Photo[] }) {
-  const [sortBy, setSortBy] = useState<SortBy>('shuffle')
+  const [sortBy, setSortBy] = useState<SortBy>('date')
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const [visibleCount, setVisibleCount] = useState(BATCH_SIZE)
@@ -205,7 +205,6 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
               key={photo.url}
               photo={photo}
               index={i}
-              tall={i % 5 === 2}
               onClick={() => openLightbox(i)}
             />
           ))}

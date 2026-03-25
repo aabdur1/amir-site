@@ -7,12 +7,12 @@ import type { Photo } from '@/lib/types'
 interface PhotoCardProps {
   photo: Photo
   index: number
-  tall?: boolean
   onClick: () => void
 }
 
-export function PhotoCard({ photo, index, tall, onClick }: PhotoCardProps) {
+export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
   const [isLoaded, setIsLoaded] = useState(false)
+  const [isPortrait, setIsPortrait] = useState(false)
   const [isInView, setIsInView] = useState(false)
   const [entryDone, setEntryDone] = useState(false)
   const cardRef = useRef<HTMLButtonElement>(null)
@@ -97,7 +97,7 @@ export function PhotoCard({ photo, index, tall, onClick }: PhotoCardProps) {
       type="button"
       onClick={handleClick}
       aria-label={`Open photo taken on ${photo.date} with ${photo.camera}`}
-      className={`cursor-zoom-in rounded-lg text-left w-full ${tall ? 'row-span-2' : ''} ${
+      className={`cursor-zoom-in rounded-lg text-left w-full ${isPortrait ? 'row-span-2' : ''} ${
         entryDone
           ? 'group transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]'
           : ''
@@ -124,7 +124,11 @@ export function PhotoCard({ photo, index, tall, onClick }: PhotoCardProps) {
             height={600}
             unoptimized
             {...(index < 4 ? { priority: true, loading: 'eager' as const } : {})}
-            onLoad={() => setIsLoaded(true)}
+            onLoad={(e) => {
+              const img = e.currentTarget
+              if (img.naturalHeight > img.naturalWidth) setIsPortrait(true)
+              setIsLoaded(true)
+            }}
             className={`w-full h-full object-cover transition-[filter] duration-700 ease-out ${
               isLoaded ? 'blur-0' : 'blur-[20px]'
             }`}
