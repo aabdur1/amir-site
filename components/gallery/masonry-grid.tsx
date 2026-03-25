@@ -8,7 +8,16 @@ import type { Photo } from '@/lib/types'
 import { PhotoCard } from './photo-card'
 import { SortControls } from './sort-controls'
 
-type SortBy = 'date' | 'camera' | 'lens'
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+type SortBy = 'shuffle' | 'date' | 'camera' | 'lens'
 
 const CAMERA_BRANDS: Record<string, string> = {
   ILCE: 'Sony',
@@ -84,23 +93,34 @@ function CountUp({ target }: { target: number }) {
 const BATCH_SIZE = 12
 
 export function MasonryGrid({ photos }: { photos: Photo[] }) {
-  const [sortBy, setSortBy] = useState<SortBy>('date')
+  const [sortBy, setSortBy] = useState<SortBy>('shuffle')
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const [visibleCount, setVisibleCount] = useState(BATCH_SIZE)
   const sentinelRef = useRef<HTMLDivElement>(null)
 
-  const sortedPhotos = useMemo(() => [...photos].sort((a, b) => {
-    if (sortBy === 'date') return b.date.localeCompare(a.date) // newest first
-    if (sortBy === 'camera') return a.camera.localeCompare(b.camera)
-    if (sortBy === 'lens') return a.lens.localeCompare(b.lens)
-    return 0
-  }), [photos, sortBy])
+  const shuffledRef = useRef<Photo[]>([])
+  if (shuffledRef.current.length !== photos.length) {
+    shuffledRef.current = shuffle(photos)
+  }
 
-  // Reset visible count when sort changes
+  const displayPhotos = useMemo(() => {
+    if (sortBy === 'shuffle') return shuffledRef.current
+    return [...photos].sort((a, b) => {
+      if (sortBy === 'date') return b.date.localeCompare(a.date)
+      if (sortBy === 'camera') return a.camera.localeCompare(b.camera)
+      if (sortBy === 'lens') return a.lens.localeCompare(b.lens)
+      return 0
+    })
+  }, [photos, sortBy])
+
+  // Reset visible count when sort changes; re-shuffle when shuffle is selected
   useEffect(() => {
+    if (sortBy === 'shuffle') {
+      shuffledRef.current = shuffle(photos)
+    }
     setVisibleCount(BATCH_SIZE)
-  }, [sortBy])
+  }, [sortBy, photos])
 
   // Infinite scroll — load more when sentinel enters viewport
   useEffect(() => {
@@ -109,29 +129,50 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setVisibleCount(prev => Math.min(prev + BATCH_SIZE, sortedPhotos.length))
+          setVisibleCount(prev => Math.min(prev + BATCH_SIZE, displayPhotos.length))
         }
       },
       { rootMargin: '400px' }
     )
     observer.observe(sentinel)
     return () => observer.disconnect()
-  }, [sortedPhotos.length])
+  }, [displayPhotos.length])
 
-  const visiblePhotos = sortedPhotos.slice(0, visibleCount)
+  const visiblePhotos = displayPhotos.slice(0, visibleCount)
 
   const photoByUrl = useMemo(
-    () => Object.fromEntries(sortedPhotos.map(p => [p.url, p])),
-    [sortedPhotos]
+    () => Object.fromEntries(displayPhotos.map(p => [p.url, p])),
+    [displayPhotos]
   )
 
   const slides = useMemo(
-    () => sortedPhotos.map((photo) => ({
+    () => displayPhotos.map((photo) => ({
       src: photo.url,
       alt: `Photograph by Amir Abdur-Rahim, ${photo.date} — ${photo.camera}, ${photo.lens}`,
     })),
-    [sortedPhotos]
+    [displayPhotos]
   )
+
+  const openLightbox = useCallback((index: number) => {
+    const open = () => {
+      setLightboxIndex(index)
+      setLightboxOpen(true)
+    }
+
+    if (document.startViewTransition) {
+      document.startViewTransition(open)
+    } else {
+      open()
+    }
+  }, [])
+
+  const closeLightbox = useCallback(() => {
+    setLightboxOpen(false)
+    // Clear view-transition-name from all photo wrappers
+    document.querySelectorAll('[style*="view-transition-name"]').forEach(el => {
+      (el as HTMLElement).style.viewTransitionName = ''
+    })
+  }, [])
 
   return (
     <div onContextMenu={(e) => e.preventDefault()}>
@@ -158,28 +199,26 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
 
       {/* Masonry grid */}
       <div className="px-4 sm:px-6 pb-16 max-w-7xl mx-auto">
-        <div className="columns-1 sm:columns-2 xl:columns-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 auto-rows-[250px] sm:auto-rows-[300px]">
           {visiblePhotos.map((photo, i) => (
             <PhotoCard
               key={photo.url}
               photo={photo}
               index={i}
-              onClick={() => {
-                setLightboxIndex(i)
-                setLightboxOpen(true)
-              }}
+              tall={i % 5 === 2}
+              onClick={() => openLightbox(i)}
             />
           ))}
         </div>
         {/* Sentinel for infinite scroll */}
-        {visibleCount < sortedPhotos.length && (
+        {visibleCount < displayPhotos.length && (
           <div ref={sentinelRef} className="h-px" />
         )}
       </div>
 
       <Lightbox
         open={lightboxOpen}
-        close={() => setLightboxOpen(false)}
+        close={closeLightbox}
         index={lightboxIndex}
         slides={slides}
         plugins={[Zoom]}

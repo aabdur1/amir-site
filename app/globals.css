@@ -424,6 +424,24 @@ html.theme-transitioning *::after {
   }
 }
 
+/* Gallery: morph thumbnail into lightbox */
+::view-transition-old(gallery-photo) {
+  animation: none;
+}
+::view-transition-new(gallery-photo) {
+  animation: gallery-morph-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes gallery-morph-in {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 /* Global focus ring — visible on keyboard navigation */
 :focus-visible {
   outline: 2px solid var(--color-mauve);

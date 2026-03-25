@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 
 const OPTIONS = [
+  { value: 'shuffle', label: 'Shuffle' },
   { value: 'date', label: 'Date' },
   { value: 'camera', label: 'Camera' },
   { value: 'lens', label: 'Lens' },
@@ -19,7 +20,7 @@ export function SortControls({ value, onChange }: SortControlsProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const optionRefs = useRef<(HTMLButtonElement | null)[]>([])
 
-  const currentLabel = OPTIONS.find((o) => o.value === value)?.label ?? 'Date'
+  const currentLabel = OPTIONS.find((o) => o.value === value)?.label ?? 'Shuffle'
 
   // Close on outside click — only attached when dropdown is open
   useEffect(() => {

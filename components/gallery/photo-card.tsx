@@ -1,21 +1,30 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import type { Photo } from '@/lib/types'
 
 interface PhotoCardProps {
   photo: Photo
   index: number
+  tall?: boolean
   onClick: () => void
 }
 
-export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
+export function PhotoCard({ photo, index, tall, onClick }: PhotoCardProps) {
   const [isLoaded, setIsLoaded] = useState(false)
   const [isInView, setIsInView] = useState(false)
   const [entryDone, setEntryDone] = useState(false)
   const cardRef = useRef<HTMLButtonElement>(null)
   const imgWrapperRef = useRef<HTMLDivElement>(null)
+
+  const handleClick = useCallback(() => {
+    const wrapper = imgWrapperRef.current
+    if (wrapper) {
+      wrapper.style.viewTransitionName = 'gallery-photo'
+    }
+    onClick()
+  }, [onClick])
 
   useEffect(() => {
     const el = cardRef.current
@@ -86,9 +95,9 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
     <button
       ref={cardRef}
       type="button"
-      onClick={onClick}
+      onClick={handleClick}
       aria-label={`Open photo taken on ${photo.date} with ${photo.camera}`}
-      className={`mb-4 break-inside-avoid cursor-zoom-in rounded-lg text-left w-full ${
+      className={`cursor-zoom-in rounded-lg text-left w-full ${tall ? 'row-span-2' : ''} ${
         entryDone
           ? 'group transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]'
           : ''
@@ -106,8 +115,8 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
             }
       }
     >
-      <div className="overflow-hidden rounded-lg">
-        <div ref={imgWrapperRef} className="will-change-transform">
+      <div className="overflow-hidden rounded-lg h-full">
+        <div ref={imgWrapperRef} className="will-change-transform h-full">
           <Image
             src={photo.thumb || photo.url}
             alt={`Photograph by Amir Abdur-Rahim, ${photo.date} — ${photo.camera}, ${photo.lens}`}
@@ -116,7 +125,7 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
             unoptimized
             {...(index < 4 ? { priority: true, loading: 'eager' as const } : {})}
             onLoad={() => setIsLoaded(true)}
-            className={`w-full h-auto transition-[filter] duration-700 ease-out ${
+            className={`w-full h-full object-cover transition-[filter] duration-700 ease-out ${
               isLoaded ? 'blur-0' : 'blur-[20px]'
             }`}
           />
