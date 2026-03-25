@@ -38,7 +38,7 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
   // After the entry animation finishes, enable hover effects
   useEffect(() => {
     if (!isInView) return
-    const delay = (index % 8) * 60 + 500 // stagger delay + animation duration
+    const delay = (index % 6) * 80 + 700 // stagger delay + animation duration
     const timer = setTimeout(() => setEntryDone(true), delay)
     return () => clearTimeout(timer)
   }, [isInView, index])
@@ -99,10 +99,10 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
           : {
               opacity: isInView ? 1 : 0,
               transform: isInView
-                ? 'scale(1) rotate(0deg)'
-                : 'scale(0.95) rotate(1.5deg)',
-              transition: 'opacity 500ms ease-out, transform 500ms ease-out',
-              transitionDelay: isInView ? `${(index % 8) * 60}ms` : '0ms',
+                ? 'translateY(0)'
+                : 'translateY(24px)',
+              transition: 'opacity 700ms ease-out, transform 700ms ease-out',
+              transitionDelay: isInView ? `${(index % 6) * 80}ms` : '0ms',
             }
       }
     >
