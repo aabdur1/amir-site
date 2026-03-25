@@ -122,8 +122,19 @@ export function Hero() {
     // Delay parallax until entrance animations complete (~2.2s for last badge)
     // to avoid style.transform conflicting with fade-in-up animation forwards fill
     const timer = setTimeout(() => {
+      // Smoothly transition into parallax to avoid a jarring jump
+      const refs = [labelRef, headshotRef, nameRef, ruleRef, taglineRef, socialRef, badgesRef, scrollIndRef];
+      refs.forEach(r => {
+        if (r.current) r.current.style.transition = 'transform 0.6s ease-out';
+      });
       window.addEventListener("scroll", handleScroll, { passive: true });
-      handleScroll(); // apply current scroll position immediately
+      handleScroll(); // apply current scroll position
+      // Remove transition after initial application so parallax is instant on scroll
+      setTimeout(() => {
+        refs.forEach(r => {
+          if (r.current) r.current.style.transition = '';
+        });
+      }, 700);
     }, 2500);
     return () => {
       clearTimeout(timer);
