@@ -1,20 +1,23 @@
 #!/usr/bin/env node
 /**
- * Add a photo to the gallery in one command.
+ * Add one or more photos to the gallery.
  *
  * Usage:
- *   node scripts/add-photo.mjs <path-to-photo> [--date YYYY-MM-DD] [--camera "Model"] [--lens "Lens"]
+ *   node scripts/add-photo.mjs <photo1> [photo2] [photo3] ... [--date YYYY-MM-DD] [--camera "Model"] [--lens "Lens"]
  *
  * Examples:
  *   node scripts/add-photo.mjs ~/Photos/DSC00123.jpg
- *   node scripts/add-photo.mjs ~/Photos/DSCF0723.jpg --camera "X100VI" --lens "23mm F2"
+ *   node scripts/add-photo.mjs ~/Photos/*.jpg
+ *   node scripts/add-photo.mjs photo1.jpg photo2.jpg --camera "X100VI" --lens "23mm F2"
  *
- * What it does:
- *   1. Uploads the original to S3 (amirabdurrahim-photos)
+ * For each photo it:
+ *   1. Uploads the original to S3
  *   2. Generates a 1600px thumbnail
  *   3. Uploads the thumbnail to S3 /thumbs/
- *   4. Adds the entry to photos.json (with thumb URL)
- *   5. Prints next steps (commit & push)
+ *   4. Adds the entry to photos.json
+ *
+ * --date/--camera/--lens flags apply to ALL photos in the batch.
+ * If not provided, auto-detects from filename or prompts (once for the batch).
  */
 
 import fs from 'node:fs'
@@ -30,7 +33,6 @@ const THUMBS_DIR = path.resolve('thumbs')
 const THUMB_WIDTH = 1600
 const THUMB_QUALITY = 80
 
-// Camera defaults based on filename prefix
 const CAMERA_DEFAULTS = {
   DSCF: { camera: 'X100VI', lens: '23mm F2' },
   DSC0: { camera: 'ILCE-6700', lens: '18-50mm F2.8 DC DN | Contemporary 021' },
@@ -45,13 +47,13 @@ function ask(question) {
 }
 
 function parseArgs(args) {
-  const result = { filePath: null, date: null, camera: null, lens: null }
+  const result = { files: [], date: null, camera: null, lens: null }
   let i = 0
   while (i < args.length) {
     if (args[i] === '--date') { result.date = args[++i]; i++ }
     else if (args[i] === '--camera') { result.camera = args[++i]; i++ }
     else if (args[i] === '--lens') { result.lens = args[++i]; i++ }
-    else { result.filePath = args[i]; i++ }
+    else { result.files.push(args[i]); i++ }
   }
   return result
 }
@@ -70,44 +72,29 @@ function guessCamera(filename) {
   return null
 }
 
-async function main() {
-  const args = parseArgs(process.argv.slice(2))
-
-  if (!args.filePath) {
-    console.error('Usage: node scripts/add-photo.mjs <path-to-photo> [--date YYYY-MM-DD] [--camera "Model"] [--lens "Lens"]')
-    process.exit(1)
-  }
-
-  const filePath = path.resolve(args.filePath)
-  if (!fs.existsSync(filePath)) {
-    console.error(`File not found: ${filePath}`)
-    process.exit(1)
-  }
-
+async function processPhoto(filePath, { date, camera, lens }, photos) {
   const filename = path.basename(filePath)
-  console.log(`\nAdding photo: ${filename}\n`)
+  console.log(`\n── ${filename}`)
 
-  // Determine date
-  let date = args.date || extractDateFromFilename(filename)
-  if (!date) date = await ask('Date (YYYY-MM-DD): ')
+  // Determine date (from flag, filename, or prompt)
+  let photoDate = date || extractDateFromFilename(filename)
+  if (!photoDate) photoDate = await ask('  Date (YYYY-MM-DD): ')
 
-  // Determine camera + lens
+  // Determine camera + lens (from flag, filename prefix, or prompt)
   const guess = guessCamera(filename)
-  let camera = args.camera || guess?.camera
-  let lens = args.lens || guess?.lens
-  if (!camera) camera = await ask('Camera model: ')
-  if (!lens) lens = await ask('Lens: ')
+  let photoCamera = camera || guess?.camera
+  let photoLens = lens || guess?.lens
+  if (!photoCamera) photoCamera = await ask('  Camera model: ')
+  if (!photoLens) photoLens = await ask('  Lens: ')
 
-  console.log(`  Date:   ${date}`)
-  console.log(`  Camera: ${camera}`)
-  console.log(`  Lens:   ${lens}\n`)
+  console.log(`  ${photoDate} · ${photoCamera} · ${photoLens}`)
 
-  // 1. Upload original to S3
-  console.log('1. Uploading original to S3...')
+  // Upload original
+  console.log('  Uploading original...')
   execFileSync('aws', ['s3', 'cp', filePath, `s3://${S3_BUCKET}/${filename}`], { stdio: 'inherit' })
 
-  // 2. Generate thumbnail
-  console.log('\n2. Generating thumbnail...')
+  // Generate thumbnail
+  console.log('  Generating thumbnail...')
   fs.mkdirSync(THUMBS_DIR, { recursive: true })
   const thumbPath = path.join(THUMBS_DIR, filename)
   const buffer = fs.readFileSync(filePath)
@@ -120,24 +107,50 @@ async function main() {
   const thumbSize = fs.statSync(thumbPath).size
   console.log(`  ${(originalSize / 1024 / 1024).toFixed(1)}MB → ${(thumbSize / 1024).toFixed(0)}KB (${((1 - thumbSize / originalSize) * 100).toFixed(0)}% smaller)`)
 
-  // 3. Upload thumbnail to S3
-  console.log('\n3. Uploading thumbnail to S3...')
+  // Upload thumbnail
+  console.log('  Uploading thumbnail...')
   execFileSync('aws', ['s3', 'cp', thumbPath, `s3://${S3_BUCKET}/thumbs/${filename}`], { stdio: 'inherit' })
 
-  // 4. Update photos.json
-  console.log('\n4. Updating photos.json...')
-  const photos = JSON.parse(fs.readFileSync(PHOTOS_PATH, 'utf-8'))
+  // Add to photos array
   photos.unshift({
     url: `${CLOUDFRONT_BASE}/${filename}`,
-    date,
-    camera,
-    lens,
+    date: photoDate,
+    camera: photoCamera,
+    lens: photoLens,
     thumb: `${CLOUDFRONT_BASE}/thumbs/${filename}`,
   })
+}
+
+async function main() {
+  const args = parseArgs(process.argv.slice(2))
+
+  if (args.files.length === 0) {
+    console.error('Usage: node scripts/add-photo.mjs <photo1> [photo2] ... [--date YYYY-MM-DD] [--camera "Model"] [--lens "Lens"]')
+    process.exit(1)
+  }
+
+  // Resolve and validate all paths
+  const filePaths = args.files.map(f => path.resolve(f))
+  for (const fp of filePaths) {
+    if (!fs.existsSync(fp)) {
+      console.error(`File not found: ${fp}`)
+      process.exit(1)
+    }
+  }
+
+  console.log(`\nAdding ${filePaths.length} photo${filePaths.length > 1 ? 's' : ''}...\n`)
+
+  const photos = JSON.parse(fs.readFileSync(PHOTOS_PATH, 'utf-8'))
+
+  for (const fp of filePaths) {
+    await processPhoto(fp, { date: args.date, camera: args.camera, lens: args.lens }, photos)
+  }
+
+  // Write updated photos.json
   fs.writeFileSync(PHOTOS_PATH, JSON.stringify(photos, null, 2) + '\n')
 
-  console.log(`\n✓ Done! Photo added to gallery (${photos.length} total)`)
-  console.log(`\nNext: git add public/photos.json && git commit -m "feat: add ${camera} photo (${date})" && git push`)
+  console.log(`\n✓ Done! ${filePaths.length} photo${filePaths.length > 1 ? 's' : ''} added (${photos.length} total)`)
+  console.log(`\nNext: git add public/photos.json && git commit -m "feat: add ${filePaths.length} photos" && git push`)
 }
 
 main().catch(console.error)
