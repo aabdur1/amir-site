@@ -13,14 +13,12 @@ import { execFileSync } from 'node:child_process'
 import path from 'node:path'
 
 const appleScript = [
-  'set theFiles to choose file with prompt "Select photos to add to gallery"',
-  '  of type {"public.jpeg", "public.png", "public.tiff", "public.heic"}',
-  '  with multiple selections allowed',
+  'set theFiles to choose file with prompt "Select photos to add to gallery" of type {"public.jpeg", "public.png", "public.tiff", "public.heic"} with multiple selections allowed',
   'set posixPaths to {}',
   'repeat with f in theFiles',
-  '  set end of posixPaths to POSIX path of f',
+  'set end of posixPaths to POSIX path of f',
   'end repeat',
-  'set AppleScript\'s text item delimiters to "\\n"',
+  'set text item delimiters of AppleScript to linefeed',
   'return posixPaths as text',
 ].join('\n')
 
