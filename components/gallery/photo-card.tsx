@@ -50,10 +50,9 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
     const imgWrapper = imgWrapperRef.current
     if (!card || !imgWrapper) return
 
-    // Skip on touch devices or reduced motion
-    const isTouch = !window.matchMedia('(pointer: fine)').matches
+    // Skip if user prefers reduced motion
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (isTouch || prefersReduced) return
+    if (prefersReduced) return
 
     // Set base scale for parallax (slightly zoomed to allow movement room)
     imgWrapper.style.transform = 'scale(1.08) translateY(0px)'
