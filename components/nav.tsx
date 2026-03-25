@@ -175,15 +175,22 @@ export default function Nav() {
         <Link
           ref={nameRef}
           href="/"
-          className="nav-wordmark min-w-0 font-[family-name:var(--font-display)] text-sm sm:text-[length:var(--step-2)] text-ink dark:text-night-text
-            tracking-tight leading-none truncate"
+          className="nav-wordmark min-w-0 font-[family-name:var(--font-display)] text-ink dark:text-night-text
+            tracking-tight leading-none"
           style={{
             opacity: isHome ? 0.6 : 1,
             transform: isHome ? `translateY(${(1 - 0.6) * 4}px)` : "none",
             transition: isHome ? "none" : "opacity 0.5s, transform 0.5s",
           }}
         >
-          Amir Abdur-Rahim
+          {/* Monogram on mobile, full name on sm+ */}
+          <span className="sm:hidden text-xl tracking-[0.08em]" aria-hidden="true">
+            A<span className="text-mauve dark:text-mauve-dark text-[0.6em] mx-[0.08em] relative top-[-0.05em]">&#9670;</span>A
+          </span>
+          <span className="hidden sm:inline text-[length:var(--step-2)]">
+            Amir Abdur-Rahim
+          </span>
+          <span className="sr-only sm:hidden">Amir Abdur-Rahim</span>
         </Link>
 
         {/* Right: Nav links + Dark mode toggle */}
