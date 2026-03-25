@@ -27,11 +27,15 @@ export function ScrollProgress() {
     if (!isScrollable) return;
 
     if (cssScrollSupported) {
-      // CSS handles the progress animation — just handle opacity fade-in
-      // Set opacity to 1 immediately since CSS controls the transform
-      if (barRef.current) {
-        barRef.current.style.opacity = '1';
+      // CSS handles the progress animation — fade in after first scroll
+      const onScroll = () => {
+        if (barRef.current && window.scrollY > 5) {
+          barRef.current.style.opacity = '1'
+          window.removeEventListener('scroll', onScroll)
+        }
       }
+      window.addEventListener('scroll', onScroll, { passive: true })
+      return () => window.removeEventListener('scroll', onScroll)
     } else {
       // Existing JS scroll listener code
       const updateProgress = () => {

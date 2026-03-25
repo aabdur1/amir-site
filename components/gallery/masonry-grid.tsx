@@ -99,25 +99,22 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
   const [visibleCount, setVisibleCount] = useState(BATCH_SIZE)
   const sentinelRef = useRef<HTMLDivElement>(null)
 
-  const shuffledRef = useRef<Photo[]>([])
-  if (shuffledRef.current.length !== photos.length) {
-    shuffledRef.current = shuffle(photos)
-  }
+  const [shuffled, setShuffled] = useState<Photo[]>(() => shuffle(photos))
 
   const displayPhotos = useMemo(() => {
-    if (sortBy === 'shuffle') return shuffledRef.current
+    if (sortBy === 'shuffle') return shuffled
     return [...photos].sort((a, b) => {
       if (sortBy === 'date') return b.date.localeCompare(a.date)
       if (sortBy === 'camera') return a.camera.localeCompare(b.camera)
       if (sortBy === 'lens') return a.lens.localeCompare(b.lens)
       return 0
     })
-  }, [photos, sortBy])
+  }, [photos, sortBy, shuffled])
 
   // Reset visible count when sort changes; re-shuffle when shuffle is selected
   useEffect(() => {
     if (sortBy === 'shuffle') {
-      shuffledRef.current = shuffle(photos)
+      setShuffled(shuffle(photos))
     }
     setVisibleCount(BATCH_SIZE)
   }, [sortBy, photos])
@@ -139,6 +136,11 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
   }, [displayPhotos.length])
 
   const visiblePhotos = displayPhotos.slice(0, visibleCount)
+
+  const photoIndexByUrl = useMemo(
+    () => Object.fromEntries(displayPhotos.map((p, i) => [p.url, i])),
+    [displayPhotos]
+  )
 
   const photoByUrl = useMemo(
     () => Object.fromEntries(displayPhotos.map(p => [p.url, p])),
@@ -205,7 +207,7 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
               key={photo.url}
               photo={photo}
               index={i}
-              onClick={() => openLightbox(i)}
+              onClick={() => openLightbox(photoIndexByUrl[photo.url])}
             />
           ))}
         </div>

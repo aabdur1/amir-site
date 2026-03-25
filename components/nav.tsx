@@ -14,7 +14,7 @@ function useMagnetic(ref: React.RefObject<HTMLAnchorElement | null>) {
 
     let targetX = 0, targetY = 0
     let currentX = 0, currentY = 0
-    let rafId: number | null = null
+    const state = { rafId: null as number | null }
     const MAX = 4 // max displacement in px
     const LERP = 0.15
 
@@ -24,10 +24,10 @@ function useMagnetic(ref: React.RefObject<HTMLAnchorElement | null>) {
       el.style.transform = `translate(${currentX}px, ${currentY}px)`
 
       if (Math.abs(targetX - currentX) > 0.1 || Math.abs(targetY - currentY) > 0.1) {
-        rafId = requestAnimationFrame(animate)
+        state.rafId = requestAnimationFrame(animate)
       } else {
         el.style.transform = `translate(${targetX}px, ${targetY}px)`
-        rafId = null
+        state.rafId = null
       }
     }
 
@@ -45,13 +45,13 @@ function useMagnetic(ref: React.RefObject<HTMLAnchorElement | null>) {
       // Clamp
       targetX = Math.max(-MAX, Math.min(MAX, targetX))
       targetY = Math.max(-MAX, Math.min(MAX, targetY))
-      if (!rafId) rafId = requestAnimationFrame(animate)
+      if (!state.rafId) state.rafId = requestAnimationFrame(animate)
     }
 
     const onLeave = () => {
       targetX = 0
       targetY = 0
-      if (!rafId) rafId = requestAnimationFrame(animate)
+      if (!state.rafId) state.rafId = requestAnimationFrame(animate)
     }
 
     el.addEventListener('mousemove', onMove)
@@ -60,7 +60,7 @@ function useMagnetic(ref: React.RefObject<HTMLAnchorElement | null>) {
     return () => {
       el.removeEventListener('mousemove', onMove)
       el.removeEventListener('mouseleave', onLeave)
-      if (rafId) cancelAnimationFrame(rafId)
+      if (state.rafId) cancelAnimationFrame(state.rafId)
       el.style.transform = ''
     }
   }, [ref])
@@ -163,7 +163,8 @@ export default function Nav() {
       clearTimeout(timerId)
       ro.disconnect()
     }
-  }, [pathname, isLearn, isGallery, indicatorMounted])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, isLearn, isGallery])
 
   return (
     <nav
