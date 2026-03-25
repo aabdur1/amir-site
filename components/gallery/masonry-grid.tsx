@@ -13,7 +13,10 @@ type SortBy = 'date' | 'camera' | 'lens'
 const CAMERA_BRANDS: Record<string, string> = {
   ILCE: 'Sony',
   NIKON: 'Nikon',
-  'FUJIFILM': 'Fujifilm',
+  FUJIFILM: 'Fujifilm',
+  X100: 'Fujifilm',
+  'X-T': 'Fujifilm',
+  'X-S': 'Fujifilm',
 }
 
 function deriveBrands(photos: Photo[]): string {
