@@ -24,6 +24,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { execFileSync } from 'node:child_process'
 import sharp from 'sharp'
+import { encode } from 'blurhash'
 import readline from 'node:readline'
 
 const S3_BUCKET = 'amirabdurrahim-photos'
@@ -107,6 +108,17 @@ async function processPhoto(filePath, { date, camera, lens }, photos) {
   const thumbSize = fs.statSync(thumbPath).size
   console.log(`  ${(originalSize / 1024 / 1024).toFixed(1)}MB → ${(thumbSize / 1024).toFixed(0)}KB (${((1 - thumbSize / originalSize) * 100).toFixed(0)}% smaller)`)
 
+  // Generate BlurHash
+  console.log('  Generating BlurHash...')
+  const thumbBuffer = fs.readFileSync(thumbPath)
+  const { data: rawData, info } = await sharp(thumbBuffer)
+    .raw()
+    .ensureAlpha()
+    .resize(32, null, { fit: 'inside' })
+    .toBuffer({ resolveWithObject: true })
+  const blurhash = encode(new Uint8ClampedArray(rawData), info.width, info.height, 4, 3)
+  console.log(`  ${blurhash}`)
+
   // Upload thumbnail
   console.log('  Uploading thumbnail...')
   execFileSync('aws', ['s3', 'cp', thumbPath, `s3://${S3_BUCKET}/thumbs/${filename}`], { stdio: 'inherit' })
@@ -118,6 +130,7 @@ async function processPhoto(filePath, { date, camera, lens }, photos) {
     camera: photoCamera,
     lens: photoLens,
     thumb: `${CLOUDFRONT_BASE}/thumbs/${filename}`,
+    blurhash,
   })
 }
 
