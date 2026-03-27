@@ -120,11 +120,16 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
           ? 'group transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]'
           : ''
       }`}
-      style={{
-        clipPath: isInView ? 'inset(0 0 0 0)' : 'inset(100% 0 0 0)',
-        transition: 'clip-path 800ms cubic-bezier(0.16, 1, 0.3, 1)',
-        transitionDelay: isInView ? `${(index % 6) * 80}ms` : '0ms',
-      }}
+      style={
+        !isInView
+          ? { opacity: 0 }
+          : entryDone
+            ? {}
+            : {
+                clipPath: 'inset(0 0 0 0)',
+                animation: `clip-reveal 800ms cubic-bezier(0.16, 1, 0.3, 1) ${(index % 6) * 80}ms both`,
+              }
+      }
     >
       <div className="overflow-hidden rounded-lg h-full relative">
         {/* BlurHash placeholder — shows instantly before image loads */}

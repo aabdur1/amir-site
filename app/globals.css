@@ -442,6 +442,16 @@ html.theme-transitioning *::after {
   }
 }
 
+/* Gallery: clip-path reveal for photo cards entering viewport */
+@keyframes clip-reveal {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
 /* Global focus ring — visible on keyboard navigation */
 :focus-visible {
   outline: 2px solid var(--color-mauve);
