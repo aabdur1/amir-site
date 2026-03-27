@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image'
+import { decode } from 'blurhash'
 import type { Photo } from '@/lib/types'
 
 interface PhotoCardProps {
@@ -17,6 +18,23 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
   const [entryDone, setEntryDone] = useState(false)
   const cardRef = useRef<HTMLButtonElement>(null)
   const imgWrapperRef = useRef<HTMLDivElement>(null)
+  const blurhashCanvasRef = useRef<HTMLCanvasElement>(null)
+
+  // Decode BlurHash into canvas on mount
+  useEffect(() => {
+    if (!photo.blurhash || !blurhashCanvasRef.current) return
+    const canvas = blurhashCanvasRef.current
+    const width = 32
+    const height = 32
+    canvas.width = width
+    canvas.height = height
+    const pixels = decode(photo.blurhash, width, height)
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    const imageData = ctx.createImageData(width, height)
+    imageData.data.set(pixels)
+    ctx.putImageData(imageData, 0, 0)
+  }, [photo.blurhash])
 
   const handleClick = useCallback(() => {
     const wrapper = imgWrapperRef.current
@@ -102,20 +120,23 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
           ? 'group transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]'
           : ''
       }`}
-      style={
-        entryDone
-          ? { opacity: 1 }
-          : {
-              opacity: isInView ? 1 : 0,
-              transform: isInView
-                ? 'translateY(0)'
-                : 'translateY(24px)',
-              transition: 'opacity 700ms ease-out, transform 700ms ease-out',
-              transitionDelay: isInView ? `${(index % 6) * 80}ms` : '0ms',
-            }
-      }
+      style={{
+        clipPath: isInView ? 'inset(0 0 0 0)' : 'inset(100% 0 0 0)',
+        transition: 'clip-path 800ms cubic-bezier(0.16, 1, 0.3, 1)',
+        transitionDelay: isInView ? `${(index % 6) * 80}ms` : '0ms',
+      }}
     >
-      <div className="overflow-hidden rounded-lg h-full">
+      <div className="overflow-hidden rounded-lg h-full relative">
+        {/* BlurHash placeholder — shows instantly before image loads */}
+        {photo.blurhash && (
+          <canvas
+            ref={blurhashCanvasRef}
+            aria-hidden="true"
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+              isLoaded ? 'opacity-0' : 'opacity-100'
+            }`}
+          />
+        )}
         <div ref={imgWrapperRef} className="will-change-transform h-full">
           <Image
             src={photo.thumb || photo.url}
@@ -129,9 +150,7 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
               if (img.naturalHeight > img.naturalWidth) setIsPortrait(true)
               setIsLoaded(true)
             }}
-            className={`w-full h-full object-cover transition-[filter] duration-700 ease-out ${
-              isLoaded ? 'blur-0' : 'blur-[20px]'
-            }`}
+            className="w-full h-full object-cover"
           />
         </div>
       </div>
