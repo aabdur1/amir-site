@@ -26,14 +26,15 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - **Shared components.** `SectionDivider` (server component, diamond ornament with `color` and `absolute` props) and `SectionHeader` (server component, numbered label + heading + mauve rule, receives `visible` prop). Used by all 5 section components + footer.
 - **Shared accent styles in `lib/styles.ts`.** Unified `ACCENT_STYLES` map (sapphire, mauve, peach, lavender) with `bg`, `border`, `hoverBorder`, `dot`, `text` classes. Used by hero badges, skills pills, and project cards. Projects extends with local `STRIPE_STYLES` for top border color.
 - **`next/image` for optimized images.** Headshot uses `fill` + `priority` (LCP element), badges use explicit `width/height`. Gallery grid uses `photo.thumb` (1600px web-optimized thumbnails via CloudFront `/thumbs/`) with `unoptimized`, lightbox uses full-resolution `photo.url`. Remote patterns configured in `next.config.ts` for CloudFront and Credly domains.
-- **Gallery thumbnail pipeline.** `scripts/add-photo.mjs` handles the full workflow: uploads original to S3, generates 1600px mozjpeg thumbnail via `sharp` (q80, `withoutEnlargement`), uploads thumbnail to S3 `/thumbs/`, updates `photos.json`. Supports batch: `node scripts/add-photo.mjs photo1.jpg photo2.jpg`. Auto-detects date from filename (`YYYYMMDD-` prefix), guesses camera/lens from filename prefix (DSCF→X100VI, DSC0→ILCE-6700, _DSC→ILCE-6300). `scripts/add-photo-gui.mjs` opens a native macOS Finder picker via `osascript`, passes selections to `add-photo.mjs`. `scripts/generate-thumbnails.mjs` batch-generates thumbnails for all photos. Thumbnails are ~250KB vs ~10MB originals (97-99% reduction).
+- **Gallery thumbnail + BlurHash pipeline.** `scripts/add-photo.mjs` handles the full workflow: uploads original to S3, generates 1600px mozjpeg thumbnail via `sharp` (q80, `withoutEnlargement`), computes 4x3 BlurHash from thumbnail, uploads thumbnail to S3 `/thumbs/`, updates `photos.json` with url, thumb, blurhash, date, camera, lens. Supports batch: `node scripts/add-photo.mjs photo1.jpg photo2.jpg`. Auto-detects date from filename (`YYYYMMDD-` prefix), guesses camera/lens from filename prefix (DSCF→X100VI, DSC0→ILCE-6700, _DSC→ILCE-6300). `scripts/add-photo-gui.mjs` opens a native macOS Finder picker via `osascript`, passes selections to `add-photo.mjs`. `scripts/generate-thumbnails.mjs` batch-generates thumbnails. `scripts/generate-blurhash.mjs` batch-generates BlurHash strings. Thumbnails are ~250KB vs ~10MB originals (97-99% reduction).
 - **Gallery sort and shuffle.** Four sort modes: `'date'` (default, newest first), `'camera'`, `'lens'`, `'shuffle'` (Fisher-Yates). Shuffle re-randomizes each time selected. Sort resets visible count to batch size (12). Sort controls in `sort-controls.tsx` with ARIA menu pattern.
 - **Gallery progressive loading.** Only 12 photos render initially (`BATCH_SIZE`). IntersectionObserver on a sentinel div with `rootMargin: '400px'` triggers loading of the next 12 as the user scrolls. Prevents mounting 50+ Image components at once.
 - **Gallery CSS Grid with varied sizes.** Uses `grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 auto-rows-[250px] sm:auto-rows-[300px]`. Portrait photos (detected via `naturalHeight > naturalWidth` on load) get `row-span-2`. The `row-span-2` class only applies after `entryDone` to prevent layout shift during the entry animation.
-- **Gallery photo card entrance.** Cards fade in with `translateY(24px)` → `translateY(0)` over 700ms, staggered at `(index % 6) * 80ms`. After animation completes, `entryDone` unlocks parallax and portrait row-span.
+- **Gallery BlurHash placeholders.** Each photo has a `blurhash` string in `photos.json` (4x3 components, ~25 chars). On mount, the BlurHash is decoded into a 32x32 canvas that shows instantly as a colorful placeholder. Fades out when the actual image loads. Uses the `blurhash` npm package for decode.
+- **Gallery clip-path reveal.** Cards enter with a `clip-reveal` CSS keyframe animation — image wipes into view from top to bottom over 800ms with expo-out easing, staggered at `(index % 6) * 80ms`. Before viewport entry, cards are `opacity: 0`. After `entryDone`, inline styles are cleared.
 - **Gallery parallax.** Each photo card has a `will-change-transform` wrapper inside `overflow-hidden`. RAF-gated scroll listener applies `scale(1.08) translateY(offset)` based on card distance from viewport center (`FACTOR = 0.15`). Works on both desktop and mobile. Respects `prefers-reduced-motion`.
 - **Gallery lightbox with View Transition morph.** Clicking a photo sets `view-transition-name: gallery-photo` on the image wrapper, then `document.startViewTransition()` triggers the lightbox open. CSS `gallery-morph-in` keyframe scales from 0.8x/opacity 0 to 1x/opacity 1 over 0.4s. Falls back to instant open on unsupported browsers. Lightbox index uses URL-based lookup (`photoIndexByUrl`) to handle infinite scroll correctly.
-- **Blur-up image loading.** Gallery photo cards show a blurred placeholder and transition to the full image on load, using CSS filter transitions. Custom implementation (not `placeholder="blur"`) to avoid needing `blurDataURL` per remote image.
+- **Gallery image loading.** BlurHash canvas placeholder shows instantly, actual image loads behind it, BlurHash fades out on load complete. No CSS blur filter needed — BlurHash provides real color data from the image.
 - **Branded OG images.** `app/opengraph-image.tsx`, `app/gallery/opengraph-image.tsx`, and `app/learn/opengraph-image.tsx` generate 1200x630 PNGs at build time using `ImageResponse` from `next/og`. Catppuccin Mocha branding with DM Serif Display font loaded from Google Fonts gstatic (with try/catch fallback if font fetch fails). No hardcoded `images` in metadata — Next.js auto-injects from these routes. `app/learn/[slug]/opengraph-image.tsx` re-exports the learn OG image for artifact pages.
 - **Metadata-driven learn section.** `lib/learn/artifacts.ts` is the single source of truth for all artifact metadata (slug, title, description, subtopics, section count). The index page, prev/next nav, sitemap entries, and JSON-LD `LearningResource` schema all derive from this array. Adding a new artifact: create the component, add an entry to the array.
 - **Learn artifact error boundary.** `ArtifactErrorBoundary` class component wraps each artifact in `app/learn/[slug]/page.tsx`. Shows editorial-styled fallback with "Try again" button if a canvas/interaction throws.
@@ -76,7 +77,7 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 
 **Effects:** Animated grain texture overlay (`body::after` with SVG feTurbulence, `grain-drift` keyframe with `steps(4)` for film-frame effect, 12% light / 4% dark opacity). Sits behind all content via `isolation: isolate` on body + `z-index: -1` on pseudo-element. Sharp editorial shadows, mauve text selection, cursor-reactive color speckles (dark mode only).
 
-**Animations:** `fade-in`, `fade-in-up`, `scale-in`, `dropdown-in`, `line-grow` (mauve accent rule), `shimmer` (scroll indicator), `float` (scroll line bob), `char-reveal` (character text reveal), `circle-reveal` (dark mode toggle radial wipe), `grain-drift` (grain overlay position shift), `scroll-progress` (CSS scroll-driven progress bar), `gallery-morph-in` (lightbox open morph from thumbnail). Dark mode toggle: `icon-swap-in` (springy pop), `sun-spin`, `moon-rock`, `sun-glow` (gold), `moon-glow` (lavender). Staggered delays throughout hero and all landing page sections (experience, projects, certifications, skills, education).
+**Animations:** `fade-in`, `fade-in-up`, `scale-in`, `dropdown-in`, `line-grow` (mauve accent rule), `shimmer` (scroll indicator), `float` (scroll line bob), `char-reveal` (character text reveal), `circle-reveal` (dark mode toggle radial wipe), `grain-drift` (grain overlay position shift), `scroll-progress` (CSS scroll-driven progress bar), `gallery-morph-in` (lightbox open morph from thumbnail), `clip-reveal` (gallery photo card wipe from top). Dark mode toggle: `icon-swap-in` (springy pop), `sun-spin`, `moon-rock`, `sun-glow` (gold), `moon-glow` (lavender). Staggered delays throughout hero and all landing page sections (experience, projects, certifications, skills, education).
 
 **Spring easing.** `--ease-spring` and `--ease-spring-settle` custom properties use CSS `linear()` function for natural multi-point spring curves. `--ease-spring` for hover entry (overshoot), `--ease-spring-settle` for settle-back. Used by `btn-lift`, `card-hover`, nav pill transitions, dark mode toggle, hero badge hovers, cert/project card transitions.
 
@@ -150,7 +151,7 @@ components/
   page-transition.tsx     # Staggered fade-in-up page wrapper (reduced-motion safe)
   gallery/
     masonry-grid.tsx      # Masonry layout with sort + lightbox + progressive loading (12 at a time)
-    photo-card.tsx        # Blur-up loading + scroll parallax + fade-in-up entrance
+    photo-card.tsx        # BlurHash placeholder + clip-path reveal + scroll parallax
     sort-controls.tsx     # Styled sort dropdown (menu/menuitem ARIA)
   learn/
     learn-card.tsx        # Index page card (illustration + number + title + accent pills)
@@ -166,14 +167,15 @@ components/
 lib/
   hooks.ts                # Shared hooks: useHydrated(), useScrollReveal()
   styles.ts               # Shared accent style map (ACCENT_STYLES)
-  types.ts                # Photo type definition (url, thumb?, date, camera, lens)
+  types.ts                # Photo type definition (url, thumb?, blurhash?, date, camera, lens)
   badges.ts               # Credly API fetcher + manual badges, exports getAllBadges()
   learn/
     artifacts.ts          # Artifact metadata array: slug, title, description, subtopics, order
 scripts/
-  add-photo.mjs           # One-command photo addition (supports multiple files): upload + thumbnail + photos.json
+  add-photo.mjs           # One-command photo addition (supports multiple files): upload + thumbnail + blurhash + photos.json
   add-photo-gui.mjs       # Native macOS Finder picker → feeds selections to add-photo.mjs
   generate-thumbnails.mjs # Batch thumbnail generation for all photos (sharp, 1600px, mozjpeg q80)
+  generate-blurhash.mjs   # Batch BlurHash generation for all photos (4x3 components from thumbnails)
 public/
   photos.json             # Photo metadata (CloudFront URLs + thumb URLs, EXIF data)
   badges/                 # Non-Credly badge images (e.g. Zscaler, Snowflake)
