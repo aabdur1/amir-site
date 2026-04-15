@@ -13,6 +13,24 @@ const STRIPE_STYLES = {
 
 const projects = [
   {
+    name: "Parkinson's Voice Screening",
+    subtitle: "Clinical ML from Acoustic Features",
+    description:
+      "Binary classification of Parkinson's patients vs healthy controls from sustained vowel recordings (n=81). Extracted 167 acoustic features (MFCCs, jitter/shimmer, spectral contrast) across 4 classifier families; LR odds ratios, Hosmer-Lemeshow calibration, and Youden's J threshold optimization for clinical interpretability.",
+    pills: ["Python", "scikit-learn", "Parselmouth", "librosa"],
+    accent: "mauve" as const,
+    url: null,
+  },
+  {
+    name: "WIEIAD Risk Scoring",
+    subtitle: "Multimodal ED Pipeline (in progress)",
+    description:
+      "Multimodal pipeline scoring 'What I Eat in a Day' TikToks for eating disorder risk markers. Combines Whisper transcripts, OCR calorie extraction, CLIP frame classification, and LLM rubric scoring across 8 EAT-26–informed dimensions. First automated NLP/CV approach to WIEIAD content.",
+    pills: ["Whisper", "CLIP", "OCR", "LLM"],
+    accent: "lavender" as const,
+    url: null,
+  },
+  {
     name: "DocDefend+",
     subtitle: "Clinical Documentation QA Platform",
     description:
