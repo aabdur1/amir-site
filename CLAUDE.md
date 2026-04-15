@@ -38,7 +38,7 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - **Branded OG images.** `app/opengraph-image.tsx`, `app/gallery/opengraph-image.tsx`, and `app/learn/opengraph-image.tsx` generate 1200x630 PNGs at build time using `ImageResponse` from `next/og`. Catppuccin Mocha branding with DM Serif Display font loaded from Google Fonts gstatic (with try/catch fallback if font fetch fails). No hardcoded `images` in metadata — Next.js auto-injects from these routes. `app/learn/[slug]/opengraph-image.tsx` re-exports the learn OG image for artifact pages.
 - **Metadata-driven learn section.** `lib/learn/artifacts.ts` is the single source of truth for all artifact metadata (slug, title, description, subtopics, section count). The index page, prev/next nav, sitemap entries, and JSON-LD `LearningResource` schema all derive from this array. Adding a new artifact: create the component, add an entry to the array.
 - **Learn artifact error boundary.** `ArtifactErrorBoundary` class component wraps each artifact in `app/learn/[slug]/page.tsx`. Shows editorial-styled fallback with "Try again" button if a canvas/interaction throws.
-- **Learn artifacts with ssr: false.** 4 of 6 learn artifacts (Log Loss, PCA, Clustering, SHAP) use `Math.random()` in `useState` initializers. They're loaded via `components/learn/dynamic-artifacts.tsx` — a `'use client'` wrapper that re-exports them with `next/dynamic` `{ ssr: false }` to avoid hydration mismatches. Gradient Descent and Regularization use deterministic initial data and load with SSR.
+- **Learn artifacts with ssr: false.** 5 of 7 learn artifacts (Log Loss, PCA, Clustering, SHAP, Neural Networks) use `Math.random()` in `useState` initializers or ref initializers. They're loaded via `components/learn/dynamic-artifacts.tsx` — a `'use client'` wrapper that re-exports them with `next/dynamic` `{ ssr: false }` to avoid hydration mismatches. Gradient Descent and Regularization use deterministic initial data and load with SSR.
 - **Canvas dark mode via MutationObserver.** Learn artifact components read Catppuccin color tokens via `getComputedStyle()` and detect `.dark` class changes on `<html>` via `MutationObserver` to re-draw canvases. Each artifact has a `getThemeColors()` helper returning the current palette.
 - **Learn artifact components are code-split.** `app/learn/[slug]/page.tsx` uses `next/dynamic` to lazy-load each artifact component, preventing all 6 from bundling into a single chunk.
 - **Staggered page transitions.** `PageTransition` wraps each direct child with `fade-in-up` animation, 120ms stagger between sections. Tracks visited pages via module-level `Set` — first visit gets full stagger, return visits get a quick 200ms fade-in. View Transitions API enabled via `experimental.viewTransition: true` in `next.config.ts` for smooth crossfades between routes.
@@ -69,6 +69,7 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - Sapphire (`#209fb5` / `#74c7ec`) — interactive: hover borders, footer link hovers, active Gallery nav
 - Lavender (`#7287fd` / `#b4befe`) — ambient: headshot glow, moon icon, scroll indicator
 - Rosewater (`#dc8a78` / `#f5e0dc`) — warm highlight: footer ornamental diamond. Note: `--color-gold-muted` in CSS is a legacy alias for this token.
+- Teal (`#179299` / `#94e2d5`) — per-artifact accent for the Neural Networks learn explainer (section headers, active pills, hidden-layer toggle, output bars). Registered via `@property` for smooth theme-toggle interpolation.
 - Yellow (`#df8e1d` / `#f9e2af`) — kept only for dark mode toggle sun icon
 
 **CSS `@property` registered colors.** `--color-mauve`, `--color-peach`, `--color-sapphire`, `--color-lavender` are registered via `@property` with `syntax: "<color>"` for smooth interpolation during theme toggles (300ms transition on `:root`).
@@ -157,13 +158,14 @@ components/
     learn-card.tsx        # Index page card (illustration + number + title + accent pills)
     learn-nav.tsx         # Prev/next navigation between artifacts (server component)
     artifact-error-boundary.tsx # Error boundary with editorial fallback + "Try again" button
-    dynamic-artifacts.tsx # Client wrapper for ssr: false dynamic imports (Log Loss, PCA, Clustering, SHAP)
+    dynamic-artifacts.tsx # Client wrapper for ssr: false dynamic imports (Log Loss, PCA, Clustering, SHAP, Neural Networks)
     gradient-descent.tsx  # 01/ Gradient Descent (4 sections: tangent line + drag, sparkline + compare, noise slider + smoothness, side-by-side GD vs GB)
     log-loss-cross-entropy.tsx # 02/ Log Loss & Cross-Entropy (4 sections: QQ + Shapiro-Wilk, sweep + multi-sample, info gain calc, hover-linked chain)
     pca.tsx               # 03/ PCA (5 sections: reconstruction + sweep, Kaiser criterion, before/after scatter, projection canvas, preset weights)
     regularization.tsx    # 04/ Regularization (2 sections: side-by-side Ridge/Lasso + sweep, bias-variance decomposition + canvas drag, linked lambda)
     clustering.tsx        # 05/ Clustering (3 sections: centroid trail + click-to-place, linkage toggle, interactive eps + cluster sparkline)
     shap.tsx              # 06/ SHAP (4 sections: feature value waterfall, click-highlight + correlation arrows, cumulative importance, subset lattice)
+    neural-networks.tsx   # 07/ Neural Networks (7 sections: neuron anatomy, XOR & linear separability (XNOR combinator toggle), activations & vanishing gradients, backprop walkthrough (5-stage step-through), momentum vs vanilla GD, training a tiny MLP, autoencoder vs PCA (2→1→4→2 AE))
 lib/
   hooks.ts                # Shared hooks: useHydrated(), useScrollReveal()
   styles.ts               # Shared accent style map (ACCENT_STYLES)

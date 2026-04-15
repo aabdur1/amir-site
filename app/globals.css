@@ -22,10 +22,21 @@
   inherits: true;
   initial-value: #7287fd;
 }
+@property --color-teal {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #179299;
+}
+@property --color-teal-dark {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #94e2d5;
+}
 
 :root {
   transition: --color-mauve 300ms ease, --color-peach 300ms ease,
-              --color-sapphire 300ms ease, --color-lavender 300ms ease;
+              --color-sapphire 300ms ease, --color-lavender 300ms ease,
+              --color-teal 300ms ease;
 }
 
 @theme {
@@ -66,6 +77,10 @@
   /* Accent: Lavender — ambient (glows) */
   --color-lavender: #7287fd;
   --color-lavender-dark: #b4befe;
+
+  /* Accent: Teal — neural networks artifact */
+  --color-teal: #179299;
+  --color-teal-dark: #94e2d5;
 
   /* Accent: Rosewater — warm highlight (footer ornaments, social hovers) */
   --color-rosewater: #dc8a78;

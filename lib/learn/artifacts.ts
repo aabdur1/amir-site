@@ -63,6 +63,15 @@ export const ARTIFACTS: Artifact[] = [
     subtopics: ['Waterfall charts', 'Beeswarm plots', 'Global importance', 'Shapley math'],
     sectionCount: 4,
   },
+  {
+    slug: 'neural-networks',
+    title: 'Neural Networks',
+    shortTitle: 'Neural Networks',
+    description: 'From a single neuron to a trained MLP — weights, activations, backpropagation, and why depth matters.',
+    number: '07',
+    subtopics: ['Neuron anatomy', 'XOR & depth', 'Activations', 'Backprop', 'Momentum', 'Training', 'Autoencoder vs PCA'],
+    sectionCount: 7,
+  },
 ]
 
 export function getArtifact(slug: string): Artifact | undefined {

@@ -26,3 +26,8 @@ export const SHAP = dynamic(
   () => import('./shap').then(m => ({ default: m.SHAP })),
   { ssr: false }
 )
+
+export const NeuralNetworks = dynamic(
+  () => import('./neural-networks').then(m => ({ default: m.NeuralNetworks })),
+  { ssr: false }
+)
