@@ -17,7 +17,7 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - **Fonts via next/font/google.** DM Serif Display (headings), DM Sans (body), Share Tech Mono (mono/tags), Lora (credential badges). Loaded as CSS variables (`--font-display`, `--font-body`, `--font-mono`, `--font-badge`) in `app/layout.tsx`.
 - **Dark mode via class toggle.** Uses `.dark` class on `<html>`. Custom variant defined in globals.css: `@custom-variant dark (&:where(.dark, .dark *));`. Blocking inline `<script>` in `layout.tsx` prevents flash of wrong theme on load. Toggle uses View Transitions API (`startViewTransition`) with circular clip-path reveal when supported, falling back to `.theme-transitioning` class for 300ms crossfade.
 - **No icon libraries.** Icons are inline SVGs.
-- **Client components marked explicitly.** Components using `"use client"`: nav, dark-mode-toggle, hero, animated-text, hero-speckles, interactive-headshot, certifications, experience, projects, skills, education, footer, scroll-progress, page-transition. Gallery components (masonry-grid, photo-card, sort-controls) are also client components. Learn components (learn-card, gradient-descent, log-loss-cross-entropy, pca, regularization, clustering, shap) are client components. learn-nav is a server component.
+- **Client components marked explicitly.** Components using `"use client"`: nav, dark-mode-toggle, hero, animated-text, hero-speckles, interactive-headshot, certifications, experience, projects, skills, education, footer, scroll-progress, page-transition. Gallery components (masonry-grid, photo-card, sort-controls) are also client components. Learn components (learn-card, gradient-descent, log-loss-cross-entropy, pca, regularization, clustering, shap, neural-networks) are client components. learn-nav is a server component.
 - **No shorthand/longhand mixing in inline styles.** Always fold `animationDelay` into the `animation` shorthand to avoid React warnings.
 
 ## Key Patterns
@@ -40,7 +40,7 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - **Learn artifact error boundary.** `ArtifactErrorBoundary` class component wraps each artifact in `app/learn/[slug]/page.tsx`. Shows editorial-styled fallback with "Try again" button if a canvas/interaction throws.
 - **Learn artifacts with ssr: false.** 5 of 7 learn artifacts (Log Loss, PCA, Clustering, SHAP, Neural Networks) use `Math.random()` in `useState` initializers or ref initializers. They're loaded via `components/learn/dynamic-artifacts.tsx` — a `'use client'` wrapper that re-exports them with `next/dynamic` `{ ssr: false }` to avoid hydration mismatches. Gradient Descent and Regularization use deterministic initial data and load with SSR.
 - **Canvas dark mode via MutationObserver.** Learn artifact components read Catppuccin color tokens via `getComputedStyle()` and detect `.dark` class changes on `<html>` via `MutationObserver` to re-draw canvases. Each artifact has a `getThemeColors()` helper returning the current palette.
-- **Learn artifact components are code-split.** `app/learn/[slug]/page.tsx` uses `next/dynamic` to lazy-load each artifact component, preventing all 6 from bundling into a single chunk.
+- **Learn artifact components are code-split.** `app/learn/[slug]/page.tsx` uses `next/dynamic` to lazy-load each artifact component, preventing all 7 from bundling into a single chunk.
 - **Staggered page transitions.** `PageTransition` wraps each direct child with `fade-in-up` animation, 120ms stagger between sections. Tracks visited pages via module-level `Set` — first visit gets full stagger, return visits get a quick 200ms fade-in. View Transitions API enabled via `experimental.viewTransition: true` in `next.config.ts` for smooth crossfades between routes.
 - **Per-element parallax.** Hero elements each have their own scroll speed (label fastest, badges slowest), creating a spread/dispersal effect on scroll. Uses refs + RAF + passive scroll listener — no state re-renders. Skipped entirely when `prefers-reduced-motion` is enabled. Parallax activates after 2.5s with a smooth 0.6s transition to prevent jarring jump after entry animations.
 - **Scroll-driven ref mutations (no re-renders).** Nav wordmark opacity and hero parallax both use direct `ref.style` mutations inside RAF callbacks instead of `setState`, avoiding React re-renders on every scroll frame.
@@ -72,7 +72,7 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - Teal (`#179299` / `#94e2d5`) — per-artifact accent for the Neural Networks learn explainer (section headers, active pills, hidden-layer toggle, output bars). Registered via `@property` for smooth theme-toggle interpolation.
 - Yellow (`#df8e1d` / `#f9e2af`) — kept only for dark mode toggle sun icon
 
-**CSS `@property` registered colors.** `--color-mauve`, `--color-peach`, `--color-sapphire`, `--color-lavender` are registered via `@property` with `syntax: "<color>"` for smooth interpolation during theme toggles (300ms transition on `:root`).
+**CSS `@property` registered colors.** `--color-mauve`, `--color-peach`, `--color-sapphire`, `--color-lavender`, `--color-teal`, `--color-teal-dark` are registered via `@property` with `syntax: "<color>"` for smooth interpolation during theme toggles (300ms transition on `:root`).
 
 **Fluid typography.** `--step--2` through `--step-5` custom properties in `@theme {}` use `clamp()` for smooth font scaling between 320px and 1280px viewports. Used by hero heading (`--step-5`), hero tagline (`--step-1`), nav wordmark (`--step-2` on sm+), section headings (`--step-3`).
 
@@ -128,7 +128,7 @@ app/
     opengraph-image.tsx   # Gallery OG image (Catppuccin Mocha, 1200x630)
     page.tsx              # Photography gallery page
   learn/
-    page.tsx              # Learn index: card grid of 6 interactive explainers
+    page.tsx              # Learn index: card grid of 7 interactive explainers
     opengraph-image.tsx   # Learn OG image (Catppuccin Mocha, 1200x630)
     [slug]/
       page.tsx            # Dynamic route: back link, artifact component, error boundary, prev/next nav, JSON-LD
@@ -206,7 +206,7 @@ Configured in `netlify.toml`:
 
 ## SEO
 
-- `app/sitemap.ts` generates `/sitemap.xml` (homepage priority 1 monthly, gallery priority 0.8 weekly, learn index priority 0.8 monthly, 6 artifact pages priority 0.7 monthly)
+- `app/sitemap.ts` generates `/sitemap.xml` (homepage priority 1 monthly, gallery priority 0.8 weekly, learn index priority 0.8 monthly, 7 artifact pages priority 0.7 monthly)
 - `app/robots.ts` generates `/robots.txt` (allow all, link to sitemap)
 - JSON-LD `Person` schema in `layout.tsx` `<head>` (hardcoded object literal via `JSON.stringify`, no user input — safe)
 - JSON-LD `LearningResource` schema on each `/learn/[slug]` page (rendered as `<script>` tag in JSX, not via metadata.other)
@@ -224,7 +224,7 @@ npm run start     # Serve production build locally
 npm run lint      # ESLint (flat config via eslint.config.mjs, not next lint)
 ```
 
-**Known lint error (pre-existing, not a regression):** 1 error in `interactive-headshot.tsx` (react-hooks/immutability — `animate` accessed before declaration). Safe to ignore.
+**Known lint errors (pre-existing, not regressions):** 2 errors — `interactive-headshot.tsx` (react-hooks/immutability — `animate` accessed before declaration) and `masonry-grid.tsx:117` (react-hooks/set-state-in-effect — setState in effect body). Both safe to ignore.
 
 ## Certifications
 
