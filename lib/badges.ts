@@ -29,6 +29,14 @@ interface CredlyResponse {
 /** Manual badges not on Credly (e.g. Zscaler, Snowflake) */
 const manualBadges: Badge[] = [
   {
+    name: "Building with the Claude API",
+    shortName: "Building with the Claude API",
+    img: "/badges/anthropic-claude-api.png",
+    org: "Anthropic",
+    date: "2026-05",
+    url: "https://verify.skilljar.com/c/ii27jw252s8e",
+  },
+  {
     name: "Zscaler Zero Trust Certified Architect",
     shortName: "Zero Trust Architect",
     img: "/badges/zscaler-ztca.jpeg",
