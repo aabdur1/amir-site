@@ -40,6 +40,35 @@ function deriveBrands(photos: Photo[]): string {
   return arr.length > 0 ? arr.join(' + ') : 'Various'
 }
 
+function brandFor(camera: string): string | null {
+  const upper = camera.toUpperCase()
+  for (const [prefix, brand] of Object.entries(CAMERA_BRANDS)) {
+    if (upper.startsWith(prefix)) return brand
+  }
+  return null
+}
+
+function cameraLabel(camera: string): string {
+  const brand = brandFor(camera)
+  return brand ? `${brand} ${camera}` : camera
+}
+
+type Group = { key: string; label: string; photos: Photo[] }
+
+function buildGroups(photos: Photo[], sortBy: 'camera' | 'lens'): Group[] {
+  const map = new Map<string, Photo[]>()
+  for (const p of photos) {
+    const key = sortBy === 'camera' ? p.camera : p.lens
+    if (!map.has(key)) map.set(key, [])
+    map.get(key)!.push(p)
+  }
+  return Array.from(map.entries()).map(([key, groupPhotos]) => ({
+    key,
+    label: sortBy === 'camera' ? cameraLabel(key) : key,
+    photos: groupPhotos,
+  }))
+}
+
 function CountUp({ target }: { target: number }) {
   const spanRef = useRef<HTMLSpanElement>(null)
   const hasAnimated = useRef(false)
@@ -97,7 +126,7 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const [visibleCount, setVisibleCount] = useState(BATCH_SIZE)
-  const sentinelRef = useRef<HTMLDivElement>(null)
+  const [sentinelEl, setSentinelEl] = useState<HTMLDivElement | null>(null)
 
   const [shuffled, setShuffled] = useState<Photo[]>(() => shuffle(photos))
 
@@ -119,10 +148,9 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
     setVisibleCount(BATCH_SIZE)
   }, [sortBy, photos])
 
-  // Infinite scroll — load more when sentinel enters viewport
+  // Infinite scroll — re-attach observer whenever the sentinel mounts/unmounts
   useEffect(() => {
-    const sentinel = sentinelRef.current
-    if (!sentinel) return
+    if (!sentinelEl) return
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -131,11 +159,28 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
       },
       { rootMargin: '400px' }
     )
-    observer.observe(sentinel)
+    observer.observe(sentinelEl)
     return () => observer.disconnect()
-  }, [displayPhotos.length])
+  }, [sentinelEl, displayPhotos.length])
 
   const visiblePhotos = displayPhotos.slice(0, visibleCount)
+
+  // When sorting by camera or lens, slice the visible photos into labeled groups
+  const visibleGroups = useMemo<Group[] | null>(() => {
+    if (sortBy !== 'camera' && sortBy !== 'lens') return null
+    return buildGroups(visiblePhotos, sortBy)
+  }, [visiblePhotos, sortBy])
+
+  // Total counts per group (used in header to show e.g. "5 / 18 photos")
+  const totalCountByKey = useMemo<Record<string, number>>(() => {
+    if (sortBy !== 'camera' && sortBy !== 'lens') return {}
+    const counts: Record<string, number> = {}
+    for (const p of displayPhotos) {
+      const key = sortBy === 'camera' ? p.camera : p.lens
+      counts[key] = (counts[key] ?? 0) + 1
+    }
+    return counts
+  }, [displayPhotos, sortBy])
 
   const photoIndexByUrl = useMemo(
     () => Object.fromEntries(displayPhotos.map((p, i) => [p.url, i])),
@@ -201,19 +246,55 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
 
       {/* Masonry grid */}
       <div className="px-4 sm:px-6 pb-16 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 auto-rows-[250px] sm:auto-rows-[300px]">
-          {visiblePhotos.map((photo, i) => (
-            <PhotoCard
-              key={photo.url}
-              photo={photo}
-              index={i}
-              onClick={() => openLightbox(photoIndexByUrl[photo.url])}
-            />
-          ))}
-        </div>
+        {visibleGroups ? (
+          visibleGroups.map((group, gi) => (
+            <section
+              key={group.key}
+              aria-label={`${group.label}, ${totalCountByKey[group.key]} photos`}
+              className={gi === 0 ? '' : 'mt-14 sm:mt-16'}
+            >
+              <header className="mb-6 flex items-baseline gap-3 flex-wrap">
+                <span aria-hidden="true" className="text-peach dark:text-peach-dark font-[family-name:var(--font-mono)] text-xs sm:text-sm">
+                  {String(gi + 1).padStart(2, '0')} /
+                </span>
+                <h2 className="text-sm sm:text-base tracking-[0.2em] uppercase font-[family-name:var(--font-mono)] text-ink dark:text-night-text">
+                  {group.label}
+                </h2>
+                <span aria-hidden="true" className="text-peach/60 dark:text-peach-dark/60">◇</span>
+                <span className="text-xs font-[family-name:var(--font-mono)] text-ink-subtle dark:text-night-muted">
+                  {group.photos.length === totalCountByKey[group.key]
+                    ? `${group.photos.length} ${group.photos.length === 1 ? 'photo' : 'photos'}`
+                    : `${group.photos.length} of ${totalCountByKey[group.key]}`}
+                </span>
+                <div className="flex-1 h-px bg-cream-border/60 dark:bg-night-border/60 ml-2" />
+              </header>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 auto-rows-[250px] sm:auto-rows-[300px]">
+                {group.photos.map((photo, i) => (
+                  <PhotoCard
+                    key={photo.url}
+                    photo={photo}
+                    index={i}
+                    onClick={() => openLightbox(photoIndexByUrl[photo.url])}
+                  />
+                ))}
+              </div>
+            </section>
+          ))
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 auto-rows-[250px] sm:auto-rows-[300px]">
+            {visiblePhotos.map((photo, i) => (
+              <PhotoCard
+                key={photo.url}
+                photo={photo}
+                index={i}
+                onClick={() => openLightbox(photoIndexByUrl[photo.url])}
+              />
+            ))}
+          </div>
+        )}
         {/* Sentinel for infinite scroll */}
         {visibleCount < displayPhotos.length && (
-          <div ref={sentinelRef} className="h-px" />
+          <div ref={setSentinelEl} className="h-px" />
         )}
       </div>
 
