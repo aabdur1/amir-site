@@ -139,3 +139,13 @@ export async function getAllBadges(): Promise<Badge[]> {
   const all = [...credlyBadges, ...manualBadges];
   return all.sort((a, b) => b.date.localeCompare(a.date));
 }
+
+/** Badge grouping for the Certifications section */
+export type BadgeGroup = "data" | "cloud";
+
+const DATA_PATTERN = /looker|lookml|bigquery|snow|data/i;
+
+/** Classify a badge: data/analytics vs cloud/security. Future Credly badges self-sort. */
+export function badgeGroup(badge: Badge): BadgeGroup {
+  return DATA_PATTERN.test(badge.name) ? "data" : "cloud";
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import type { Badge } from "@/lib/badges";
+import { badgeGroup, type Badge } from "@/lib/badges";
 import { useScrollReveal } from "@/lib/hooks";
 import { SectionDivider } from "@/components/section-divider";
 import { SectionHeader } from "@/components/section-header";
@@ -20,6 +20,11 @@ interface CertificationsProps {
 export function Certifications({ badges }: CertificationsProps) {
   const [sectionRef, visible] = useScrollReveal();
 
+  const groups = [
+    { label: "Data & Analytics", dot: "bg-sapphire dark:bg-sapphire-dark", items: badges.filter((b) => badgeGroup(b) === "data") },
+    { label: "Cloud & Security", dot: "bg-lavender dark:bg-lavender-dark", items: badges.filter((b) => badgeGroup(b) === "cloud") },
+  ];
+
   return (
     <section
       ref={sectionRef}
@@ -31,54 +36,72 @@ export function Certifications({ badges }: CertificationsProps) {
       <div className="max-w-5xl mx-auto px-6 sm:px-8">
         <SectionHeader number="03" label="Certifications" title="Verified Credentials" visible={visible} />
 
-        {/* Badge grid */}
-        <div className="grid grid-cols-1 min-[375px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-          {badges.map((badge, i) => (
-            <a
-              key={badge.url}
-              href={badge.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`${badge.name} (opens in new tab)`}
-              className={`group flex flex-col items-center text-center p-4 sm:p-5 rounded-2xl
-                bg-cream/80 dark:bg-night/60
-                border border-cream-border/60 dark:border-night-border/60
-                hover:-translate-y-1 hover:shadow-card ${accentHoverBorders[i % 4]}`}
+        {groups.map((group, g) => (
+          <div key={group.label} className={g === 0 ? "" : "mt-12"}>
+            <p
+              className="flex items-center gap-2 text-xs tracking-[0.2em] uppercase
+                font-[family-name:var(--font-mono)] text-ink-subtle dark:text-night-muted mb-5"
               style={{
                 opacity: 0,
-                transition: "transform 300ms var(--ease-spring), box-shadow 300ms var(--ease-spring), border-color 300ms ease",
-                ...(visible
-                  ? {
-                      animation: `fade-in-up 0.5s ease-out ${200 + i * 80}ms forwards`,
-                    }
-                  : {}),
+                ...(visible ? { animation: `fade-in 0.5s ease-out ${100 + g * 80}ms forwards` } : {}),
               }}
             >
-              {/* Badge image */}
-              <div className="relative w-20 h-20 sm:w-24 sm:h-24 mb-3
-                group-hover:scale-105 transition-transform duration-300">
-                <Image
-                  src={badge.img}
-                  alt={badge.name}
-                  width={96}
-                  height={96}
-                  sizes="(max-width: 640px) 80px, 96px"
-                  className="w-full h-full object-contain"
-                />
-              </div>
+              <span className={`w-1.5 h-1.5 rounded-full ${group.dot} shrink-0`} aria-hidden="true" />
+              {group.label}
+            </p>
+            <div className="grid grid-cols-1 min-[375px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+              {group.items.map((badge, i) => (
+                <a
+                  key={badge.url}
+                  href={badge.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${badge.name} (opens in new tab)`}
+                  className={`group flex flex-col items-center text-center p-4 sm:p-5 rounded-2xl
+                    bg-cream/80 dark:bg-night/60
+                    border border-cream-border/60 dark:border-night-border/60
+                    hover:-translate-y-1 hover:shadow-card ${accentHoverBorders[i % 4]}`}
+                  style={{
+                    opacity: 0,
+                    transition: "transform 300ms var(--ease-spring), box-shadow 300ms var(--ease-spring), border-color 300ms ease",
+                    ...(visible
+                      ? {
+                          animation: `fade-in-up 0.5s ease-out ${200 + g * 100 + i * 80}ms forwards`,
+                        }
+                      : {}),
+                  }}
+                >
+                  {/* Badge image */}
+                  <div
+                    className="relative flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 mb-3 p-2
+                      rounded-xl bg-white/90 dark:bg-cream/95
+                      border border-cream-border/60 dark:border-night-border/40
+                      group-hover:scale-105 transition-transform duration-300"
+                  >
+                    <Image
+                      src={badge.img}
+                      alt={badge.name}
+                      width={96}
+                      height={96}
+                      sizes="(max-width: 640px) 80px, 96px"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
 
-              {/* Badge info */}
-              <span className="text-sm font-[family-name:var(--font-badge)]
-                text-ink dark:text-night-text/80 leading-snug mb-1">
-                {badge.shortName}
-              </span>
-              <span className="text-xs font-[family-name:var(--font-mono)]
-                text-ink-subtle dark:text-night-muted tracking-wide uppercase">
-                {badge.org}
-              </span>
-            </a>
-          ))}
-        </div>
+                  {/* Badge info */}
+                  <span className="text-sm font-[family-name:var(--font-badge)]
+                    text-ink dark:text-night-text/80 leading-snug mb-1">
+                    {badge.shortName}
+                  </span>
+                  <span className="text-xs font-[family-name:var(--font-mono)]
+                    text-ink-subtle dark:text-night-muted tracking-wide uppercase">
+                    {badge.org}
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        ))}
 
         {/* Credly link */}
         <div
