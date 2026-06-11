@@ -125,7 +125,7 @@ export function Hero() {
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    // Delay parallax until entrance animations complete (~2.0s for last badge)
+    // Delay parallax until entrance animations complete (~2.5s: last badge starts at 2000ms + 500ms duration)
     // to avoid style.transform conflicting with fade-in-up animation forwards fill
     const timer = setTimeout(() => {
       // Smoothly transition into parallax to avoid a jarring jump
