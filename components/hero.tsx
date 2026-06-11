@@ -131,7 +131,14 @@ export function Hero() {
       // Smoothly transition into parallax to avoid a jarring jump
       const refs = [labelRef, headshotRef, nameRef, ruleRef, taglineRef, blurbRef, ctaRef, socialRef, badgesRef, scrollIndRef];
       refs.forEach(r => {
-        if (r.current) r.current.style.transition = 'transform 0.6s ease-out';
+        if (r.current) {
+          // Entrance animations fill forwards, which overrides inline transforms —
+          // lock in their final state and clear them so parallax transforms apply
+          r.current.style.animation = 'none';
+          r.current.style.opacity = '1';
+          r.current.style.transform = '';
+          r.current.style.transition = 'transform 0.6s ease-out';
+        }
       });
       window.addEventListener("scroll", handleScroll, { passive: true });
       handleScroll(); // apply current scroll position

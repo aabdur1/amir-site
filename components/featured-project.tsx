@@ -78,7 +78,7 @@ export function FeaturedProject({ visible }: { visible: boolean }) {
       <div className="order-first lg:order-last mx-auto w-36 sm:w-44 lg:w-full lg:max-w-[200px]">
         <Image
           src="/theli/home.png"
-          alt="Theli home screen showing a day's logged meals"
+          alt="Theli home screen in its dark theme"
           width={IMG_WIDTH}
           height={IMG_HEIGHT}
           sizes="(max-width: 640px) 144px, 200px"
