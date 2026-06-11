@@ -145,7 +145,7 @@ export type BadgeGroup = "data" | "cloud";
 
 const DATA_PATTERN = /looker|lookml|bigquery|snow|data/i;
 
-/** Classify a badge: data/analytics vs cloud/security. Future Credly badges self-sort. */
+/** Classify a badge: data/analytics vs cloud/security. Keyword-based — review new badges and extend DATA_PATTERN as needed (e.g. Tableau/dbt/Databricks would currently land in "cloud"). */
 export function badgeGroup(badge: Badge): BadgeGroup {
   return DATA_PATTERN.test(badge.name) ? "data" : "cloud";
 }

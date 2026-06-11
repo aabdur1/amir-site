@@ -36,9 +36,10 @@ export function Certifications({ badges }: CertificationsProps) {
       <div className="max-w-5xl mx-auto px-6 sm:px-8">
         <SectionHeader number="03" label="Certifications" title="Verified Credentials" visible={visible} />
 
-        {groups.map((group, g) => (
+        {groups.map((group, g) =>
+          group.items.length === 0 ? null : (
           <div key={group.label} className={g === 0 ? "" : "mt-12"}>
-            <p
+            <h3
               className="flex items-center gap-2 text-xs tracking-[0.2em] uppercase
                 font-[family-name:var(--font-mono)] text-ink-subtle dark:text-night-muted mb-5"
               style={{
@@ -48,7 +49,7 @@ export function Certifications({ badges }: CertificationsProps) {
             >
               <span className={`w-1.5 h-1.5 rounded-full ${group.dot} shrink-0`} aria-hidden="true" />
               {group.label}
-            </p>
+            </h3>
             <div className="grid grid-cols-1 min-[375px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
               {group.items.map((badge, i) => (
                 <a
@@ -73,7 +74,7 @@ export function Certifications({ badges }: CertificationsProps) {
                 >
                   {/* Badge image */}
                   <div
-                    className="relative flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 mb-3 p-2
+                    className="flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 mb-3 p-2
                       rounded-xl bg-white/90 dark:bg-cream/95
                       border border-cream-border/60 dark:border-night-border/40
                       group-hover:scale-105 transition-transform duration-300"
@@ -101,7 +102,8 @@ export function Certifications({ badges }: CertificationsProps) {
               ))}
             </div>
           </div>
-        ))}
+          )
+        )}
 
         {/* Credly link */}
         <div
