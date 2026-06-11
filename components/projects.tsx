@@ -9,6 +9,7 @@ const STRIPE_STYLES = {
   sapphire: "border-t-sapphire dark:border-t-sapphire-dark",
   mauve: "border-t-mauve dark:border-t-mauve-dark",
   lavender: "border-t-lavender dark:border-t-lavender-dark",
+  rosewater: "border-t-rosewater dark:border-t-rosewater-dark",
 } as const;
 
 const projects = [

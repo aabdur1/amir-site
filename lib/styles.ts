@@ -27,6 +27,13 @@ export const ACCENT_STYLES = {
     dot: "bg-lavender dark:bg-lavender-dark",
     text: "text-ink dark:text-night-text/80",
   },
+  rosewater: {
+    bg: "bg-rosewater/10 dark:bg-rosewater-dark/12",
+    border: "border-rosewater/25 dark:border-rosewater-dark/25",
+    hoverBorder: "hover:border-rosewater/50 dark:hover:border-rosewater-dark/50",
+    dot: "bg-rosewater dark:bg-rosewater-dark",
+    text: "text-ink dark:text-night-text/80",
+  },
 } as const;
 
 export type AccentColor = keyof typeof ACCENT_STYLES;
