@@ -4,6 +4,7 @@ import { useScrollReveal } from "@/lib/hooks";
 import { ACCENT_STYLES } from "@/lib/styles";
 import { SectionDivider } from "@/components/section-divider";
 import { SectionHeader } from "@/components/section-header";
+import { FeaturedProject } from "@/components/featured-project";
 
 const STRIPE_STYLES = {
   sapphire: "border-t-sapphire dark:border-t-sapphire-dark",
@@ -83,6 +84,8 @@ export function Projects() {
       <div className="max-w-5xl mx-auto px-6 sm:px-8">
         <SectionHeader number="02" label="Projects" title="Things I've Built" visible={visible} />
 
+        <FeaturedProject visible={visible} />
+
         {/* Project grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           {projects.map((project, i) => {
@@ -160,7 +163,7 @@ export function Projects() {
                 "transform 300ms var(--ease-spring), box-shadow 300ms var(--ease-spring), border-color 300ms ease",
               ...(visible
                 ? {
-                    animation: `fade-in-up 0.5s ease-out ${200 + i * 100}ms forwards`,
+                    animation: `fade-in-up 0.5s ease-out ${300 + i * 100}ms forwards`,
                   }
                 : {}),
             };

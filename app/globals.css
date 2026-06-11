@@ -32,11 +32,16 @@
   inherits: true;
   initial-value: #94e2d5;
 }
+@property --color-rosewater {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #dc8a78;
+}
 
 :root {
   transition: --color-mauve 300ms ease, --color-peach 300ms ease,
               --color-sapphire 300ms ease, --color-lavender 300ms ease,
-              --color-teal 300ms ease;
+              --color-teal 300ms ease, --color-rosewater 300ms ease;
 }
 
 @theme {
