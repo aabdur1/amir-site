@@ -1,6 +1,6 @@
 # amir-site
 
-Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero + 5 editorial resume sections) + photography gallery + interactive data mining explainers.
+Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero with CTA/resume links + 6 editorial resume sections) + photography gallery + interactive data mining explainers.
 
 ## Tech Stack
 
@@ -17,14 +17,14 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - **Fonts via next/font/google.** DM Serif Display (headings), DM Sans (body), Share Tech Mono (mono/tags), Lora (credential badges). Loaded as CSS variables (`--font-display`, `--font-body`, `--font-mono`, `--font-badge`) in `app/layout.tsx`.
 - **Dark mode via class toggle.** Uses `.dark` class on `<html>`. Custom variant defined in globals.css: `@custom-variant dark (&:where(.dark, .dark *));`. Blocking inline `<script>` in `layout.tsx` prevents flash of wrong theme on load. Toggle uses View Transitions API (`startViewTransition`) with circular clip-path reveal when supported, falling back to `.theme-transitioning` class for 300ms crossfade.
 - **No icon libraries.** Icons are inline SVGs.
-- **Client components marked explicitly.** Components using `"use client"`: nav, dark-mode-toggle, hero, animated-text, hero-speckles, interactive-headshot, certifications, experience, projects, skills, education, footer, scroll-progress, page-transition. Gallery components (masonry-grid, photo-card, sort-controls) are also client components. Learn components (learn-card, gradient-descent, log-loss-cross-entropy, pca, regularization, clustering, shap, neural-networks) are client components. learn-nav is a server component.
+- **Client components marked explicitly.** Components using `"use client"`: nav, dark-mode-toggle, hero, animated-text, hero-speckles, interactive-headshot, certifications, experience, projects, featured-project, skills, education, footer, scroll-progress, page-transition, learn-teaser. Gallery components (masonry-grid, photo-card, sort-controls) are also client components. Learn components (learn-card, gradient-descent, log-loss-cross-entropy, pca, regularization, clustering, shap, neural-networks) are client components. learn-nav is a server component.
 - **No shorthand/longhand mixing in inline styles.** Always fold `animationDelay` into the `animation` shorthand to avoid React warnings.
 
 ## Key Patterns
 
 - **Shared hooks in `lib/hooks.ts`.** `useHydrated()` (hydration-safe boolean via `useSyncExternalStore`) and `useScrollReveal()` (IntersectionObserver with threshold 0.1, disconnect-after-first-intersection, returns `[ref, visible]`). Used by hero, footer, animated-text (hydrated) and all 5 section components (scroll reveal).
 - **Shared components.** `SectionDivider` (server component, diamond ornament with `color` and `absolute` props) and `SectionHeader` (server component, numbered label + heading + mauve rule, receives `visible` prop). Used by all 5 section components + footer.
-- **Shared accent styles in `lib/styles.ts`.** Unified `ACCENT_STYLES` map (sapphire, mauve, peach, lavender) with `bg`, `border`, `hoverBorder`, `dot`, `text` classes. Used by hero badges, skills pills, and project cards. Projects extends with local `STRIPE_STYLES` for top border color.
+- **Shared accent styles in `lib/styles.ts`.** Unified `ACCENT_STYLES` map (sapphire, mauve, peach, lavender, rosewater) with `bg`, `border`, `hoverBorder`, `dot`, `text` classes. Used by hero badges, skills pills, project cards, and the featured Theli card. Projects extends with local `STRIPE_STYLES` for top border color (includes rosewater).
 - **`next/image` for optimized images.** Headshot uses `fill` + `priority` (LCP element), badges use explicit `width/height`. Gallery grid uses `photo.thumb` (1600px web-optimized thumbnails via CloudFront `/thumbs/`) with `unoptimized`, lightbox uses full-resolution `photo.url`. Remote patterns configured in `next.config.ts` for CloudFront and Credly domains.
 - **Gallery thumbnail + BlurHash pipeline.** `scripts/add-photo.mjs` handles the full workflow: uploads original to S3, generates 1600px mozjpeg thumbnail via `sharp` (q80, `withoutEnlargement`), computes 4x3 BlurHash from thumbnail, uploads thumbnail to S3 `/thumbs/`, updates `photos.json` with url, thumb, blurhash, date, camera, lens. Supports batch: `node scripts/add-photo.mjs photo1.jpg photo2.jpg`. Auto-detects date from filename (`YYYYMMDD-` prefix), guesses camera/lens from filename prefix (DSCF→X100VI, DSC0→ILCE-6700, _DSC→ILCE-6300). `scripts/add-photo-gui.mjs` opens a native macOS Finder picker via `osascript`, passes selections to `add-photo.mjs`. `scripts/generate-thumbnails.mjs` batch-generates thumbnails. `scripts/generate-blurhash.mjs` batch-generates BlurHash strings. Thumbnails are ~250KB vs ~10MB originals (97-99% reduction).
 - **Gallery sort and shuffle.** Four sort modes: `'date'` (default, newest first), `'camera'`, `'lens'`, `'shuffle'` (Fisher-Yates). Shuffle re-randomizes each time selected. Sort resets visible count to batch size (12). Sort controls in `sort-controls.tsx` with ARIA menu pattern.
@@ -42,18 +42,23 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - **Canvas dark mode via MutationObserver.** Learn artifact components read Catppuccin color tokens via `getComputedStyle()` and detect `.dark` class changes on `<html>` via `MutationObserver` to re-draw canvases. Each artifact has a `getThemeColors()` helper returning the current palette.
 - **Learn artifact components are code-split.** `app/learn/[slug]/page.tsx` uses `next/dynamic` to lazy-load each artifact component, preventing all 7 from bundling into a single chunk.
 - **Staggered page transitions.** `PageTransition` wraps each direct child with `fade-in-up` animation, 120ms stagger between sections. Tracks visited pages via module-level `Set` — first visit gets full stagger, return visits get a quick 200ms fade-in. View Transitions API enabled via `experimental.viewTransition: true` in `next.config.ts` for smooth crossfades between routes.
-- **Per-element parallax.** Hero elements each have their own scroll speed (label fastest, badges slowest), creating a spread/dispersal effect on scroll. Uses refs + RAF + passive scroll listener — no state re-renders. Skipped entirely when `prefers-reduced-motion` is enabled. Parallax activates after 2.5s with a smooth 0.6s transition to prevent jarring jump after entry animations.
+- **Per-element parallax.** Hero elements each have their own scroll speed (label fastest, badges slowest), creating a spread/dispersal effect on scroll. Uses refs + RAF + passive scroll listener — no state re-renders. Skipped entirely when `prefers-reduced-motion` is enabled. Parallax activates after 2.5s: at attach time, each parallax element gets `animation: 'none'; opacity: '1'; transform: ''` to clear the `forwards`-fill from entrance animations (which otherwise overrides inline transform), then a 0.6s `transform` transition for a smooth first-frame settle, removed after 700ms so subsequent scroll is instant.
 - **Scroll-driven ref mutations (no re-renders).** Nav wordmark opacity and hero parallax both use direct `ref.style` mutations inside RAF callbacks instead of `setState`, avoiding React re-renders on every scroll frame.
 - **Multi-accent hero badges.** Each hero badge pill has a distinct Catppuccin accent with tinted background, colored dot, and matching hover border. Current badges: "Top 20 Regional — SANS AWS CTF" (sapphire), "Zscaler Zero Trust Architect" (mauve), "MS in MIS — UIC '26" (peach), "AWS Cloud Security Builder" (lavender).
 - **Character-by-character hero name reveal.** `RevealText` component splits text into per-character `<span>` elements with staggered `char-reveal` animation (clip-path mask via `overflow-hidden` wrapper). Uses `useSyncExternalStore` for `prefers-reduced-motion`. "Amir" starts at 0.3s, "Abdur-Rahim" at 0.5s, 40ms stagger per character.
 - **Cursor-reactive hero speckles (dark mode only).** `HeroSpeckles` renders viewport-proportional Catppuccin dots that drift from cursor. Seeded PRNG, RAF + lerp with convergence check. Disabled on touch/reduced-motion.
 - **Cursor-reactive headshot.** `InteractiveHeadshot` tilts toward cursor (3deg max) with light-source shadow. Perspective 3D + RAF + lerp, `getBoundingClientRect` cached via ResizeObserver. Disabled on touch.
 - **RAF convergence checks.** Speckle and headshot RAF loops auto-stop when lerp values converge, preventing idle 60fps loops.
-- **Parallax delayed start.** Hero parallax attaches after 2.5s to avoid conflicting with entrance `fade-in-up` animation fill. Smooth 0.6s transition on first frame prevents visual jump.
+- **Hero CTA + positioning blurb.** Below the tagline, a short positioning paragraph (healthcare data analyst / Epic EHR / MS MIS) fades in at 0.95s. Two CTA buttons follow: "Get in touch" (filled mauve, mailto) and "View resume" (outlined, links to `/Amir_Abdur-Rahim_Resume.pdf` in new tab), fading in at 1.1s/1.2s. Both have `will-change-transform` and are included in the parallax refs (rate 0.08). Badge entrance stagger re-spaced to start at 1700+i*100ms; social icons at 1.35/1.45/1.55s.
 - **Scroll progress bar.** `ScrollProgress` component shows a 2px mauve bar at the top of the viewport. Only renders on pages >2x viewport height (via ResizeObserver). Uses CSS `animation-timeline: scroll()` when supported (Chrome/Firefox), falls back to RAF-gated JS scroll listener for Safari.
 - **Gallery count-up animation.** Photo count in gallery subtitle animates from 0 to target using RAF with cubic ease-out over 1.2s. Triggers on viewport entry via IntersectionObserver. Respects `prefers-reduced-motion`.
-- **Numbered editorial sections.** Landing page sections use `01/`–`05/` numbered mono labels (peach accent number + slash separator). Sections alternate backgrounds: transparent → `bg-cream-dark/50 dark:bg-night-card/40` → transparent, etc. Each section has an ornamental diamond divider at top, display font heading, and mauve accent rule with `line-grow` animation.
+- **Numbered editorial sections.** Landing page sections use `01/`–`06/` numbered mono labels (peach accent number + slash separator). Sections alternate backgrounds: transparent → `bg-cream-dark/50 dark:bg-night-card/40` → transparent, etc. Each section has an ornamental diamond divider at top, display font heading, and mauve accent rule with `line-grow` animation. Section 06 (Learn Teaser) uses the tinted background.
 - **Multi-accent section pills.** Experience, Projects, Skills, and Education sections reuse the hero badge pill pattern — accent-tinted `bg-{color}/10`, `border-{color}/25`, colored dot, badge font. Each section/category gets a distinct accent from the Catppuccin palette.
+- **Featured project marquee card.** `components/featured-project.tsx` renders a full-width rosewater-striped card above the Projects grid — links to `https://theli.app`, shows a 640×1391 screenshot (`public/theli/home.png`), peach "Coming soon — App Store" status pill, and Swift/SwiftUI/Vision OCR/HealthKit tech pills. Launch-day swap is data-only (URL + pill text). Grid card delays shifted to 300+i*100ms to give the featured card clear visual separation.
+- **Project provenance tags.** Each project card has a `provenance` field rendered as a mono 12px label under the subtitle (e.g. "Graduate coursework · UIC MS MIS", "SANS competition"). Communicates origin context at a glance without adding prose.
+- **Certification grouping.** `lib/badges.ts` exports `badgeGroup(badge)` — keyword classifier (`/looker|lookml|bigquery|snow|data/i` → `"data"`, else `"cloud"`). `certifications.tsx` renders two `h3`-labeled groups: "Data & Analytics" (sapphire dot) and "Cloud & Security" (lavender dot). Empty groups are suppressed. Badge images are normalized to `bg-white/90 dark:bg-cream/95` chip so transparent-background PNGs render cleanly on both themes.
+- **Learn teaser section.** `components/learn-teaser.tsx` is homepage section 06 "Learning in Public". Pulls three artifacts by slug (`neural-networks`, `pca`, `shap`) from `lib/learn/artifacts.ts` via `TEASER_SLUGS`. Renders mini-cards (number, title, first 4 subtopics, section count) with an "Explore all {ARTIFACTS.length}" link to `/learn`. Uses `useScrollReveal` like all other sections.
+- **Resume PDF.** `public/Amir_Abdur-Rahim_Resume.pdf` is served at `/Amir_Abdur-Rahim_Resume.pdf`. Source of truth is `~/job_search/resume.md`; export pipeline is `~/job_search/scripts/export-resume.mjs` (markdown → marked → headless Chrome PDF). To update: edit `resume.md`, run `node ~/job_search/scripts/export-resume.mjs`, copy the output to `public/`, commit.
 
 ## Design System — Catppuccin Editorial
 
@@ -68,11 +73,11 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - Peach (`#fe640b` / `#fab387`) — decorative: section numbers, ornaments, separators
 - Sapphire (`#209fb5` / `#74c7ec`) — interactive: hover borders, footer link hovers, active Gallery nav
 - Lavender (`#7287fd` / `#b4befe`) — ambient: headshot glow, moon icon, scroll indicator
-- Rosewater (`#dc8a78` / `#f5e0dc`) — warm highlight: footer ornamental diamond. Note: `--color-gold-muted` in CSS is a legacy alias for this token.
+- Rosewater (`#dc8a78` / `#f5e0dc`) — warm highlight: footer ornamental diamond, featured Theli card top-border + tech pill accent. `@property` registered (`--color-rosewater`) with 300ms `:root` transition. Note: `--color-gold-muted` in CSS is a legacy alias for this token.
 - Teal (`#179299` / `#94e2d5`) — per-artifact accent for the Neural Networks learn explainer (section headers, active pills, hidden-layer toggle, output bars). Registered via `@property` for smooth theme-toggle interpolation.
 - Yellow (`#df8e1d` / `#f9e2af`) — kept only for dark mode toggle sun icon
 
-**CSS `@property` registered colors.** `--color-mauve`, `--color-peach`, `--color-sapphire`, `--color-lavender`, `--color-teal`, `--color-teal-dark` are registered via `@property` with `syntax: "<color>"` for smooth interpolation during theme toggles (300ms transition on `:root`).
+**CSS `@property` registered colors.** `--color-mauve`, `--color-peach`, `--color-sapphire`, `--color-lavender`, `--color-teal`, `--color-teal-dark`, `--color-rosewater` are registered via `@property` with `syntax: "<color>"` for smooth interpolation during theme toggles (300ms transition on `:root`).
 
 **Fluid typography.** `--step--2` through `--step-5` custom properties in `@theme {}` use `clamp()` for smooth font scaling between 320px and 1280px viewports. Used by hero heading (`--step-5`), hero tagline (`--step-1`), nav wordmark (`--step-2` on sm+), section headings (`--step-3`).
 
@@ -120,7 +125,7 @@ app/
   layout.tsx              # Root layout, fonts (4 families), metadata, theme-color, skip link, <main>, JSON-LD, nav, footer
   not-found.tsx           # Custom 404 page (editorial "wandered off the map", noindex)
   opengraph-image.tsx     # Branded OG image (Catppuccin Mocha, 1200x630)
-  page.tsx                # Landing: Hero, Experience, Projects, Certifications, Skills, Education
+  page.tsx                # Landing: Hero, Experience, Projects, Certifications, Skills, Education, LearnTeaser
   globals.css             # @property colors, @theme tokens, keyframes, utility classes, theme transitions, grain overlay
   sitemap.ts              # Generated /sitemap.xml (homepage + gallery + learn)
   robots.ts               # Generated /robots.txt (allow all, link to sitemap)
@@ -137,19 +142,21 @@ components/
   nav.tsx                 # Sticky nav: AA monogram (mobile) / full name (desktop), Learn pill (mauve), Gallery pill (sapphire), morphing indicator, magnetic hover, thin rule
   footer.tsx              # Editorial footer: name, tagline, links, diamond ornaments
   dark-mode-toggle.tsx    # Circular clip-path reveal via View Transitions API (fallback: crossfade)
-  hero.tsx                # Asymmetric hero: character-reveal name, headshot, badges, parallax
+  hero.tsx                # Asymmetric hero: character-reveal name, headshot, positioning blurb, CTA pair, badges, parallax
+  featured-project.tsx   # Full-width rosewater-striped Theli card above Projects grid (client component)
   interactive-headshot.tsx# Cursor-reactive 3D tilt headshot (light-source shadow)
   section-divider.tsx     # Shared ornamental diamond divider (server component)
   section-header.tsx      # Shared numbered section header with mauve rule (server component)
   certifications.tsx      # 03/ Scroll-triggered Credly badge grid (8 certs)
   experience.tsx          # 01/ Professional Experience — featured ScribeAmerica card
-  projects.tsx            # 02/ Things I've Built — DocDefend+, StudentPM, LightERP, CTF
+  projects.tsx            # 02/ Things I've Built — featured Theli card + 6-card grid (Parkinson's, WIEIAD, DocDefend+, StudentPM, LightERP, CTF) with provenance tags
   skills.tsx              # 04/ Technical Stack — 5 categorized pill rows
   education.tsx           # 05/ Education — MS MIS + BA Psychology with coursework
   animated-text.tsx       # Staggered word-by-word text reveal
   hero-speckles.tsx       # Cursor-reactive color dot field (dark mode only)
   scroll-progress.tsx     # Mauve scroll progress bar (CSS scroll-driven with JS fallback)
   page-transition.tsx     # Staggered fade-in-up page wrapper (reduced-motion safe)
+  learn-teaser.tsx        # 06/ Learning in Public — 3 mini-cards (neural-networks, pca, shap) + Explore all link (client component)
   gallery/
     masonry-grid.tsx      # Masonry layout with sort + lightbox + progressive loading (12 at a time)
     photo-card.tsx        # BlurHash placeholder + clip-path reveal + scroll parallax
@@ -181,6 +188,9 @@ scripts/
 public/
   photos.json             # Photo metadata (CloudFront URLs + thumb URLs, EXIF data)
   badges/                 # Non-Credly badge images (e.g. Zscaler, Snowflake)
+  theli/
+    home.png              # Theli app screenshot (640×1391, used by featured-project.tsx)
+  Amir_Abdur-Rahim_Resume.pdf  # Resume PDF served at /Amir_Abdur-Rahim_Resume.pdf; source: ~/job_search/resume.md
 next.config.ts            # Image remote patterns (CloudFront, Credly), experimental.viewTransition
 netlify.toml              # Netlify build config + CSP, HSTS, cache headers
 .nvmrc                    # Node version (20) for Netlify
