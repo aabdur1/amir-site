@@ -26,11 +26,11 @@ const projects = [
   },
   {
     name: "WIEIAD Risk Scoring",
-    subtitle: "Multimodal ED Pipeline (in progress)",
+    subtitle: "Multimodal ED-Signal & Diet-Quality Pipeline",
     provenance: "Graduate coursework · UIC MS MIS",
     description:
-      "Multimodal pipeline scoring 'What I Eat in a Day' TikToks for eating disorder risk markers. Combines Whisper transcripts, OCR calorie extraction, CLIP frame classification, and LLM rubric scoring across 8 EAT-26–informed dimensions. First automated NLP/CV approach to WIEIAD content.",
-    pills: ["Whisper", "CLIP", "OCR", "LLM"],
+      "Multimodal analysis of 1,100+ 'What I Eat in a Day' TikToks — Whisper, OCR, and CLIP features with LLM rubric scoring across MyPlate nutrition and five ED risk signals; a mainstream vs. coded-hashtag comparison found 2× signal prevalence. Final iteration: Gemini whole-video analysis of 467 video-days against HEI-2020.",
+    pills: ["Whisper", "CLIP", "Gemini", "LLM"],
     accent: "lavender" as const,
     url: null,
   },
