@@ -60,6 +60,8 @@ const SCROLL_RATES = {
   name: 0.28,
   rule: 0.2,
   tagline: 0.12,
+  blurb: 0.1,
+  cta: 0.08,
   social: 0.06,
   badges: 0.02,
 } as const;
@@ -76,6 +78,8 @@ export function Hero() {
   const ruleRef = useRef<HTMLDivElement>(null);
   const taglineRef = useRef<HTMLParagraphElement>(null);
   const socialRef = useRef<HTMLDivElement>(null);
+  const blurbRef = useRef<HTMLParagraphElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
   const badgesRef = useRef<HTMLDivElement>(null);
   const headshotRef = useRef<HTMLDivElement>(null);
   const scrollIndRef = useRef<HTMLDivElement>(null);
@@ -95,6 +99,8 @@ export function Hero() {
     move(nameRef.current, SCROLL_RATES.name);
     move(ruleRef.current, SCROLL_RATES.rule);
     move(taglineRef.current, SCROLL_RATES.tagline);
+    move(blurbRef.current, SCROLL_RATES.blurb);
+    move(ctaRef.current, SCROLL_RATES.cta);
     move(socialRef.current, SCROLL_RATES.social);
     move(badgesRef.current, SCROLL_RATES.badges);
 
@@ -119,11 +125,11 @@ export function Hero() {
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    // Delay parallax until entrance animations complete (~2.2s for last badge)
+    // Delay parallax until entrance animations complete (~2.0s for last badge)
     // to avoid style.transform conflicting with fade-in-up animation forwards fill
     const timer = setTimeout(() => {
       // Smoothly transition into parallax to avoid a jarring jump
-      const refs = [labelRef, headshotRef, nameRef, ruleRef, taglineRef, socialRef, badgesRef, scrollIndRef];
+      const refs = [labelRef, headshotRef, nameRef, ruleRef, taglineRef, blurbRef, ctaRef, socialRef, badgesRef, scrollIndRef];
       refs.forEach(r => {
         if (r.current) r.current.style.transition = 'transform 0.6s ease-out';
       });
@@ -218,8 +224,56 @@ export function Hero() {
               <span className="text-ink dark:text-night-text not-italic font-[family-name:var(--font-body)] font-medium">Chicago.</span>
             </p>
 
+            {/* Positioning blurb */}
+            <p
+              ref={blurbRef}
+              className="text-sm sm:text-base mt-5 max-w-lg font-[family-name:var(--font-body)]
+                text-ink-subtle dark:text-night-muted leading-relaxed will-change-transform"
+              style={{
+                opacity: 0,
+                ...(mounted ? { animation: "fade-in-up 0.6s ease-out 0.95s forwards" } : {}),
+              }}
+            >
+              Healthcare data analyst with 2+ years of Epic EHR experience — building
+              clinical ML, BI, and documentation tools. MS in MIS at UIC, graduating Fall &rsquo;26.
+            </p>
+
+            {/* CTA pair */}
+            <div ref={ctaRef} className="flex flex-wrap gap-3 items-center mt-7 will-change-transform">
+              <a
+                href="mailto:amirabdurrahim@gmail.com"
+                className="btn-lift inline-flex items-center justify-center rounded-full px-6 py-3
+                  bg-mauve dark:bg-mauve-dark text-cream dark:text-night
+                  text-[13px] tracking-wide font-[family-name:var(--font-badge)] font-medium
+                  hover:shadow-card"
+                style={{
+                  opacity: 0,
+                  ...(mounted ? { animation: "fade-in-up 0.5s ease-out 1.1s forwards" } : {}),
+                }}
+              >
+                Get in touch
+              </a>
+              <a
+                href="/Amir_Abdur-Rahim_Resume.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="View resume (opens in new tab)"
+                className="btn-lift inline-flex items-center justify-center rounded-full px-6 py-3
+                  border border-ink/20 dark:border-night-border
+                  text-ink dark:text-night-text
+                  text-[13px] tracking-wide font-[family-name:var(--font-badge)]
+                  hover:border-sapphire/50 dark:hover:border-sapphire-dark/50 hover:shadow-card"
+                style={{
+                  opacity: 0,
+                  ...(mounted ? { animation: "fade-in-up 0.5s ease-out 1.2s forwards" } : {}),
+                }}
+              >
+                View resume
+              </a>
+            </div>
+
             {/* Social links */}
-            <div ref={socialRef} className="flex gap-2 items-center mt-8">
+            <div ref={socialRef} className="flex gap-2 items-center mt-6">
               <a
                 href="https://github.com/aabdur1"
                 target="_blank"
@@ -231,7 +285,7 @@ export function Hero() {
                   transition-all duration-200"
                 style={{
                   opacity: 0,
-                  ...(mounted ? { animation: "fade-in-up 0.5s ease-out 1.1s forwards" } : {}),
+                  ...(mounted ? { animation: "fade-in-up 0.5s ease-out 1.35s forwards" } : {}),
                 }}
               >
                 <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
@@ -249,7 +303,7 @@ export function Hero() {
                   transition-all duration-200"
                 style={{
                   opacity: 0,
-                  ...(mounted ? { animation: "fade-in-up 0.5s ease-out 1.25s forwards" } : {}),
+                  ...(mounted ? { animation: "fade-in-up 0.5s ease-out 1.45s forwards" } : {}),
                 }}
               >
                 <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
@@ -265,7 +319,7 @@ export function Hero() {
                   transition-all duration-200"
                 style={{
                   opacity: 0,
-                  ...(mounted ? { animation: "fade-in-up 0.5s ease-out 1.4s forwards" } : {}),
+                  ...(mounted ? { animation: "fade-in-up 0.5s ease-out 1.55s forwards" } : {}),
                 }}
               >
                 <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
@@ -293,7 +347,7 @@ export function Hero() {
                       transition: "transform 250ms var(--ease-spring), box-shadow 250ms var(--ease-spring), border-color 300ms ease, color 200ms ease",
                       ...(mounted
                         ? {
-                            animation: `fade-in-up 0.5s ease-out ${1600 + i * 100}ms forwards`,
+                            animation: `fade-in-up 0.5s ease-out ${1700 + i * 100}ms forwards`,
                           }
                         : {}),
                     }}
