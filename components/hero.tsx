@@ -387,7 +387,8 @@ export function Hero() {
         className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden sm:flex flex-col items-center gap-2 will-change-transform"
         style={{
           opacity: 0,
-          ...(mounted ? { animation: "fade-in 0.8s ease-out 2.2s forwards" } : {}),
+          // ends by 2.5s, before the parallax-attach animation clear (no opacity snap)
+          ...(mounted ? { animation: "fade-in 0.8s ease-out 1.7s forwards" } : {}),
         }}
       >
         <span

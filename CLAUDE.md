@@ -147,7 +147,7 @@ components/
   interactive-headshot.tsx# Cursor-reactive 3D tilt headshot (light-source shadow)
   section-divider.tsx     # Shared ornamental diamond divider (server component)
   section-header.tsx      # Shared numbered section header with mauve rule (server component)
-  certifications.tsx      # 03/ Scroll-triggered Credly badge grid (8 certs)
+  certifications.tsx      # 03/ Credly badge grid, grouped Data & Analytics / Cloud & Security
   experience.tsx          # 01/ Professional Experience — featured ScribeAmerica card
   projects.tsx            # 02/ Things I've Built — featured Theli card + 6-card grid (Parkinson's, WIEIAD, DocDefend+, StudentPM, LightERP, CTF) with provenance tags
   skills.tsx              # 04/ Technical Stack — 5 categorized pill rows
