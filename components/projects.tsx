@@ -17,6 +17,7 @@ const projects = [
   {
     name: "Parkinson's Voice Screening",
     subtitle: "Clinical ML from Acoustic Features",
+    provenance: "Graduate coursework · UIC MS MIS",
     description:
       "Binary classification of Parkinson's patients vs healthy controls from sustained vowel recordings (n=81). Extracted 167 acoustic features (MFCCs, jitter/shimmer, spectral contrast) across 4 classifier families; LR odds ratios, Hosmer-Lemeshow calibration, and Youden's J threshold optimization for clinical interpretability.",
     pills: ["Python", "scikit-learn", "Parselmouth", "librosa"],
@@ -26,6 +27,7 @@ const projects = [
   {
     name: "WIEIAD Risk Scoring",
     subtitle: "Multimodal ED Pipeline (in progress)",
+    provenance: "Graduate coursework · UIC MS MIS",
     description:
       "Multimodal pipeline scoring 'What I Eat in a Day' TikToks for eating disorder risk markers. Combines Whisper transcripts, OCR calorie extraction, CLIP frame classification, and LLM rubric scoring across 8 EAT-26–informed dimensions. First automated NLP/CV approach to WIEIAD content.",
     pills: ["Whisper", "CLIP", "OCR", "LLM"],
@@ -35,6 +37,7 @@ const projects = [
   {
     name: "DocDefend+",
     subtitle: "Clinical Documentation QA Platform",
+    provenance: "Graduate coursework · UIC MS MIS",
     description:
       "Full-stack app using Claude AI to validate whether clinical notes support billing codes before claim submission. Defensibility scoring, E/M recommendations, and financial impact analysis.",
     pills: ["React", "Express", "Claude API", "Tailwind"],
@@ -44,6 +47,7 @@ const projects = [
   {
     name: "StudentPM",
     subtitle: "Project Management Application",
+    provenance: "Graduate coursework · UIC MS MIS",
     description:
       "JavaFX desktop app with MVC architecture, SQLite integration, and user authentication.",
     pills: ["JavaFX", "MVC", "SQLite", "Auth"],
@@ -53,6 +57,7 @@ const projects = [
   {
     name: "LightERP",
     subtitle: "Enterprise Resource Planning System",
+    provenance: "Graduate coursework · UIC MS MIS",
     description:
       "React MVP with Firebase Cloud Firestore and full UML documentation suite.",
     pills: ["React", "Firebase", "UML"],
@@ -62,6 +67,7 @@ const projects = [
   {
     name: "CTF & Security Labs",
     subtitle: "Capture the Flag & Cloud Security",
+    provenance: "SANS competition",
     description:
       "Top 20 regionally in the SANS AWS Skills to Jobs CTF (7,498 pts). Network forensics, packet analysis, and AWS security labs covering KMS, VPC, S3, and IAM.",
     pills: ["SANS CTF", "AWS", "KMS", "Forensics"],
@@ -104,9 +110,17 @@ export function Projects() {
                 {/* Subtitle */}
                 <p
                   className="text-sm font-[family-name:var(--font-badge)] italic
-                    text-ink-subtle dark:text-night-muted mb-3"
+                    text-ink-subtle dark:text-night-muted mb-1"
                 >
                   {project.subtitle}
+                </p>
+
+                {/* Provenance tag */}
+                <p
+                  className="text-[12px] font-[family-name:var(--font-mono)] tracking-wide
+                    text-ink-subtle dark:text-night-muted mb-3"
+                >
+                  {project.provenance}
                 </p>
 
                 {/* Description */}
