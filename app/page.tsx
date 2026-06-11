@@ -5,6 +5,7 @@ import { Experience } from "@/components/experience";
 import { Projects } from "@/components/projects";
 import { Skills } from "@/components/skills";
 import { Education } from "@/components/education";
+import { LearnTeaser } from "@/components/learn-teaser";
 import { PageTransition } from '@/components/page-transition'
 import { getAllBadges } from "@/lib/badges";
 
@@ -38,6 +39,7 @@ export default async function Home() {
       <Certifications badges={badges} />
       <Skills />
       <Education />
+      <LearnTeaser />
     </PageTransition>
   );
 }
