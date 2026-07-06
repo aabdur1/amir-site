@@ -25,6 +25,16 @@ export default function DarkModeToggle() {
   const iconRef = useRef<HTMLSpanElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
+  // The static theme-color metas key off the system scheme; when the class
+  // toggle diverges from it (stored override), re-stamp them so mobile
+  // browser chrome matches the page background. Values = Latte/Mocha Base.
+  useEffect(() => {
+    const color = dark ? "#1e1e2e" : "#eff1f5";
+    document
+      .querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')
+      .forEach((m) => { m.content = color; });
+  }, [dark]);
+
   useEffect(() => {
     let stored: string | null = null;
     try { stored = localStorage.getItem("theme"); } catch {}

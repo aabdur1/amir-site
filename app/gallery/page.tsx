@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { preconnect } from 'react-dom'
 import photosData from '@/public/photos.json'
 import { MasonryGrid } from '@/components/gallery/masonry-grid'
 import { PageTransition } from '@/components/page-transition'
@@ -28,6 +29,8 @@ export const metadata: Metadata = {
 const photos: Photo[] = photosData
 
 export default function GalleryPage() {
+  // Thumbnails load unoptimized straight from CloudFront — warm the connection early
+  preconnect('https://d36t8s1mzbufg5.cloudfront.net')
   return (
     <PageTransition>
       <MasonryGrid photos={photos} />

@@ -73,6 +73,7 @@ export default function RootLayout({
               '@type': 'Person',
               name: 'Amir Abdur-Rahim',
               url: 'https://amirabdurrahim.com',
+              image: 'https://d36t8s1mzbufg5.cloudfront.net/_DSC4482.jpg',
               sameAs: [
                 'https://github.com/aabdur1',
                 'https://www.linkedin.com/in/amir-abdur-rahim/',
