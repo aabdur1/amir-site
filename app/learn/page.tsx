@@ -101,6 +101,31 @@ function SHAPIllustration() {
   )
 }
 
+function NeuralNetworksIllustration() {
+  return (
+    <svg width="80" height="64" viewBox="0 0 80 64" aria-hidden="true" focusable="false">
+      {/* Edges */}
+      <g className="stroke-ink-faint dark:stroke-night-border" strokeWidth="1.2">
+        <line x1="16" y1="14" x2="40" y2="22" />
+        <line x1="16" y1="32" x2="40" y2="22" />
+        <line x1="16" y1="50" x2="40" y2="22" />
+        <line x1="16" y1="14" x2="40" y2="44" />
+        <line x1="16" y1="32" x2="40" y2="44" />
+        <line x1="16" y1="50" x2="40" y2="44" />
+        <line x1="40" y1="22" x2="64" y2="32" />
+        <line x1="40" y1="44" x2="64" y2="32" />
+      </g>
+      {/* Input, hidden, output nodes */}
+      <circle cx="16" cy="14" r="4" className="fill-sapphire dark:fill-sapphire-dark" opacity="0.85" />
+      <circle cx="16" cy="32" r="4" className="fill-sapphire dark:fill-sapphire-dark" opacity="0.85" />
+      <circle cx="16" cy="50" r="4" className="fill-sapphire dark:fill-sapphire-dark" opacity="0.85" />
+      <circle cx="40" cy="22" r="4.5" className="fill-teal dark:fill-teal-dark" />
+      <circle cx="40" cy="44" r="4.5" className="fill-teal dark:fill-teal-dark" />
+      <circle cx="64" cy="32" r="4.5" className="fill-peach dark:fill-peach-dark" />
+    </svg>
+  )
+}
+
 const ILLUSTRATIONS: Record<string, () => React.JSX.Element> = {
   'gradient-descent': GradientDescentIllustration,
   'log-loss-cross-entropy': LogLossIllustration,
@@ -108,6 +133,7 @@ const ILLUSTRATIONS: Record<string, () => React.JSX.Element> = {
   'regularization': RegularizationIllustration,
   'clustering': ClusteringIllustration,
   'shap': SHAPIllustration,
+  'neural-networks': NeuralNetworksIllustration,
 }
 
 export default function LearnPage() {

@@ -84,7 +84,7 @@ function buildPoints(w: number, h: number, density: number): FieldPoint[] {
     if (roll > 0.94 && labelsUsed < 3) {
       kind = "label";
       labelsUsed++;
-    } else if (roll > 0.85) {
+    } else if (roll > 0.76) {
       kind = "tick";
     }
 
@@ -195,7 +195,9 @@ export function LivingField() {
         const x = baseX + driftX + p.offsetX;
         const py = y + driftY + p.offsetY;
         const color = colors[p.colorIndex];
-        const a = p.alpha * alphaScale * t;
+        // Dark mode: smaller, quieter single points (the old speckle scale);
+        // light mode keeps the larger dots since there is no glow to amplify them
+        const a = p.alpha * alphaScale * t * (dark ? 0.75 : 1);
         if (a <= 0.005) continue;
 
         ctx!.globalAlpha = a;
@@ -211,16 +213,8 @@ export function LivingField() {
           ctx!.lineTo(x, py + 3);
           ctx!.stroke();
         } else {
-          if (dark) {
-            // Soft halo in dark mode
-            ctx!.globalAlpha = a * 0.35;
-            ctx!.beginPath();
-            ctx!.arc(x, py, p.size * 2.4, 0, Math.PI * 2);
-            ctx!.fill();
-            ctx!.globalAlpha = a;
-          }
           ctx!.beginPath();
-          ctx!.arc(x, py, p.size, 0, Math.PI * 2);
+          ctx!.arc(x, py, dark ? Math.max(0.7, p.size * 0.55) : p.size, 0, Math.PI * 2);
           ctx!.fill();
           if (p.kind === "label" && p.label) {
             ctx!.globalAlpha = a * 0.8;
