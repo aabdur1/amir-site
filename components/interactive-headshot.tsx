@@ -13,8 +13,6 @@ export function InteractiveHeadshot() {
   const containerRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
-  const borderOuterRef = useRef<HTMLDivElement>(null);
-  const borderInnerRef = useRef<HTMLDivElement>(null);
   const cachedRectRef = useRef<DOMRect | null>(null);
 
   // Smoothed values (current) and target values
@@ -56,16 +54,6 @@ export function InteractiveHeadshot() {
         // Soft diffuse shadow
         `${c.shadowX * 1.5}px ${c.shadowY * 1.5}px ${shadowBlur * 2}px rgba(0,0,0,${shadowOpacity * 0.4})`,
       ].join(", ");
-    }
-
-    // Decorative borders tilt slightly less (parallax depth)
-    if (borderOuterRef.current) {
-      borderOuterRef.current.style.transform =
-        `translate(12px, 12px) perspective(800px) rotateX(${c.rotateX * 0.5}deg) rotateY(${c.rotateY * 0.5}deg)`;
-    }
-    if (borderInnerRef.current) {
-      borderInnerRef.current.style.transform =
-        `translate(4px, 4px) perspective(800px) rotateX(${c.rotateX * 0.7}deg) rotateY(${c.rotateY * 0.7}deg)`;
     }
 
     // Glow shifts toward cursor (light spill)
@@ -169,16 +157,13 @@ export function InteractiveHeadshot() {
 
   return (
     <div ref={containerRef} className="relative">
-      {/* Decorative offset border — outer */}
-      <div
-        ref={borderOuterRef}
-        className="absolute -inset-3 border border-ink-faint/30 dark:border-night-border rounded-2xl translate-x-3 translate-y-3 transition-transform duration-100"
-      />
-      {/* Decorative offset border — inner */}
-      <div
-        ref={borderInnerRef}
-        className="absolute -inset-1.5 border border-ink-faint/20 dark:border-night-border/50 rounded-2xl translate-x-1 translate-y-1 transition-transform duration-100"
-      />
+      {/* Registration marks — fixed print-style corner ticks; the plate tilts inside them */}
+      <div aria-hidden="true" className="absolute -inset-4">
+        <span className="reg-mark top-0 left-0 border-t border-l" />
+        <span className="reg-mark top-0 right-0 border-t border-r" />
+        <span className="reg-mark bottom-0 left-0 border-b border-l" />
+        <span className="reg-mark bottom-0 right-0 border-b border-r" />
+      </div>
 
       {/* The headshot with 3D tilt */}
       <div
@@ -198,6 +183,11 @@ export function InteractiveHeadshot() {
           className="object-cover"
         />
       </div>
+
+      {/* Plate caption — ledger annotation under the figure */}
+      <p className="annotation mt-5 text-center">
+        fig. 00 &middot; Chicago &mdash; 41.88&deg; N
+      </p>
 
       {/* Glow that shifts toward cursor */}
       <div

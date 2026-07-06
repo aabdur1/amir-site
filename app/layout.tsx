@@ -3,6 +3,7 @@ import { DM_Serif_Display, DM_Sans, Share_Tech_Mono, Lora } from "next/font/goog
 import Nav from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { ScrollProgress } from "@/components/scroll-progress";
+import { LivingField } from "@/components/living-field";
 import "./globals.css";
 
 const dmSerif = DM_Serif_Display({
@@ -94,6 +95,7 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <LivingField />
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:z-[10000] focus:top-4 focus:left-4

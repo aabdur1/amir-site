@@ -4,67 +4,7 @@ import { useEffect, useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import DarkModeToggle from "@/components/dark-mode-toggle";
-
-function useMagnetic(ref: React.RefObject<HTMLAnchorElement | null>) {
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    // Skip on touch devices
-    if (!window.matchMedia('(pointer: fine)').matches) return
-
-    let targetX = 0, targetY = 0
-    let currentX = 0, currentY = 0
-    const state = { rafId: null as number | null }
-    const MAX = 4 // max displacement in px
-    const LERP = 0.15
-
-    const animate = () => {
-      currentX += (targetX - currentX) * LERP
-      currentY += (targetY - currentY) * LERP
-      el.style.transform = `translate(${currentX}px, ${currentY}px)`
-
-      if (Math.abs(targetX - currentX) > 0.1 || Math.abs(targetY - currentY) > 0.1) {
-        state.rafId = requestAnimationFrame(animate)
-      } else {
-        el.style.transform = `translate(${targetX}px, ${targetY}px)`
-        state.rafId = null
-      }
-    }
-
-    const onMove = (e: MouseEvent) => {
-      const rect = el.getBoundingClientRect()
-      const cx = rect.left + rect.width / 2
-      const cy = rect.top + rect.height / 2
-      const dx = e.clientX - cx
-      const dy = e.clientY - cy
-      const dist = Math.sqrt(dx * dx + dy * dy)
-      const maxDist = Math.max(rect.width, rect.height)
-      const factor = Math.max(0, 1 - dist / maxDist)
-      targetX = dx * factor * (MAX / maxDist * 2)
-      targetY = dy * factor * (MAX / maxDist * 2)
-      // Clamp
-      targetX = Math.max(-MAX, Math.min(MAX, targetX))
-      targetY = Math.max(-MAX, Math.min(MAX, targetY))
-      if (!state.rafId) state.rafId = requestAnimationFrame(animate)
-    }
-
-    const onLeave = () => {
-      targetX = 0
-      targetY = 0
-      if (!state.rafId) state.rafId = requestAnimationFrame(animate)
-    }
-
-    el.addEventListener('mousemove', onMove)
-    el.addEventListener('mouseleave', onLeave)
-
-    return () => {
-      el.removeEventListener('mousemove', onMove)
-      el.removeEventListener('mouseleave', onLeave)
-      if (state.rafId) cancelAnimationFrame(state.rafId)
-      el.style.transform = ''
-    }
-  }, [ref])
-}
+import { useMagnetic } from "@/lib/hooks";
 
 export default function Nav() {
   const pathname = usePathname();
@@ -216,7 +156,7 @@ export default function Nav() {
             aria-current={isLearn ? "page" : undefined}
             className={`nav-learn-pill group relative font-[family-name:var(--font-mono)] text-[13px]
               tracking-[0.15em] uppercase
-              px-4 py-2 rounded-full border overflow-hidden
+              px-3 sm:px-4 py-2 rounded-full border overflow-hidden
               transition-all duration-300
               ${isLearn
                 ? "nav-learn-active border-transparent text-ink dark:text-night-text"
@@ -252,7 +192,7 @@ export default function Nav() {
             aria-current={isGallery ? "page" : undefined}
             className={`nav-gallery-pill group relative font-[family-name:var(--font-mono)] text-[13px]
               tracking-[0.15em] uppercase
-              px-4 py-2 rounded-full border overflow-hidden
+              px-3 sm:px-4 py-2 rounded-full border overflow-hidden
               transition-all duration-300
               ${isGallery
                 ? "nav-gallery-active border-transparent text-ink dark:text-night-text"

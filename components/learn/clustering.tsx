@@ -927,7 +927,7 @@ function Section1() {
             }`}
           >
             <span className="font-medium">{v.label}</span>
-            <span className="text-[12px] text-ink-faint dark:text-night-muted">{v.desc}</span>
+            <span className="text-[12px] text-ink-subtle dark:text-night-muted">{v.desc}</span>
           </button>
         ))}
       </div>
@@ -1013,7 +1013,7 @@ function Section1() {
               className="w-full rounded-lg"
               style={{ height: 180 }}
             />
-            <p className="text-[12px] text-ink-faint dark:text-night-muted text-center mt-1">Elbow {'\u2014'} look for the bend</p>
+            <p className="text-[12px] text-ink-subtle dark:text-night-muted text-center mt-1">Elbow {'\u2014'} look for the bend</p>
           </div>
           <div className="flex-1 min-w-[200px]">
             <canvas
@@ -1023,7 +1023,7 @@ function Section1() {
               className="w-full rounded-lg"
               style={{ height: 180 }}
             />
-            <p className="text-[12px] text-ink-faint dark:text-night-muted text-center mt-1">Silhouette {'\u2014'} higher is better</p>
+            <p className="text-[12px] text-ink-subtle dark:text-night-muted text-center mt-1">Silhouette {'\u2014'} higher is better</p>
           </div>
         </div>
         <InsightBox>{elbowInsight}</InsightBox>
@@ -1263,7 +1263,7 @@ function Section2() {
         className="w-full rounded-lg"
         style={{ height: 260 }}
       />
-      <p className="text-[13px] text-ink-faint dark:text-night-muted text-center my-1">
+      <p className="text-[13px] text-ink-subtle dark:text-night-muted text-center my-1">
         Dendrogram {'\u2014'} taller merges = more dissimilar clusters
       </p>
 
@@ -1274,7 +1274,7 @@ function Section2() {
         className="w-full rounded-lg"
         style={{ height: 260 }}
       />
-      <p className="text-[13px] text-ink-faint dark:text-night-muted text-center my-1">
+      <p className="text-[13px] text-ink-subtle dark:text-night-muted text-center my-1">
         Scatter plot {'\u2014'} colored by cut
       </p>
 
@@ -1658,7 +1658,7 @@ function Section3() {
 
       {/* Sparkline: cluster count + noise % vs eps */}
       <div className="mt-2 rounded-lg bg-cream-dark/50 dark:bg-night-card/40 px-3 py-2">
-        <p className="text-[12px] text-ink-faint dark:text-night-muted mb-1">
+        <p className="text-[12px] text-ink-subtle dark:text-night-muted mb-1">
           Clusters (solid) &amp; noise % (dashed) vs eps {'\u2014'} dot = current eps
         </p>
         <canvas

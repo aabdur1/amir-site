@@ -12,7 +12,14 @@ export function Experience() {
       <SectionDivider />
 
       <div className="max-w-5xl mx-auto px-6 sm:px-8">
-        <SectionHeader number="01" label="Experience" title="Professional Experience" visible={visible} />
+        <SectionHeader
+          number="01"
+          label="Experience"
+          title="Professional Experience"
+          visible={visible}
+          annotation={<>fig. 01 &middot; aug 2021 &mdash; sep 2023 &middot; Epic EHR</>}
+          spark={{ data: [1, 1, 2, 2.5, 3, 4], variant: "step" }}
+        />
 
         {/* Featured experience card */}
         <div

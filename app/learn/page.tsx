@@ -4,6 +4,7 @@ import { ARTIFACTS } from '@/lib/learn/artifacts'
 import { LearnCard } from '@/components/learn/learn-card'
 import { PageTransition } from '@/components/page-transition'
 import { SectionDivider } from '@/components/section-divider'
+import { SparkRule } from '@/components/spark-rule'
 
 export const metadata: Metadata = {
   title: 'Learn — Interactive Data Mining Explainers',
@@ -127,8 +128,10 @@ export default function LearnPage() {
           <p className="text-ink-subtle dark:text-night-muted text-[15px] max-w-xl mx-auto mb-6">
             Built while studying IDS 572 — interactive tools for understanding machine learning fundamentals
           </p>
-          <div className="h-px w-12 bg-mauve dark:bg-mauve-dark mx-auto"
-            style={{ animation: 'line-grow 0.8s ease-out 0.3s forwards', transform: 'scaleX(0)', transformOrigin: 'center' }} />
+          <div className="flex justify-center">
+            {/* Gradient-descent loss curve — the section's own subject matter */}
+            <SparkRule data={[7, 4, 2.6, 1.9, 1.5, 1.3, 1.2]} variant="line" visible delay={350} />
+          </div>
         </div>
 
         {/* Card grid */}

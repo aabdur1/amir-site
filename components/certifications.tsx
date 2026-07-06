@@ -5,6 +5,7 @@ import { badgeGroup, type Badge } from "@/lib/badges";
 import { useScrollReveal } from "@/lib/hooks";
 import { SectionDivider } from "@/components/section-divider";
 import { SectionHeader } from "@/components/section-header";
+import { CountUp } from "@/components/count-up";
 
 const accentHoverBorders = [
   "hover:border-sapphire/40 dark:hover:border-sapphire-dark/40",
@@ -34,7 +35,19 @@ export function Certifications({ badges }: CertificationsProps) {
       <SectionDivider />
 
       <div className="max-w-5xl mx-auto px-6 sm:px-8">
-        <SectionHeader number="03" label="Certifications" title="Verified Credentials" visible={visible} />
+        <SectionHeader
+          number="03"
+          label="Certifications"
+          title="Verified Credentials"
+          visible={visible}
+          annotation={
+            <>
+              fig. 03 &middot; n = <CountUp target={badges.length} /> credentials &middot;{" "}
+              {groups.filter((g) => g.items.length > 0).length} tracks
+            </>
+          }
+          spark={{ data: [1, 2, 4, 5, 7, 9, 10], variant: "line" }}
+        />
 
         {groups.map((group, g) =>
           group.items.length === 0 ? null : (

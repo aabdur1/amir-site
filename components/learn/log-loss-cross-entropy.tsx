@@ -370,7 +370,7 @@ function Section1() {
             }`}
           >
             {v.label}
-            <span className="text-[12px] text-ink-faint dark:text-night-muted">{v.desc}</span>
+            <span className="text-[12px] text-ink-subtle dark:text-night-muted">{v.desc}</span>
           </button>
         ))}
       </div>
@@ -1376,7 +1376,7 @@ function Section4() {
               </div>
             </div>
             {idx < arrows.length && (
-              <div className={`pl-5 py-0.5 text-[13px] text-ink-faint dark:text-night-muted transition-opacity duration-200 ${
+              <div className={`pl-5 py-0.5 text-[13px] text-ink-subtle dark:text-night-muted transition-opacity duration-200 ${
                 hoveredIdx !== null ? 'opacity-40' : 'opacity-100'
               }`}>
                 {'\u2193'} {arrows[idx]}

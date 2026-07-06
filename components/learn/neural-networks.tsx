@@ -315,21 +315,21 @@ function Section1() {
 
       <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
-          <p className="text-[11px] font-[family-name:var(--font-mono)] uppercase tracking-wider text-ink-subtle dark:text-night-muted mb-3">Inputs</p>
+          <p className="text-[12px] font-[family-name:var(--font-mono)] uppercase tracking-wider text-ink-subtle dark:text-night-muted mb-3">Inputs</p>
           {[0,1,2].map(i => (
             <SliderRow key={i} label={`x${i+1}`} min={-1} max={1} step={0.01} value={inputs[i]}
               onChange={(v) => setInputs(prev => { const next = [...prev] as [number,number,number]; next[i] = v; return next })} />
           ))}
         </div>
         <div>
-          <p className="text-[11px] font-[family-name:var(--font-mono)] uppercase tracking-wider text-ink-subtle dark:text-night-muted mb-3">Weights</p>
+          <p className="text-[12px] font-[family-name:var(--font-mono)] uppercase tracking-wider text-ink-subtle dark:text-night-muted mb-3">Weights</p>
           {[0,1,2].map(i => (
             <SliderRow key={i} label={`w${i+1}`} min={-2} max={2} step={0.01} value={weights[i]}
               onChange={(v) => setWeights(prev => { const next = [...prev] as [number,number,number]; next[i] = v; return next })} />
           ))}
         </div>
         <div>
-          <p className="text-[11px] font-[family-name:var(--font-mono)] uppercase tracking-wider text-ink-subtle dark:text-night-muted mb-3">Bias & activation</p>
+          <p className="text-[12px] font-[family-name:var(--font-mono)] uppercase tracking-wider text-ink-subtle dark:text-night-muted mb-3">Bias & activation</p>
           <SliderRow label="b" min={-2} max={2} step={0.01} value={bias} onChange={setBias} />
           <label className="block mt-4">
             <span className="text-[12px] text-ink-subtle dark:text-night-muted">Activation</span>
@@ -609,18 +609,18 @@ function Section3() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <p className="text-[11px] uppercase tracking-wider text-ink-subtle dark:text-night-muted mb-2 font-[family-name:var(--font-mono)]">Activation f(x)</p>
+          <p className="text-[12px] uppercase tracking-wider text-ink-subtle dark:text-night-muted mb-2 font-[family-name:var(--font-mono)]">Activation f(x)</p>
           <canvas ref={curveCanvas} role="img" aria-label={`Activation function curves with ${highlighted} highlighted`} className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded" style={{ height: 180 }} />
         </div>
         <div>
-          <p className="text-[11px] uppercase tracking-wider text-ink-subtle dark:text-night-muted mb-2 font-[family-name:var(--font-mono)]">Derivative f&apos;(x)</p>
+          <p className="text-[12px] uppercase tracking-wider text-ink-subtle dark:text-night-muted mb-2 font-[family-name:var(--font-mono)]">Derivative f&apos;(x)</p>
           <canvas ref={derivCanvas} role="img" aria-label={`Derivative curves with ${highlighted} highlighted`} className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded" style={{ height: 180 }} />
         </div>
       </div>
 
       <div className="mt-6">
         <div className="flex items-center gap-3 mb-2">
-          <span className="text-[11px] uppercase tracking-wider text-ink-subtle dark:text-night-muted font-[family-name:var(--font-mono)]">Stacked through {depth} layers</span>
+          <span className="text-[12px] uppercase tracking-wider text-ink-subtle dark:text-night-muted font-[family-name:var(--font-mono)]">Stacked through {depth} layers</span>
           <input type="range" min={1} max={8} step={1} value={depth} onChange={e => setDepth(parseInt(e.target.value))} aria-label="Number of stacked layers" className="flex-1 max-w-xs accent-teal dark:accent-teal-dark" />
         </div>
         <canvas ref={stackCanvas} role="img" aria-label={`Gradient magnitude after passing through ${depth} stacked ${highlighted} layers`} className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded" style={{ height: 120 }} />
@@ -1040,18 +1040,18 @@ function Section5() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <p className="text-[11px] uppercase tracking-wider text-mauve dark:text-mauve-dark mb-2 font-[family-name:var(--font-mono)]">Vanilla GD</p>
+          <p className="text-[12px] uppercase tracking-wider text-mauve dark:text-mauve-dark mb-2 font-[family-name:var(--font-mono)]">Vanilla GD</p>
           <canvas ref={canvasV} role="img" aria-label={`Vanilla gradient descent path on the ${landscape} loss landscape`} className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded" style={{ height: 280 }} />
         </div>
         <div>
-          <p className="text-[11px] uppercase tracking-wider text-teal dark:text-teal-dark mb-2 font-[family-name:var(--font-mono)]">Momentum</p>
+          <p className="text-[12px] uppercase tracking-wider text-teal dark:text-teal-dark mb-2 font-[family-name:var(--font-mono)]">Momentum</p>
           <canvas ref={canvasM} role="img" aria-label={`Momentum gradient descent path on the ${landscape} loss landscape`} className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded" style={{ height: 280 }} />
         </div>
       </div>
 
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
-          <label htmlFor="nn-landscape" className="text-[11px] uppercase tracking-wider text-ink-subtle dark:text-night-muted font-[family-name:var(--font-mono)]">Landscape</label>
+          <label htmlFor="nn-landscape" className="text-[12px] uppercase tracking-wider text-ink-subtle dark:text-night-muted font-[family-name:var(--font-mono)]">Landscape</label>
           <select id="nn-landscape" value={landscape} onChange={e => setLandscape(e.target.value as Landscape)}
             className="mt-1 w-full bg-cream dark:bg-night-card border border-cream-border dark:border-night-border rounded px-3 py-2 text-[13px] font-[family-name:var(--font-mono)]">
             <option value="ravine">Ravine</option>
@@ -1315,7 +1315,7 @@ function Section6() {
         </div>
         <div className="space-y-4">
           <div>
-            <label htmlFor="nn-dataset" className="text-[11px] uppercase tracking-wider text-ink-subtle dark:text-night-muted font-[family-name:var(--font-mono)]">Dataset</label>
+            <label htmlFor="nn-dataset" className="text-[12px] uppercase tracking-wider text-ink-subtle dark:text-night-muted font-[family-name:var(--font-mono)]">Dataset</label>
             <select id="nn-dataset" value={kind} onChange={e => setKind(e.target.value as DatasetKind)}
               className="mt-1 w-full bg-cream dark:bg-night-card border border-cream-border dark:border-night-border rounded px-3 py-2 text-[13px] font-[family-name:var(--font-mono)]">
               <option value="blobs">Blobs</option>
@@ -1324,7 +1324,7 @@ function Section6() {
             </select>
           </div>
           <div>
-            <label htmlFor="nn-activation" className="text-[11px] uppercase tracking-wider text-ink-subtle dark:text-night-muted font-[family-name:var(--font-mono)]">Activation</label>
+            <label htmlFor="nn-activation" className="text-[12px] uppercase tracking-wider text-ink-subtle dark:text-night-muted font-[family-name:var(--font-mono)]">Activation</label>
             <select id="nn-activation" value={act} onChange={e => setAct(e.target.value as Activation)}
               className="mt-1 w-full bg-cream dark:bg-night-card border border-cream-border dark:border-night-border rounded px-3 py-2 text-[13px] font-[family-name:var(--font-mono)]">
               <option value="relu">ReLU</option>

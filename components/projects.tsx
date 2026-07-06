@@ -88,7 +88,15 @@ export function Projects() {
       <SectionDivider />
 
       <div className="max-w-5xl mx-auto px-6 sm:px-8">
-        <SectionHeader number="02" label="Projects" title="Things I've Built" visible={visible} />
+        <SectionHeader
+          number="02"
+          label="Projects"
+          title="Things I've Built"
+          visible={visible}
+          align="right"
+          annotation={<>fig. 02 &middot; n = {projects.length + 1} builds &middot; clinical ML to iOS</>}
+          spark={{ data: [2, 4, 3, 5, 4, 6, 7], variant: "bars" }}
+        />
 
         <FeaturedProject visible={visible} />
 

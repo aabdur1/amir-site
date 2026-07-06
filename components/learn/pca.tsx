@@ -1841,7 +1841,7 @@ function Section5() {
             >
               <div className={`text-[12px] font-medium mb-1.5 ${personColorClasses[i]}`}>
                 {s.name}{' '}
-                <span className="font-normal text-ink-faint dark:text-night-muted">{s.desc}</span>
+                <span className="font-normal text-ink-subtle dark:text-night-muted">{s.desc}</span>
               </div>
               <div className="font-[family-name:var(--font-mono)] text-[13px] leading-[1.8] text-ink-subtle dark:text-night-muted">
                 Height: {s.height} in<br />
