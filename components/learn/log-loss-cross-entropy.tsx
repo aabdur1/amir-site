@@ -362,6 +362,7 @@ function Section1() {
             key={v.key}
             type="button"
             onClick={() => switchDist(v.key)}
+            aria-pressed={distType === v.key}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
               distType === v.key
                 ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
@@ -790,6 +791,7 @@ function Section2() {
             <button
               type="button"
               onClick={() => setActualY(1)}
+              aria-pressed={actualY === 1}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
                 actualY === 1
                   ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
@@ -801,6 +803,7 @@ function Section2() {
             <button
               type="button"
               onClick={() => setActualY(0)}
+              aria-pressed={actualY === 0}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
                 actualY === 0
                   ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
@@ -825,6 +828,7 @@ function Section2() {
         <button
           type="button"
           onClick={() => { setMultiMode(false); if (sweepRef.current) { cancelAnimationFrame(sweepRef.current); sweepRef.current = null; setSweeping(false) } }}
+          aria-pressed={!multiMode}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
             !multiMode
               ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
@@ -836,6 +840,7 @@ function Section2() {
         <button
           type="button"
           onClick={() => { setMultiMode(true); if (sweepRef.current) { cancelAnimationFrame(sweepRef.current); sweepRef.current = null; setSweeping(false) } }}
+          aria-pressed={multiMode}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
             multiMode
               ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'

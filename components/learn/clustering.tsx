@@ -176,6 +176,7 @@ function ShapeButtons({ shape, setShape }: { shape: ShapeKey; setShape: (s: Shap
           key={s.key}
           type="button"
           onClick={() => setShape(s.key)}
+          aria-pressed={shape === s.key}
           className={`px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
             shape === s.key
               ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
@@ -918,6 +919,7 @@ function Section1() {
             key={v.key}
             type="button"
             onClick={() => handleModeChange(v.key)}
+            aria-pressed={mode === v.key}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
               mode === v.key
                 ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
@@ -970,6 +972,7 @@ function Section1() {
         <button
           type="button"
           onClick={togglePlacingMode}
+          aria-pressed={placingMode}
           className={`px-4 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
             placingMode
               ? 'border-peach/30 dark:border-peach-dark/30 bg-peach/10 dark:bg-peach-dark/10 text-peach dark:text-peach-dark font-semibold'
@@ -1241,6 +1244,7 @@ function Section2() {
             key={l}
             type="button"
             onClick={() => handleLinkageChange(l)}
+            aria-pressed={linkage === l}
             className={`px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
               linkage === l
                 ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'

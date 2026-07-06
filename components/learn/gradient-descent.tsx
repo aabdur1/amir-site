@@ -796,6 +796,7 @@ function Section2() {
         <button
           type="button"
           onClick={() => setCompareMode(true)}
+          aria-pressed={compareMode}
           className={`px-4 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
             compareMode
               ? 'border-mauve/30 dark:border-mauve-dark/30 bg-mauve/10 dark:bg-mauve-dark/10 text-mauve dark:text-mauve-dark'
@@ -1192,6 +1193,7 @@ function Section3() {
               key={v.key}
               type="button"
               onClick={() => setActive(v.key)}
+              aria-pressed={isActive}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
                 isActive
                   ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'

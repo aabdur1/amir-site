@@ -1124,6 +1124,7 @@ function Section3() {
         <button
           type="button"
           onClick={() => setStandardized(false)}
+          aria-pressed={!standardized}
           className={`px-4 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
             !standardized
               ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
@@ -1135,6 +1136,7 @@ function Section3() {
         <button
           type="button"
           onClick={() => setStandardized(true)}
+          aria-pressed={standardized}
           className={`px-4 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
             standardized
               ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'

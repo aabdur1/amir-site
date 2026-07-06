@@ -1071,6 +1071,7 @@ function Section4() {
               key={f}
               type="button"
               onClick={() => setHighlightFeature(prev => prev === f ? null : f)}
+              aria-pressed={active}
               className={`px-4 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
                 active
                   ? colors[f]

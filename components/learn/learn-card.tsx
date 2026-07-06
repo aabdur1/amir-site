@@ -46,8 +46,11 @@ export function LearnCard({ artifact, index, illustration }: LearnCardProps) {
             <span className="font-[family-name:var(--font-mono)] text-[12px] text-peach dark:text-peach-dark">
               {artifact.number}/
             </span>
-            {/* [text-shadow:none] keeps the pre-h2 appearance — globals.css adds a shadow to all h2 */}
-            <h2 className="font-[family-name:var(--font-display)] text-lg text-ink dark:text-night-text [text-shadow:none]">
+            {/* inline text-shadow:none keeps the pre-h2 appearance — globals.css shadows all h2 (and .dark h2 outranks a utility class) */}
+            <h2
+              className="font-[family-name:var(--font-display)] text-lg text-ink dark:text-night-text"
+              style={{ textShadow: "none" }}
+            >
               {artifact.title}
             </h2>
           </div>
