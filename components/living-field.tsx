@@ -117,6 +117,13 @@ const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 const REPEL_RADIUS = 140;
 const REPEL_MAX = 14;
 const FRAME_MS = 1000 / 30;
+// Pause the drift loop when nobody has interacted for this long — a
+// full-viewport canvas repaint at 30fps costs ~5% of a core while idle
+// (measured), which matters on battery. Any pointer/scroll/touch/key
+// activity wakes it instantly; the pause itself is imperceptible since
+// drift is a ±5px sinusoid, not a discrete motion.
+const IDLE_TIMEOUT_MS = 12000;
+const ASSEMBLE_GUARD_MS = 4000; // never pause before the entry assembly finishes
 
 export function LivingField() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -138,9 +145,15 @@ export function LivingField() {
     let running = false;
     let lastFrame = 0;
     let mounted = performance.now();
+    let lastActivity = performance.now();
     const mouse = { x: -9999, y: -9999 };
 
     const isDark = () => document.documentElement.classList.contains("dark");
+
+    // Resolve the mono stack from the next/font variable so canvas labels use
+    // the same face as the .annotation class (falls back to the literal name)
+    const monoStack = getComputedStyle(document.body).getPropertyValue("--font-mono").trim();
+    const labelFont = `10px ${monoStack || '"Share Tech Mono"'}, monospace`;
 
     function resize() {
       W = window.innerWidth;
@@ -160,7 +173,7 @@ export function LivingField() {
       const scrollY = window.scrollY;
 
       ctx!.clearRect(0, 0, W, H);
-      ctx!.font = '10px "Share Tech Mono", monospace';
+      ctx!.font = labelFont;
 
       for (const p of points) {
         // Assembly progress (or final state for reduced motion / later frames)
@@ -227,6 +240,12 @@ export function LivingField() {
 
     function loop(now: number) {
       if (!running) return;
+      // Idle pause — see IDLE_TIMEOUT_MS. wake() resumes on any activity.
+      if (now - lastActivity > IDLE_TIMEOUT_MS && now - mounted > ASSEMBLE_GUARD_MS) {
+        running = false;
+        rafId = 0;
+        return;
+      }
       if (now - lastFrame >= FRAME_MS) {
         lastFrame = now;
         draw(now, false);
@@ -236,6 +255,7 @@ export function LivingField() {
 
     function start() {
       if (running || reduced) return;
+      lastActivity = performance.now();
       running = true;
       rafId = requestAnimationFrame(loop);
     }
@@ -244,6 +264,10 @@ export function LivingField() {
       if (rafId) cancelAnimationFrame(rafId);
       rafId = 0;
     }
+    const wake = () => {
+      lastActivity = performance.now();
+      if (!running && !document.hidden) start();
+    };
 
     resize();
     if (reduced) {
@@ -282,6 +306,11 @@ export function LivingField() {
     if (finePointer) window.addEventListener("mousemove", onMouseMove, { passive: true });
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("resize", onResize);
+    // Any interaction wakes the paused drift loop
+    window.addEventListener("pointermove", wake, { passive: true });
+    window.addEventListener("scroll", wake, { passive: true });
+    window.addEventListener("touchstart", wake, { passive: true });
+    window.addEventListener("keydown", wake);
 
     return () => {
       stop();
@@ -289,6 +318,10 @@ export function LivingField() {
       if (finePointer) window.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("resize", onResize);
+      window.removeEventListener("pointermove", wake);
+      window.removeEventListener("scroll", wake);
+      window.removeEventListener("touchstart", wake);
+      window.removeEventListener("keydown", wake);
       if (resizeTimer) clearTimeout(resizeTimer);
     };
   }, [pathname]);
