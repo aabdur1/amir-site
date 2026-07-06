@@ -46,9 +46,10 @@ export function LearnCard({ artifact, index, illustration }: LearnCardProps) {
             <span className="font-[family-name:var(--font-mono)] text-[12px] text-peach dark:text-peach-dark">
               {artifact.number}/
             </span>
-            <h3 className="font-[family-name:var(--font-display)] text-lg text-ink dark:text-night-text">
+            {/* [text-shadow:none] keeps the pre-h2 appearance — globals.css adds a shadow to all h2 */}
+            <h2 className="font-[family-name:var(--font-display)] text-lg text-ink dark:text-night-text [text-shadow:none]">
               {artifact.title}
-            </h3>
+            </h2>
           </div>
 
           {/* Subtopics */}

@@ -116,7 +116,13 @@ function CountUp({ target }: { target: number }) {
     return () => observer.disconnect()
   }, [animate])
 
-  return <span ref={spanRef}>0</span>
+  // Animated digits are hidden from AT; sr-only span carries the real count
+  return (
+    <>
+      <span ref={spanRef} aria-hidden="true">0</span>
+      <span className="sr-only">{target}</span>
+    </>
+  )
 }
 
 const BATCH_SIZE = 12

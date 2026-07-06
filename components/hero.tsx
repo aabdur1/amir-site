@@ -384,6 +384,7 @@ export function Hero() {
       {/* Bottom scroll indicator */}
       <div
         ref={scrollIndRef}
+        aria-hidden="true"
         className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden sm:flex flex-col items-center gap-2 will-change-transform"
         style={{
           opacity: 0,

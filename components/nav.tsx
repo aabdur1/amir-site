@@ -200,6 +200,7 @@ export default function Nav() {
             {/* Morphing indicator */}
             <div
               ref={indicatorRef}
+              aria-hidden="true"
               className="absolute top-0 left-0 h-full rounded-full border pointer-events-none"
               style={{
                 transition: indicatorMounted
@@ -212,6 +213,7 @@ export default function Nav() {
           <Link
             ref={learnPillRef}
             href="/learn"
+            aria-current={isLearn ? "page" : undefined}
             className={`nav-learn-pill group relative font-[family-name:var(--font-mono)] text-[13px]
               tracking-[0.15em] uppercase
               px-4 py-2 rounded-full border overflow-hidden
@@ -247,6 +249,7 @@ export default function Nav() {
           <Link
             ref={galleryPillRef}
             href="/gallery"
+            aria-current={isGallery ? "page" : undefined}
             className={`nav-gallery-pill group relative font-[family-name:var(--font-mono)] text-[13px]
               tracking-[0.15em] uppercase
               px-4 py-2 rounded-full border overflow-hidden

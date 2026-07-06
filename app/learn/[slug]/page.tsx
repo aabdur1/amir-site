@@ -133,6 +133,7 @@ export default async function LearnArtifactPage({
               <Link
                 key={a.slug}
                 href={`/learn/${a.slug}`}
+                aria-current={a.slug === slug ? 'page' : undefined}
                 className={`shrink-0 px-3.5 py-1.5 rounded-full text-[13px] font-[family-name:var(--font-mono)] tracking-wide border transition-colors ${
                   a.slug === slug
                     ? 'bg-mauve/10 dark:bg-mauve-dark/10 border-mauve/40 dark:border-mauve-dark/40 text-mauve dark:text-mauve-dark'
