@@ -23,15 +23,15 @@
   status = 301
   force = true
 
+# Applies to STATIC-ASSET responses only — Netlify ignores toml headers on
+# responses served by the Next.js runtime function (i.e. every page). The
+# document-level security headers (CSP, X-Frame-Options, Referrer-Policy,
+# Permissions-Policy, HSTS) live in next.config.ts headers().
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
     Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-FzZqltVqNEMe1AP7MNJyYU92WT6Smm3z6p9+mEkOLu0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: https://d36t8s1mzbufg5.cloudfront.net https://images.credly.com; connect-src 'self' https://www.credly.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
 
 [[headers]]
   for = "/badges/*"
