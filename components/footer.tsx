@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useHydrated } from "@/lib/hooks";
 import { SectionDivider } from "@/components/section-divider";
 
@@ -29,7 +30,18 @@ export function Footer() {
         </p>
 
         {/* Links row */}
-        <div className="flex items-center justify-center gap-6 mb-8">
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 mb-8">
+          <Link
+            href="/work"
+            className="text-xs tracking-[0.15em] uppercase font-[family-name:var(--font-mono)]
+              text-ink-subtle dark:text-night-muted hover:text-ink dark:hover:text-night-text
+              hover:-translate-y-px hover:underline hover:decoration-sapphire dark:hover:decoration-sapphire-dark
+              hover:underline-offset-4 hover:decoration-2
+              py-3 px-1 transition-all duration-200"
+          >
+            Work
+          </Link>
+          <span aria-hidden="true" className="text-cream-border dark:text-night-border text-[12px]">&#9670;</span>
           <a
             href="https://github.com/aabdur1"
             target="_blank"

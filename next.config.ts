@@ -35,6 +35,16 @@ const PYTHON_CSP = renderCsp({
   'connect-src': `${CSP_DIRECTIVES['connect-src']} https://cdn.jsdelivr.net`,
 });
 
+// /work/airline-flight-patterns only: the click-gated Tableau Public story
+// embeds as a plain iframe, so only frame-src widens (default-src 'self' is
+// the fallback that would otherwise block it). No script-src change — the
+// Embedding API was deliberately skipped to keep third-party JS out of the
+// page context.
+const TABLEAU_CSP = renderCsp({
+  ...CSP_DIRECTIVES,
+  'frame-src': 'https://public.tableau.com',
+});
+
 const nextConfig: NextConfig = {
   experimental: {
     viewTransition: true,
@@ -63,6 +73,10 @@ const nextConfig: NextConfig = {
         // matching source wins, which is how this override takes effect.
         source: '/learn/python',
         headers: [{ key: 'Content-Security-Policy', value: PYTHON_CSP }],
+      },
+      {
+        source: '/work/airline-flight-patterns',
+        headers: [{ key: 'Content-Security-Policy', value: TABLEAU_CSP }],
       },
     ];
   },

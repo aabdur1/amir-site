@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useScrollReveal } from "@/lib/hooks";
 import { ACCENT_STYLES } from "@/lib/styles";
 import { SectionDivider } from "@/components/section-divider";
@@ -9,6 +10,7 @@ import { FeaturedProject } from "@/components/featured-project";
 const STRIPE_STYLES = {
   sapphire: "border-t-sapphire dark:border-t-sapphire-dark",
   mauve: "border-t-mauve dark:border-t-mauve-dark",
+  peach: "border-t-peach dark:border-t-peach-dark",
   lavender: "border-t-lavender dark:border-t-lavender-dark",
   rosewater: "border-t-rosewater dark:border-t-rosewater-dark",
 } as const;
@@ -73,6 +75,16 @@ const projects = [
     pills: ["SANS CTF", "AWS", "KMS", "Forensics"],
     accent: "lavender" as const,
     url: null,
+  },
+  {
+    name: "US Airline Flight Patterns",
+    subtitle: "Tableau Data-Visualization Story",
+    provenance: "Coursework · IDS 405 · Full case study",
+    description:
+      "A four-point Tableau story across two years of US flight records and 11 carriers: traffic over time (with a flagged data-completeness artifact), weekly flights by airline, and the distance-airtime relationship. Includes the live interactive viz.",
+    pills: ["Tableau", "Data viz", "Storytelling"],
+    accent: "peach" as const,
+    url: "/work/airline-flight-patterns",
   },
 ];
 
@@ -189,6 +201,20 @@ export function Projects() {
                   }
                 : {}),
             };
+
+            if (project.url?.startsWith("/")) {
+              return (
+                <Link
+                  key={project.name}
+                  href={project.url}
+                  aria-label={`${project.name} — ${project.subtitle}`}
+                  className={sharedClassName}
+                  style={sharedStyle}
+                >
+                  {cardContent}
+                </Link>
+              );
+            }
 
             if (project.url) {
               return (
