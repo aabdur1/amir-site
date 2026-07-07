@@ -7,6 +7,7 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - **Framework:** Next.js 16 (App Router) + TypeScript
 - **Styling:** Tailwind CSS 4 (CSS-first `@theme` configuration in `app/globals.css`)
 - **Lightbox:** yet-another-react-lightbox (gallery EXIF overlay + zoom)
+- **SQL engine:** sql.js ^1.14 (SQLite → WASM, MIT) — the one deliberate exception to the no-dependencies ethos (you can't hand-roll a SQL engine). Used only by the 08/ SQL learn artifact.
 - **Deployment:** Netlify (connected to GitHub repo, `@netlify/plugin-nextjs`)
 - **Domain:** amirabdurrahim.com
 
@@ -17,7 +18,7 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - **Fonts via next/font/google.** DM Serif Display (headings), DM Sans (body), Share Tech Mono (mono/tags), Lora (credential badges). Loaded as CSS variables (`--font-display`, `--font-body`, `--font-mono`, `--font-badge`) in `app/layout.tsx`.
 - **Dark mode via class toggle.** Uses `.dark` class on `<html>`. Custom variant defined in globals.css: `@custom-variant dark (&:where(.dark, .dark *));`. Blocking inline `<script>` in `layout.tsx` prevents flash of wrong theme on load. Toggle uses View Transitions API (`startViewTransition`) with circular clip-path reveal when supported, falling back to `.theme-transitioning` class for 300ms crossfade.
 - **No icon libraries.** Icons are inline SVGs.
-- **Client components marked explicitly.** Components using `"use client"`: nav, dark-mode-toggle, hero, animated-text, living-field, spine, count-up, interactive-headshot, certifications, experience, projects, featured-project, skills, education, footer, scroll-progress, page-transition, learn-teaser. Gallery components (masonry-grid, photo-card, sort-controls) are also client components. Learn components (learn-card, section-rail, gradient-descent, log-loss-cross-entropy, pca, regularization, clustering, shap, neural-networks) are client components. learn-nav, section-header, section-divider, and spark-rule are server components.
+- **Client components marked explicitly.** Components using `"use client"`: nav, dark-mode-toggle, hero, animated-text, living-field, spine, count-up, interactive-headshot, certifications, experience, projects, featured-project, skills, education, footer, scroll-progress, page-transition, learn-teaser. Gallery components (masonry-grid, photo-card, sort-controls) are also client components. Learn components (learn-card, section-rail, gradient-descent, log-loss-cross-entropy, pca, regularization, clustering, shap, neural-networks, sql) are client components. learn-nav, section-header, section-divider, and spark-rule are server components.
 - **No shorthand/longhand mixing in inline styles.** Always fold `animationDelay` into the `animation` shorthand to avoid React warnings.
 
 ## Key Patterns
@@ -42,7 +43,8 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - **Branded OG images.** `app/opengraph-image.tsx`, `app/gallery/opengraph-image.tsx`, and `app/learn/opengraph-image.tsx` generate 1200x630 PNGs at build time using `ImageResponse` from `next/og`. Catppuccin Mocha branding with DM Serif Display font loaded from Google Fonts gstatic (with try/catch fallback if font fetch fails). No hardcoded `images` in metadata — Next.js auto-injects from these routes. `app/learn/[slug]/opengraph-image.tsx` renders a unique per-slug card (number, title, subtopics, the index-card illustration with Mocha colors hardcoded), served on demand (the route is ƒ dynamic). Satori gotchas learned there: JSX interpolation that yields multiple text-node children (e.g. `{number}/`) fails with "Expected <div> to have explicit display: flex" — fold into a single template string; the ◆ glyph triggers a runtime font-fallback fetch that can fail, so ornaments in the dynamic OG route are drawn (rotated square div) instead.
 - **Metadata-driven learn section.** `lib/learn/artifacts.ts` is the single source of truth for all artifact metadata (slug, title, description, subtopics, section count, and `sections` — the `{ id, label }` list driving the SectionRail). The index page, prev/next nav, section rail, per-slug OG image, sitemap entries, and JSON-LD `LearningResource`/`BreadcrumbList` schemas all derive from this array. Adding a new artifact: create the component (with stable ids on its section h2s), add an entry to the array.
 - **Learn artifact error boundary.** `ArtifactErrorBoundary` class component wraps each artifact in `app/learn/[slug]/page.tsx`. Shows editorial-styled fallback with "Try again" button if a canvas/interaction throws.
-- **Learn artifacts with ssr: false.** 5 of 7 learn artifacts (Log Loss, PCA, Clustering, SHAP, Neural Networks) use `Math.random()` in `useState` initializers or ref initializers. They're loaded via `components/learn/dynamic-artifacts.tsx` — a `'use client'` wrapper that re-exports them with `next/dynamic` `{ ssr: false }` to avoid hydration mismatches. Gradient Descent and Regularization use deterministic initial data and load with SSR.
+- **Learn artifacts with ssr: false.** 6 of 8 learn artifacts (Log Loss, PCA, Clustering, SHAP, Neural Networks, SQL) use `Math.random()` in `useState` initializers or ref initializers, or require client-only initialization. They're loaded via `components/learn/dynamic-artifacts.tsx` — a `'use client'` wrapper that re-exports them with `next/dynamic` `{ ssr: false }` to avoid hydration mismatches. SQL is ssr:false because its WASM engine is client-only, not because of Math.random(). Gradient Descent and Regularization use deterministic initial data and load with SSR.
+- **SQL sandbox artifact (08/).** `components/learn/sql.tsx`: sql.js is imported only here (ssr: false chunk → zero bytes outside `/learn/sql`); wasm served from `public/sql-wasm.wasm` — **re-copy from `node_modules/sql.js/dist/sql-wasm.wasm` when bumping the sql.js dependency**. Engine is a module singleton: seed DB built once from `lib/learn/sql-seed.ts`, `db.export()` buffer cached, **fresh `Database(seedBuffer)` per Run** (destructive statements can't leak; accepted MVP risk: queries run on the main thread). Seed data is generated by `scripts/generate-sql-seed.mjs` (deterministic LCG, committed output, in-script assertions enforce the teaching shapes — zero-encounter patients, tie-free ORDER BY / ROW_NUMBER columns, HbA1c series). Exercises in `lib/learn/sql-exercises.ts` are checked by `lib/learn/sql-check.ts`: column *count* (aliases pass), then positional cells — numbers 1e-9 tolerance, strings trimmed, NULL ≡ NULL, canonical row sort unless `ordered: true`. Engine-load failure renders an in-artifact fallback with retry (never throws to the ArtifactErrorBoundary). CSP needs `'wasm-unsafe-eval'` (netlify.toml; deploy-preview-only verification).
 - **Canvas dark mode via MutationObserver.** Learn artifact components read Catppuccin color tokens via `getComputedStyle()` and detect `.dark` class changes on `<html>` via `MutationObserver` to re-draw canvases. Each artifact has a `getThemeColors()` helper returning the current palette.
 - **Learn artifact components are code-split.** `app/learn/[slug]/page.tsx` uses `next/dynamic` to lazy-load each artifact component, preventing all 7 from bundling into a single chunk.
 - **Staggered page transitions.** `PageTransition` wraps each direct child with `fade-in-up` animation, 120ms stagger between sections. Tracks visited pages via module-level `Set` — first visit gets full stagger, return visits get a quick 200ms fade-in. View Transitions API enabled via `experimental.viewTransition: true` in `next.config.ts` for smooth crossfades between routes.
@@ -183,6 +185,7 @@ components/
     clustering.tsx        # 05/ Clustering (3 sections: centroid trail + click-to-place, linkage toggle, interactive eps + cluster sparkline)
     shap.tsx              # 06/ SHAP (4 sections: feature value waterfall, click-highlight + correlation arrows, cumulative importance, subset lattice)
     neural-networks.tsx   # 07/ Neural Networks (7 sections: neuron anatomy, XOR & linear separability (XNOR combinator toggle), activations & vanishing gradients, backprop walkthrough (5-stage step-through), momentum vs vanilla GD, training a tiny MLP, autoencoder vs PCA (2→1→4→2 AE))
+    sql.tsx                 # 08/ SQL (4 sections: SELECT/WHERE/ORDER BY, GROUP BY/HAVING, joins & fan-out, window functions — 11 checked exercises on sql.js)
 lib/
   hooks.ts                # Shared hooks: useHydrated(), useScrollReveal()
   styles.ts               # Shared accent style map (ACCENT_STYLES)
@@ -190,16 +193,21 @@ lib/
   badges.ts               # Credly API fetcher + manual badges, exports getAllBadges()
   learn/
     artifacts.ts          # Artifact metadata array: slug, title, description, subtopics, order, sections (rail ids + labels)
+    sql-seed.ts             # GENERATED deterministic healthcare seed (patients/encounters/labs/medications) — regenerate via scripts/generate-sql-seed.mjs
+    sql-exercises.ts        # 11 exercise definitions (prompt, hint, solution, ordered, tables)
+    sql-check.ts            # Result-set comparator (positional, tolerant, ordered/unordered)
 scripts/
   add-photo.mjs           # One-command photo addition (supports multiple files): upload + thumbnail + blurhash + photos.json
   add-photo-gui.mjs       # Native macOS Finder picker → feeds selections to add-photo.mjs
   generate-thumbnails.mjs # Batch thumbnail generation for all photos (sharp, 1600px, mozjpeg q80)
   generate-blurhash.mjs   # Batch BlurHash generation for all photos (4x3 components from thumbnails)
+  generate-sql-seed.mjs   # Seed generator + teaching-shape assertions (writes lib/learn/sql-seed.ts)
 public/
   photos.json             # Photo metadata (CloudFront URLs + thumb URLs, EXIF data)
   badges/                 # Non-Credly badge images (e.g. Zscaler, Snowflake)
   theli/
     home.png              # Theli app screenshot (640×1391, used by featured-project.tsx)
+  sql-wasm.wasm           # sql.js WASM binary (re-copy on sql.js bumps), served at /sql-wasm.wasm
   Amir_Abdur-Rahim_Resume.pdf  # Resume PDF served at /Amir_Abdur-Rahim_Resume.pdf; source: ~/job_search/resume.md
 next.config.ts            # Image remote patterns (CloudFront, Credly), experimental.viewTransition
 netlify.toml              # Netlify build config + CSP, HSTS, cache headers
@@ -220,7 +228,7 @@ netlify.toml              # Netlify build config + CSP, HSTS, cache headers
 ## Security Headers
 
 Configured in `netlify.toml`:
-- **CSP:** `script-src 'self'` + SHA-256 hash of the inline dark-mode script. If the inline script in `layout.tsx` changes, recompute the hash: `echo -n "<script-content>" | openssl dgst -sha256 -binary | base64`
+- **CSP:** `script-src 'self' 'wasm-unsafe-eval'` + SHA-256 hash of the inline dark-mode script. `'wasm-unsafe-eval'` is required by sql.js on /learn/sql. If the inline script in `layout.tsx` changes, recompute the hash: `echo -n "<script-content>" | openssl dgst -sha256 -binary | base64`
 - **HSTS:** `max-age=63072000; includeSubDomains; preload`
 - **Cache:** Immutable 1-year cache on `/_next/static/*`, 1-hour cache on `/badges/*`
 
