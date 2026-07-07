@@ -519,6 +519,20 @@ function Section2({ instances, regenerate }: { instances: Instance[]; regenerate
     canvas.style.cursor = x < 105 ? 'pointer' : 'default'
   }, [])
 
+  // Keyboard alternative to clicking feature names: up/down cycle the
+  // isolated feature through the display order, Escape clears
+  const handleCanvasKeyDown = useCallback((e: React.KeyboardEvent<HTMLCanvasElement>) => {
+    if (e.key === 'Escape') { setHighlightedFeature(null); return }
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
+    e.preventDefault()
+    const dir = e.key === 'ArrowDown' ? 1 : -1
+    setHighlightedFeature(prev => {
+      if (prev === null) return order[dir === 1 ? 0 : order.length - 1]
+      const row = order.indexOf(prev)
+      return order[(row + dir + order.length) % order.length]
+    })
+  }, [order])
+
   return (
     <section
       ref={sectionRef as React.RefObject<HTMLElement>}
@@ -540,11 +554,15 @@ function Section2({ instances, regenerate }: { instances: Instance[]; regenerate
       <canvas
         ref={canvasRef}
         role="img"
-        aria-label="Beeswarm plot showing SHAP value distributions for each feature colored by feature value"
+        tabIndex={0}
+        aria-label={`Beeswarm plot showing SHAP value distributions for each feature colored by feature value.${
+          highlightedFeature !== null ? ` ${FEAT_SHORT[highlightedFeature]} is isolated.` : ''
+        } Use up and down arrow keys to cycle feature isolation, Escape to clear.`}
         className="w-full rounded-lg"
         style={{ height: 320 }}
         onClick={handleCanvasClick}
         onMouseMove={handleCanvasMove}
+        onKeyDown={handleCanvasKeyDown}
       />
 
       {/* Gradient legend */}

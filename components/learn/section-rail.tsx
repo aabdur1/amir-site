@@ -16,7 +16,8 @@ export function SectionRail({ sections }: { sections: ArtifactSection[] }) {
   const [activeId, setActiveId] = useState<string | null>(null)
 
   useEffect(() => {
-    setActiveId(null)
+    // No reset needed on section change: ids are slug-prefixed, so a stale
+    // activeId can't match the new artifact and the observer re-highlights.
     let io: IntersectionObserver | null = null
     let mo: MutationObserver | null = null
 

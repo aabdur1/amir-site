@@ -1351,7 +1351,7 @@ function Section4() {
       </h2>
       <p className="text-[15px] text-ink-subtle dark:text-night-muted leading-relaxed mb-4">
         One formula runs through the entire course. Every connection below is something you{'\u2019'}ve already seen {'\u2014'}{' '}
-        this just makes the chain explicit. Hover over any node to highlight it.
+        this just makes the chain explicit. Hover over or focus any node to highlight it.
       </p>
 
       {/* Chain visualization */}
@@ -1367,6 +1367,9 @@ function Section4() {
                   : 'opacity-100'
               }`}
               onMouseEnter={() => setHoveredIdx(idx)}
+              tabIndex={0}
+              onFocus={() => setHoveredIdx(idx)}
+              onBlur={() => setHoveredIdx(null)}
             >
               <div className={`text-[13px] font-medium ${node.colorClass}`}>
                 {node.title}
@@ -1418,6 +1421,9 @@ function Section4() {
                       : 'opacity-100'
                   }`}
                   onMouseEnter={() => setHoveredIdx(row.chainIdx)}
+                  tabIndex={0}
+                  onFocus={() => setHoveredIdx(row.chainIdx)}
+                  onBlur={() => setHoveredIdx(null)}
                 >
                   <td className={`py-1.5 px-2 font-medium border-b border-cream-border/50 dark:border-night-border/50 ${row.colorClass}`}>
                     {row.name}

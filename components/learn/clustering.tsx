@@ -472,6 +472,10 @@ function Section1() {
   const [placingMode, setPlacingMode] = useState(false)
   const [placedCentroids, setPlacedCentroids] = useState<number[][]>([])
 
+  // Keyboard placement: candidate position (data coords) + canvas focus flag
+  const [kbCandidate, setKbCandidate] = useState<[number, number]>([0.5, 0.5])
+  const [kbFocus, setKbFocus] = useState(false)
+
   // Reset is called from event handlers only (not effects)
   const resetWithParams = useCallback((s: ShapeKey, kVal: number) => {
     let newPts: number[][]
@@ -549,20 +553,9 @@ function Section1() {
   const wss = step > 0 ? computeWSS(pts, assigns, centroids) : 0
   const sil = converged ? computeSilhouette(pts, assigns, k) : 0
 
-  // Canvas click handler for placing centroids
-  const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!placingMode) return
+  // Shared placement logic — used by both the click and keyboard paths
+  const placeCentroidAt = useCallback((dataX: number, dataY: number) => {
     if (placedCentroids.length >= k) return
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const rect = canvas.getBoundingClientRect()
-    const pad = 20
-    const pw = rect.width - pad * 2
-    const ph = 340 - pad * 2
-    const px = e.clientX - rect.left
-    const py = e.clientY - rect.top
-    const dataX = (px - pad) / pw
-    const dataY = 1 - (py - pad) / ph
     const clamped = [Math.max(0, Math.min(1, dataX)), Math.max(0, Math.min(1, dataY))]
     const newPlaced = [...placedCentroids, clamped]
     setPlacedCentroids(newPlaced)
@@ -574,7 +567,41 @@ function Section1() {
       setConverged(false)
       setCentroidTrail([])
     }
-  }, [placingMode, placedCentroids, k, pts.length])
+  }, [placedCentroids, k, pts.length])
+
+  // Canvas click handler for placing centroids
+  const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!placingMode) return
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const rect = canvas.getBoundingClientRect()
+    const pad = 20
+    const pw = rect.width - pad * 2
+    const ph = 340 - pad * 2
+    const px = e.clientX - rect.left
+    const py = e.clientY - rect.top
+    placeCentroidAt((px - pad) / pw, 1 - (py - pad) / ph)
+  }, [placingMode, placeCentroidAt])
+
+  // Keyboard alternative to click-to-place (mirrors the XOR canvas pattern):
+  // arrows move the candidate, Enter places it via the same logic as a click
+  const handleCanvasKeyDown = useCallback((e: React.KeyboardEvent<HTMLCanvasElement>) => {
+    if (!placingMode || placedCentroids.length >= k) return
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      placeCentroidAt(kbCandidate[0], kbCandidate[1])
+      return
+    }
+    let dx = 0, dy = 0
+    if (e.key === 'ArrowLeft') dx = -0.03
+    else if (e.key === 'ArrowRight') dx = 0.03
+    else if (e.key === 'ArrowUp') dy = 0.03 // data y-axis points up
+    else if (e.key === 'ArrowDown') dy = -0.03
+    else return
+    e.preventDefault()
+    const clamp = (v: number) => Math.max(0, Math.min(1, v))
+    setKbCandidate(prev => [clamp(prev[0] + dx), clamp(prev[1] + dy)])
+  }, [placingMode, placedCentroids.length, k, kbCandidate, placeCentroidAt])
 
   // Draw main canvas
   const draw = useCallback(() => {
@@ -699,7 +726,18 @@ function Section1() {
       ctx.textAlign = 'right'
       ctx.fillText(`Click to place: ${placedCentroids.length}/${k}`, W - pad - 4, pad + 14)
     }
-  }, [pts, assigns, centroids, mode, centroidTrail, k, placingMode, placedCentroids])
+
+    // Keyboard placement candidate — only drawn while the canvas has focus,
+    // so the pointer experience is unchanged
+    if (placingMode && kbFocus && placedCentroids.length < k) {
+      const x = xOf(kbCandidate[0]), y = yOf(kbCandidate[1])
+      ctx.strokeStyle = c.peach
+      ctx.lineWidth = 1.5
+      ctx.beginPath(); ctx.moveTo(x - 11, y); ctx.lineTo(x + 11, y); ctx.stroke()
+      ctx.beginPath(); ctx.moveTo(x, y - 11); ctx.lineTo(x, y + 11); ctx.stroke()
+      ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2); ctx.stroke()
+    }
+  }, [pts, assigns, centroids, mode, centroidTrail, k, placingMode, placedCentroids, kbFocus, kbCandidate])
 
   // Draw elbow chart
   const drawElbow = useCallback(() => {
@@ -935,10 +973,16 @@ function Section1() {
       <canvas
         ref={canvasRef}
         role="img"
-        aria-label="Scatter plot showing data points colored by cluster assignment with centroid or medoid markers and radius circles"
+        tabIndex={placingMode ? 0 : undefined}
+        aria-label={placingMode
+          ? `Scatter plot in centroid placement mode, ${placedCentroids.length} of ${k} placed. Arrow keys move the candidate centroid; press Enter to place it.`
+          : 'Scatter plot showing data points colored by cluster assignment with centroid or medoid markers and radius circles'}
         className={`w-full rounded-lg ${placingMode && placedCentroids.length < k ? 'cursor-crosshair' : ''}`}
         style={{ height: 340 }}
         onClick={handleCanvasClick}
+        onKeyDown={handleCanvasKeyDown}
+        onFocus={() => setKbFocus(true)}
+        onBlur={() => setKbFocus(false)}
       />
 
       {/* k slider */}
@@ -1371,6 +1415,38 @@ function Section3() {
     void dataX; void dataY
   }, [pts])
 
+  // Keyboard alternative to click-to-inspect: arrows cycle through points
+  // (selecting via setClickedPt as they go), Enter toggles, Escape clears
+  const handleCanvasKeyDown = useCallback((e: React.KeyboardEvent<HTMLCanvasElement>) => {
+    const n = pts.length
+    if (n === 0) return
+    if (e.key === 'Escape') { setClickedPt(null); return }
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      setClickedPt(prev => prev === null ? 0 : null)
+      return
+    }
+    let dir = 0
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') dir = 1
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') dir = -1
+    else return
+    e.preventDefault()
+    setClickedPt(prev => prev === null ? (dir === 1 ? 0 : n - 1) : (prev + dir + n) % n)
+  }, [pts.length])
+
+  // sr-only readout of the inspected point (keyboard / screen-reader path)
+  const inspected = useMemo(() => {
+    if (clickedPt === null || clickedPt >= pts.length) return null
+    let nbrs = 0
+    for (let j = 0; j < pts.length; j++) if (dist(pts[clickedPt], pts[j]) <= eps) nbrs++
+    const lbl = labels[clickedPt]
+    return {
+      nbrs,
+      kind: nbrs >= minPts ? 'core point' : lbl >= 0 ? 'border point' : 'noise point',
+      cluster: lbl >= 0 ? `cluster ${lbl + 1}` : 'no cluster',
+    }
+  }, [clickedPt, pts, labels, eps, minPts])
+
   // Sparkline data: cluster count + noise % vs eps
   const sparklineData = useMemo(() => {
     const steps = 50
@@ -1650,11 +1726,19 @@ function Section3() {
       <canvas
         ref={canvasRef}
         role="img"
-        aria-label="Scatter plot showing DBSCAN clustering with core points as filled dots, border points as rings, and noise as X marks. Click a point to inspect its eps-neighborhood."
+        tabIndex={0}
+        aria-label="Scatter plot showing DBSCAN clustering with core points as filled dots, border points as rings, and noise as X marks. Click a point, or use arrow keys to cycle through points, to inspect its eps-neighborhood; Escape clears the inspection."
         className="w-full rounded-lg cursor-pointer"
         style={{ height: 360 }}
         onClick={handleCanvasClick}
+        onKeyDown={handleCanvasKeyDown}
       />
+
+      <p className="sr-only" role="status">
+        {inspected && clickedPt !== null
+          ? `Inspecting point ${clickedPt + 1} of ${pts.length}: ${inspected.nbrs} neighbors within eps ${eps.toFixed(3)}, ${inspected.kind}, ${inspected.cluster}.`
+          : 'No point inspected.'}
+      </p>
 
       {/* Sparkline: cluster count + noise % vs eps */}
       <div className="mt-2 rounded-lg bg-cream-dark/50 dark:bg-night-card/40 px-3 py-2">
