@@ -141,7 +141,7 @@ app/
     opengraph-image.tsx   # Gallery OG image (Catppuccin Mocha, 1200x630)
     page.tsx              # Photography gallery page
   learn/
-    page.tsx              # Learn index: card grid of 7 interactive explainers
+    page.tsx              # Learn index: card grid of 8 interactive explainers
     opengraph-image.tsx   # Learn OG image (Catppuccin Mocha, 1200x630)
     [slug]/
       page.tsx            # Dynamic route: section rail, back link, tab bar (+scroll fade), artifact component, error boundary, prev/next nav, JSON-LD ×2
