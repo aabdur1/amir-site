@@ -1,10 +1,11 @@
-// lib/learn/sql-exercises.ts — the 11 checked exercises for the 08/ SQL
-// artifact. Checking runs `solution` against a fresh seed database and
-// compares result sets positionally (lib/learn/sql-check.ts), so prompts
+// lib/learn/sql-exercises.ts — the 19 checked exercises for the 08/ SQL
+// artifact, escalating within each section and ending in a combined
+// challenge section. Checking runs `solution` against a fresh seed database
+// and compares result sets positionally (lib/learn/sql-check.ts), so prompts
 // must pin down the output columns; ordered: true only where the prompt
 // demands a specific ORDER BY.
 
-export type SqlSectionId = 'sql-select' | 'sql-aggregate' | 'sql-joins' | 'sql-windows'
+export type SqlSectionId = 'sql-select' | 'sql-aggregate' | 'sql-joins' | 'sql-windows' | 'sql-challenge'
 
 export interface SqlExercise {
   id: string
@@ -51,6 +52,18 @@ FROM encounters;`,
     ordered: false,
     tables: ['encounters'],
   },
+  {
+    id: 'select-null',
+    section: 'sql-select',
+    prompt:
+      'Return the drug_name and start_date of every medication that is still ongoing — the ones with no end date recorded.',
+    hint: 'NULL never equals anything, even NULL — end_date = NULL matches zero rows, silently. IS NULL is the only test that works.',
+    solution: `SELECT drug_name, start_date
+FROM medications
+WHERE end_date IS NULL;`,
+    ordered: false,
+    tables: ['medications'],
+  },
 
   // --- 02/ GROUP BY / HAVING ---
   {
@@ -87,6 +100,32 @@ FROM encounters
 GROUP BY patient_id
 HAVING COUNT(*) > 3;`,
     ordered: false,
+    tables: ['encounters'],
+  },
+  {
+    id: 'agg-year',
+    section: 'sql-aggregate',
+    prompt:
+      'Return encounter counts per department per year — three columns: yr (the four-digit year of admit_date), dept, encounter_count.',
+    hint: "strftime('%Y', admit_date) pulls the year out of an ISO date string, and you can GROUP BY that expression (or its alias) together with dept.",
+    solution: `SELECT strftime('%Y', admit_date) AS yr, dept, COUNT(*) AS encounter_count
+FROM encounters
+GROUP BY yr, dept;`,
+    ordered: false,
+    tables: ['encounters'],
+  },
+  {
+    id: 'agg-share',
+    section: 'sql-aggregate',
+    prompt:
+      "Return each department's share of all encounters as a percentage rounded to one decimal — two columns, dept and pct — with the busiest department first.",
+    hint: 'COUNT(*) / total is integer division — it truncates to 0 before the ×100 ever happens, and 100 * COUNT(*) / total silently drops the decimals too. Make one operand a float (100.0 * …), get the grand total from a subquery, and ROUND(…, 1).',
+    solution: `SELECT dept,
+       ROUND(100.0 * COUNT(*) / (SELECT COUNT(*) FROM encounters), 1) AS pct
+FROM encounters
+GROUP BY dept
+ORDER BY pct DESC;`,
+    ordered: true,
     tables: ['encounters'],
   },
 
@@ -129,6 +168,32 @@ GROUP BY p.patient_id, p.name;`,
     ordered: false,
     tables: ['patients', 'encounters', 'labs'],
   },
+  {
+    id: 'join-antijoin',
+    section: 'sql-joins',
+    prompt: 'Return the name of every patient with no medications at all — one column, name.',
+    hint: 'An anti-join: LEFT JOIN medications and keep only the rows where the right side came back empty (m.med_id IS NULL). NOT IN (SELECT patient_id FROM medications) also works here.',
+    solution: `SELECT p.name
+FROM patients p
+LEFT JOIN medications m ON m.patient_id = p.patient_id
+WHERE m.med_id IS NULL;`,
+    ordered: false,
+    tables: ['patients', 'medications'],
+  },
+  {
+    id: 'join-active',
+    section: 'sql-joins',
+    prompt:
+      'How many encounters began while the patient had at least one medication active on the admission date? Active means start_date on or before admit_date, and end_date on or after it — or no end date at all. Return a single number.',
+    hint: 'Join medications to encounters on patient_id and put the date-range logic in WHERE — including the IS NULL branch for ongoing meds. A patient can have several active meds at once, so COUNT(DISTINCT e.encounter_id), not COUNT(*).',
+    solution: `SELECT COUNT(DISTINCT e.encounter_id) AS n
+FROM encounters e
+JOIN medications m ON m.patient_id = e.patient_id
+WHERE m.start_date <= e.admit_date
+  AND (m.end_date IS NULL OR m.end_date >= e.admit_date);`,
+    ordered: false,
+    tables: ['encounters', 'medications'],
+  },
 
   // --- 04/ Window functions ---
   {
@@ -163,5 +228,63 @@ JOIN patients p ON p.patient_id = r.patient_id
 WHERE r.rn = 1;`,
     ordered: false,
     tables: ['patients', 'encounters', 'labs'],
+  },
+  {
+    id: 'win-lag',
+    section: 'sql-windows',
+    prompt:
+      "Return patient_id, admit_date, and days_since_prev — the number of days since that patient's previous encounter (NULL for their first one).",
+    hint: "LAG(admit_date) OVER (PARTITION BY patient_id ORDER BY admit_date) reads the previous row's value inside each patient's partition. Wrap both dates in julianday() to subtract; the first visit has no previous row, so LAG returns NULL and the subtraction stays NULL.",
+    solution: `SELECT patient_id,
+       admit_date,
+       julianday(admit_date) - julianday(LAG(admit_date) OVER (PARTITION BY patient_id ORDER BY admit_date)) AS days_since_prev
+FROM encounters;`,
+    ordered: false,
+    tables: ['encounters'],
+  },
+
+  // --- 05/ Challenges ---
+  {
+    id: 'challenge-hba1c',
+    section: 'sql-challenge',
+    prompt:
+      'The care team wants a follow-up list: every patient whose most recent HbA1c result is above 6.5 — two columns, name and value, one row per flagged patient.',
+    hint: 'Three pieces you already know, stacked: filter labs to HbA1c and rank per patient with ROW_NUMBER() … ORDER BY taken_at DESC inside a CTE; keep rn = 1 AND value > 6.5; join patients for the name.',
+    solution: `WITH ranked AS (
+  SELECT e.patient_id,
+         l.value,
+         ROW_NUMBER() OVER (PARTITION BY e.patient_id ORDER BY l.taken_at DESC) AS rn
+  FROM labs l
+  JOIN encounters e ON e.encounter_id = l.encounter_id
+  WHERE l.test_name = 'HbA1c'
+)
+SELECT p.name, r.value
+FROM ranked r
+JOIN patients p ON p.patient_id = r.patient_id
+WHERE r.rn = 1 AND r.value > 6.5;`,
+    ordered: false,
+    tables: ['patients', 'encounters', 'labs'],
+  },
+  {
+    id: 'challenge-burden',
+    section: 'sql-challenge',
+    prompt:
+      "For every patient with more than 3 encounters, return name, encounters, and distinct_drugs — the number of different medications they have ever been on, with 0 (not NULL, not a missing row) for the patients who take nothing.",
+    hint: 'A CTE with GROUP BY + HAVING finds the frequent patients. LEFT JOIN medications so the zero-drug patients survive, then COUNT(DISTINCT m.drug_name) — COUNT ignores NULLs, so the no-medication rows land on 0 by themselves.',
+    solution: `WITH frequent AS (
+  SELECT patient_id, COUNT(*) AS encounters
+  FROM encounters
+  GROUP BY patient_id
+  HAVING COUNT(*) > 3
+)
+SELECT p.name,
+       f.encounters,
+       COUNT(DISTINCT m.drug_name) AS distinct_drugs
+FROM frequent f
+JOIN patients p ON p.patient_id = f.patient_id
+LEFT JOIN medications m ON m.patient_id = f.patient_id
+GROUP BY p.patient_id, p.name, f.encounters;`,
+    ordered: false,
+    tables: ['patients', 'encounters', 'medications'],
   },
 ]

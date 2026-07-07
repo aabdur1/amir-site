@@ -297,8 +297,8 @@ interface SectionDef {
   insight: string
 }
 
-// The four sections; exercises attach by their `section` id, numbered
-// continuously across sections (ex. 01–11).
+// The sections; exercises attach by their `section` id, numbered
+// continuously across sections.
 const SECTIONS: SectionDef[] = [
   {
     id: 'sql-select',
@@ -335,6 +335,15 @@ const SECTIONS: SectionDef[] = [
       'Window functions compute a value per row over a partition — GROUP BY without collapsing the rows. ROW_NUMBER() OVER (PARTITION BY … ORDER BY …) is the workhorse.',
     insight:
       'The latest-row-per-group pattern — rank with ROW_NUMBER() OVER (PARTITION BY patient ORDER BY taken_at DESC) in a CTE, keep rn = 1 — shows up in nearly every analyst interview, because transactional data is always many rows per entity.',
+  },
+  {
+    id: 'sql-challenge',
+    number: '05',
+    title: 'Challenges',
+    intro:
+      'Nothing new here — each of these combines two or three of the sections above in one query, the way real analyst tickets do. Expect a CTE, a join, and an aggregate working together.',
+    insight:
+      'Hard queries are written inside-out: build the innermost piece first, run it, look at the rows, then wrap the next layer around it. A CTE is just a saved intermediate step — SQL for assigning to a variable.',
   },
 ]
 
@@ -402,7 +411,7 @@ export function SQL() {
   const { status } = useSqlEngine()
   const engineReady = status === 'ready'
 
-  // Exercise numbering is continuous across sections (ex. 01–11)
+  // Exercise numbering is continuous across sections
   const startNumbers: number[] = []
   let acc = 1
   for (const sec of SECTIONS) {
@@ -421,7 +430,7 @@ export function SQL() {
           SQL / Querying Data
         </h1>
         <p className="text-[15px] text-ink-subtle dark:text-night-muted">
-          4 sections {'·'} 11 checked exercises {'·'} SQLite running in your browser via WebAssembly
+          {SECTIONS.length} sections {'·'} {SQL_EXERCISES.length} checked exercises {'·'} SQLite running in your browser via WebAssembly
         </p>
         <div className="mt-4 h-px w-16 mx-auto bg-mauve dark:bg-mauve-dark" />
         <p role="status" className="mt-6 font-[family-name:var(--font-mono)] text-[12px] text-ink-subtle dark:text-night-muted">

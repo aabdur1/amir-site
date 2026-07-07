@@ -1,6 +1,7 @@
-// lib/learn/python-exercises.ts — the 11 checked exercises for the 09/ Python
+// lib/learn/python-exercises.ts — the 19 checked exercises for the 09/ Python
 // artifact. They mirror the 08/ SQL exercises one-for-one on the same dataset,
-// so the SQL ↔ pandas mapping is explicit.
+// so the SQL ↔ pandas mapping is explicit; each section escalates and the
+// final challenge section combines concepts.
 //
 // Contract: every prompt ends with "Assign your answer to result." The checker
 // (embedded in components/learn/python.tsx) runs the user's code and the
@@ -15,7 +16,7 @@
 //   resultType: 'dataframe' | 'series' (table-shaped, compared positionally)
 //               | 'scalar' (single value, compared with 1e-9 tolerance)
 
-export type PySectionId = 'py-filter' | 'py-groupby' | 'py-merge' | 'py-window'
+export type PySectionId = 'py-filter' | 'py-groupby' | 'py-merge' | 'py-window' | 'py-challenge'
 
 export interface PyExercise {
   id: string
@@ -54,6 +55,17 @@ result = patients[mask][['name', 'birth_date']]`,
     ordered: false,
     tables: ['patients'],
   },
+  {
+    id: 'py-filter-null',
+    section: 'py-filter',
+    prompt:
+      'Return the drug_name and start_date of every medication that is still ongoing — the ones with no end date recorded. Assign your answer to result.',
+    hint: 'NaN/NaT never equals anything, even itself — end_date == None matches nothing, silently. Mask with .isna() instead.',
+    solution: `result = medications[medications['end_date'].isna()][['drug_name', 'start_date']]`,
+    resultType: 'dataframe',
+    ordered: false,
+    tables: ['medications'],
+  },
 
   // --- 02/ GroupBy & aggregation ---
   {
@@ -91,6 +103,31 @@ result = by_dept[by_dept['avg_los'] > 3]`,
 result = counts[counts['encounter_count'] > 3]`,
     resultType: 'dataframe',
     ordered: false,
+    tables: ['encounters'],
+  },
+  {
+    id: 'py-group-year',
+    section: 'py-groupby',
+    prompt:
+      'Return encounter counts per department per year — three columns: yr (the year of admit_date), dept, encounter_count. Assign your answer to result.',
+    hint: "encounters['admit_date'].dt.year gives the year — .assign() it as a column and group by both keys with groupby(['yr', 'dept'], as_index=False). A two-key groupby without as_index=False returns a MultiIndex result, which also passes.",
+    solution: `by_year = encounters.assign(yr=encounters['admit_date'].dt.year)
+result = by_year.groupby(['yr', 'dept'], as_index=False).agg(encounter_count=('encounter_id', 'count'))`,
+    resultType: 'dataframe',
+    ordered: false,
+    tables: ['encounters'],
+  },
+  {
+    id: 'py-group-share',
+    section: 'py-groupby',
+    prompt:
+      "Return each department's share of all encounters as a percentage rounded to one decimal — two columns, dept and pct — with the busiest department first. Assign your answer to result.",
+    hint: 'value_counts(normalize=True) gives fractions that already come sorted busiest-first — multiply by 100 and .round(1). Counting per dept and dividing by len(encounters) works too.',
+    solution: `pct = (encounters['dept'].value_counts(normalize=True) * 100).round(1)
+result = pct.reset_index()
+result.columns = ['dept', 'pct']`,
+    resultType: 'dataframe',
+    ordered: true,
     tables: ['encounters'],
   },
 
@@ -135,6 +172,31 @@ result = per_patient[['name', 'encounters', 'labs']]`,
     ordered: false,
     tables: ['patients', 'encounters', 'labs'],
   },
+  {
+    id: 'py-merge-antijoin',
+    section: 'py-merge',
+    prompt:
+      'Return the name of every patient with no medications at all — one column, name. Assign your answer to result.',
+    hint: "The anti-join in pandas is a negated membership mask: ~patients['patient_id'].isin(medications['patient_id']) keeps exactly the patients who never appear in medications.",
+    solution: `result = patients[~patients['patient_id'].isin(medications['patient_id'])][['name']]`,
+    resultType: 'dataframe',
+    ordered: false,
+    tables: ['patients', 'medications'],
+  },
+  {
+    id: 'py-merge-active',
+    section: 'py-merge',
+    prompt:
+      'How many encounters began while the patient had at least one medication active on the admission date? Active means start_date on or before admit_date, and end_date on or after it — or no end date at all. Return a single number. Assign your answer to result.',
+    hint: 'Merge medications onto encounters by patient_id, mask the date range — with .isna() as the ongoing branch — then .nunique() on encounter_id, since several active meds fan the same encounter out.',
+    solution: `merged = encounters.merge(medications, on='patient_id')
+active = merged[(merged['start_date'] <= merged['admit_date']) &
+                (merged['end_date'].isna() | (merged['end_date'] >= merged['admit_date']))]
+result = active['encounter_id'].nunique()`,
+    resultType: 'scalar',
+    ordered: false,
+    tables: ['encounters', 'medications'],
+  },
 
   // --- 04/ Window operations ---
   {
@@ -177,5 +239,54 @@ result = ordered[['patient_id', 'admit_date', 'cumulative_days']]`,
     resultType: 'dataframe',
     ordered: false,
     tables: ['encounters'],
+  },
+  {
+    id: 'py-window-lag',
+    section: 'py-window',
+    prompt:
+      "Return patient_id, admit_date, and days_since_prev — the number of days since that patient's previous encounter (NaN for their first one). Assign your answer to result.",
+    hint: "Sort by patient and date, then groupby('patient_id')['admit_date'].shift() reads the previous visit's date within each patient — pandas' LAG. Subtract and take .dt.days; a first visit has nothing to shift in, so it stays NaT and the days come out NaN.",
+    solution: `ordered = encounters.sort_values(['patient_id', 'admit_date'])
+result = ordered[['patient_id', 'admit_date']].copy()
+prev = ordered.groupby('patient_id')['admit_date'].shift()
+result['days_since_prev'] = (ordered['admit_date'] - prev).dt.days`,
+    resultType: 'dataframe',
+    ordered: false,
+    tables: ['encounters'],
+  },
+
+  // --- 05/ Challenges ---
+  {
+    id: 'py-challenge-hba1c',
+    section: 'py-challenge',
+    prompt:
+      'The care team wants a follow-up list: every patient whose most recent HbA1c result is above 6.5 — two columns, name and value, one row per flagged patient. Assign your answer to result.',
+    hint: 'Pieces you already know, chained: filter labs to HbA1c, merge patient_id in via encounters, sort + groupby.tail(1) for the latest per patient, then a value > 6.5 mask and one last merge for the names.',
+    solution: `hba1c = labs[labs['test_name'] == 'HbA1c'].merge(
+    encounters[['encounter_id', 'patient_id']], on='encounter_id')
+latest = hba1c.sort_values('taken_at').groupby('patient_id').tail(1)
+flagged = latest[latest['value'] > 6.5]
+result = flagged.merge(patients[['patient_id', 'name']], on='patient_id')[['name', 'value']]`,
+    resultType: 'dataframe',
+    ordered: false,
+    tables: ['patients', 'encounters', 'labs'],
+  },
+  {
+    id: 'py-challenge-burden',
+    section: 'py-challenge',
+    prompt:
+      'For every patient with more than 3 encounters, return name, encounters, and distinct_drugs — the number of different medications they have ever been on, with 0 (not NaN, not a missing row) for the patients who take nothing. Assign your answer to result.',
+    hint: "Count encounters per patient and keep > 3, left-merge medications so the zero-drug patients survive, then agg ('drug_name', 'nunique') — nunique skips NaN, so the no-medication rows land on 0 by themselves.",
+    solution: `counts = encounters.groupby('patient_id', as_index=False).agg(encounters=('encounter_id', 'count'))
+frequent = counts[counts['encounters'] > 3]
+merged = frequent.merge(medications, on='patient_id', how='left')
+per_patient = merged.groupby('patient_id', as_index=False).agg(
+    encounters=('encounters', 'first'),
+    distinct_drugs=('drug_name', 'nunique'),
+)
+result = per_patient.merge(patients[['patient_id', 'name']], on='patient_id')[['name', 'encounters', 'distinct_drugs']]`,
+    resultType: 'dataframe',
+    ordered: false,
+    tables: ['patients', 'encounters', 'medications'],
   },
 ]
