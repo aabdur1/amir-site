@@ -141,6 +141,22 @@ function Illustration({ slug }: { slug: string }) {
           <circle cx="40" cy="32" r="3" fill={C.peach} />
         </svg>
       )
+    case 'python':
+      return (
+        <svg {...common}>
+          <rect x="8" y="8" width="64" height="48" rx="3" fill="none" stroke={C.peach} strokeWidth="1.5" />
+          <line x1="8" y1="18" x2="72" y2="18" stroke={C.peach} strokeWidth="1.5" />
+          <line x1="21" y1="18" x2="21" y2="56" stroke={C.line} strokeWidth="1.2" strokeDasharray="3" />
+          <line x1="13" y1="26" x2="17" y2="26" stroke={C.line} strokeWidth="1.2" />
+          <line x1="13" y1="35" x2="17" y2="35" stroke={C.line} strokeWidth="1.2" />
+          <line x1="13" y1="44" x2="17" y2="44" stroke={C.line} strokeWidth="1.2" />
+          <line x1="13" y1="53" x2="17" y2="53" stroke={C.line} strokeWidth="1.2" />
+          <rect x="26" y="23" width="34" height="5" rx="1" fill={C.sapphire} opacity="0.85" />
+          <rect x="26" y="32" width="42" height="5" rx="1" fill={C.mauve} opacity="0.85" />
+          <rect x="26" y="41" width="26" height="5" rx="1" fill={C.lavender} opacity="0.85" />
+          <rect x="26" y="50" width="38" height="5" rx="1" fill={C.peach} opacity="0.85" />
+        </svg>
+      )
     default:
       return (
         <svg {...common}>
