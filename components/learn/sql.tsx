@@ -294,7 +294,8 @@ interface SectionDef {
   insight: string
 }
 
-// Task 6 appends the aggregate/joins/windows entries here.
+// The four sections; exercises attach by their `section` id, numbered
+// continuously across sections (ex. 01–11).
 const SECTIONS: SectionDef[] = [
   {
     id: 'sql-select',
@@ -304,6 +305,33 @@ const SECTIONS: SectionDef[] = [
       'Every query starts as a question. SELECT picks the columns, WHERE filters the rows, ORDER BY sorts what survives, and DISTINCT collapses duplicates.',
     insight:
       'WHERE runs before SELECT ever labels a column, so filter on real column values, not output aliases. And ISO dates like 1980-01-01 sort correctly as plain strings — which is exactly why analysts store dates that way.',
+  },
+  {
+    id: 'sql-aggregate',
+    number: '02',
+    title: 'GROUP BY & HAVING',
+    intro:
+      'GROUP BY collapses rows into groups and aggregates summarize each one. WHERE filters rows before grouping; HAVING filters the groups after.',
+    insight:
+      'If a filter mentions an aggregate (AVG, COUNT), it belongs in HAVING. If it mentions raw column values, put it in WHERE — rows drop before grouping, which is also cheaper.',
+  },
+  {
+    id: 'sql-joins',
+    number: '03',
+    title: 'Joins & the fan-out trap',
+    intro:
+      'Joins line tables up row by row. INNER keeps only matches; LEFT keeps every left-side row, with NULLs where the right side is missing. One-to-many joins multiply rows — the fan-out that quietly corrupts counts.',
+    insight:
+      'COUNT(*) counts rows; COUNT(e.encounter_id) skips the NULLs a LEFT JOIN produces — that is how zero-encounter patients show 0 instead of 1. And after a double one-to-many join, aggregate per level (COUNT(DISTINCT …) or a pre-aggregated CTE) before trusting any number.',
+  },
+  {
+    id: 'sql-windows',
+    number: '04',
+    title: 'Window functions',
+    intro:
+      'Window functions compute a value per row over a partition — GROUP BY without collapsing the rows. ROW_NUMBER() OVER (PARTITION BY … ORDER BY …) is the workhorse.',
+    insight:
+      'The latest-row-per-group pattern — rank with ROW_NUMBER() OVER (PARTITION BY patient ORDER BY taken_at DESC) in a CTE, keep rn = 1 — shows up in nearly every analyst interview, because transactional data is always many rows per entity.',
   },
 ]
 
