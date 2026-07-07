@@ -3,8 +3,8 @@
 import Image from "next/image";
 import { ACCENT_STYLES } from "@/lib/styles";
 
-const IMG_WIDTH = 640;
-const IMG_HEIGHT = 1391;
+const IMG_WIDTH = 1206;
+const IMG_HEIGHT = 2622;
 
 const pills = ["Swift 6", "SwiftUI", "Vision OCR", "HealthKit"];
 
