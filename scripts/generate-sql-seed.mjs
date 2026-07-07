@@ -121,7 +121,8 @@ for (let i = 1; i <= 120; i++) {
     patientId: randInt(1, 50),
     drug: pick(DRUGS),
     start,
-    end: rand() < 0.2 ? null : iso(dayMs(start) + randInt(30, 365) * DAY), // NULL = ongoing
+    // NULL = ongoing; capped so every clinical date stays within 2024–2026
+    end: rand() < 0.2 ? null : iso(Math.min(dayMs(start) + randInt(30, 365) * DAY, dayMs('2026-12-31'))),
   })
 }
 

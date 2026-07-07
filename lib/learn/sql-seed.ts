@@ -915,7 +915,7 @@ INSERT INTO labs (lab_id, encounter_id, test_name, value, unit, taken_at) VALUES
   (558, 188, 'LDL', 75, 'mg/dL', '2025-10-08 12:08');
 
 INSERT INTO medications (med_id, patient_id, drug_name, start_date, end_date) VALUES
-  (1, 29, 'Albuterol', '2026-05-01', '2027-04-17'),
+  (1, 29, 'Albuterol', '2026-05-01', '2026-12-31'),
   (2, 24, 'Omeprazole', '2025-06-06', '2025-08-02'),
   (3, 21, 'Lisinopril', '2025-02-21', '2025-10-29'),
   (4, 43, 'Levothyroxine', '2024-08-10', '2024-12-05'),
@@ -945,7 +945,7 @@ INSERT INTO medications (med_id, patient_id, drug_name, start_date, end_date) VA
   (26, 18, 'Albuterol', '2025-01-22', '2025-11-29'),
   (27, 18, 'Amlodipine', '2025-09-19', '2025-11-12'),
   (28, 40, 'Albuterol', '2026-03-29', '2026-05-28'),
-  (29, 32, 'Metformin', '2026-05-19', '2027-04-22'),
+  (29, 32, 'Metformin', '2026-05-19', '2026-12-31'),
   (30, 23, 'Amlodipine', '2024-08-20', '2024-12-27');
 INSERT INTO medications (med_id, patient_id, drug_name, start_date, end_date) VALUES
   (31, 15, 'Amlodipine', '2026-02-17', '2026-11-20'),
@@ -964,7 +964,7 @@ INSERT INTO medications (med_id, patient_id, drug_name, start_date, end_date) VA
   (43, 31, 'Amlodipine', '2024-09-03', NULL),
   (44, 27, 'Sertraline', '2025-09-16', '2025-11-16'),
   (45, 41, 'Lisinopril', '2024-12-30', '2025-09-10'),
-  (46, 7, 'Lisinopril', '2026-03-24', '2027-01-28'),
+  (46, 7, 'Lisinopril', '2026-03-24', '2026-12-31'),
   (47, 42, 'Omeprazole', '2025-12-11', '2026-08-22'),
   (48, 15, 'Amlodipine', '2025-02-11', '2025-12-30'),
   (49, 29, 'Sertraline', '2025-10-11', '2026-05-22'),
