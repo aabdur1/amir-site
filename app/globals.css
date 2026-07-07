@@ -578,6 +578,11 @@ a, button {
   opacity: 0.55;
 }
 
+/* Artifact section anchors land clear of the sticky nav when rail links scroll */
+section[aria-labelledby] h2[id] {
+  scroll-margin-top: 5.5rem;
+}
+
 /* Nav wordmark underline — dashed ledger rule instead of a solid sweep */
 .nav-wordmark::after {
   background: repeating-linear-gradient(

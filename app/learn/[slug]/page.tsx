@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { ARTIFACTS, getArtifact, getAdjacentArtifacts } from '@/lib/learn/artifacts'
 import { LearnNav } from '@/components/learn/learn-nav'
+import { SectionRail } from '@/components/learn/section-rail'
 import { ArtifactErrorBoundary } from '@/components/learn/artifact-error-boundary'
 import { PageTransition } from '@/components/page-transition'
 import Link from 'next/link'
@@ -100,7 +101,10 @@ export default async function LearnArtifactPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <article className="pt-12 pb-24">
+      <article className="relative pt-12 pb-24">
+        {/* Sticky section rail in the left margin (xl+ only) */}
+        <SectionRail sections={artifact.sections} />
+
         {/* Back link */}
         <div className="mx-auto max-w-5xl px-6 sm:px-10 lg:px-12">
           <Link
