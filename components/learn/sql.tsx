@@ -427,6 +427,7 @@ export function SQL() {
         <p role="status" className="mt-6 font-[family-name:var(--font-mono)] text-[12px] text-ink-subtle dark:text-night-muted">
           {status === 'loading' && 'loading engine — ~0.7 MB of WebAssembly'}
           {status === 'ready' && 'engine ready — every run starts from a fresh copy of the dataset'}
+          {status === 'error' && 'engine failed to load'}
         </p>
       </div>
 
