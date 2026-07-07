@@ -54,6 +54,7 @@
   --step-3:  clamp(1.73rem, 1.48rem + 1.24vw, 2.44rem);
   --step-4:  clamp(2.49rem, 2.01rem + 2.41vw, 3.81rem);
   --step-5:  clamp(2.99rem, 2.35rem + 3.17vw, 4.77rem);
+  --step-6:  clamp(2.80rem, 1.85rem + 4.75vw, 6.25rem);
 
   /* Colors - Light: Catppuccin Latte */
   --color-cream: #eff1f5;         /* Base */
@@ -498,5 +499,125 @@ a, button {
   .scroll-progress-css {
     animation: scroll-progress linear both;
     animation-timeline: scroll();
+  }
+}
+
+/* ============================================================
+   Living Ledger design language
+   Ruled "analyst's journal" structure + live data-plot accents.
+   Shared vocabulary: annotations (mono captions), drawn strokes
+   (spark rules, ticks), the scroll spine, registration marks.
+   ============================================================ */
+
+/* Annotation voice — mono margin captions with real numbers */
+.annotation {
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--color-ink-subtle);
+  font-variant-numeric: tabular-nums;
+}
+.dark .annotation {
+  color: var(--color-night-muted);
+}
+
+/* Self-drawing SVG strokes (spark rules, baseline axes).
+   Elements set pathLength=100; visible state animates offset to 0. */
+.draw-stroke {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+}
+.draw-stroke.is-drawn,
+.is-drawn .draw-stroke {
+  animation: draw-stroke 1s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+}
+@keyframes draw-stroke {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Spark bars — rise from the baseline with a stagger set inline */
+.spark-bar {
+  transform: scaleY(0);
+  transform-origin: bottom;
+}
+.is-drawn .spark-bar {
+  animation: bar-rise 0.6s var(--ease-spring-settle) forwards;
+}
+@keyframes bar-rise {
+  to { transform: scaleY(1); }
+}
+
+/* Section tick — the header's horizontal hairline draws toward the numeral,
+   then the dot "commits" with a spring pop */
+.tick-line {
+  transform: scaleX(0);
+}
+.tick-line.is-drawn {
+  animation: line-grow 0.7s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+}
+.tick-dot {
+  transform: scale(0);
+}
+.tick-dot.is-committed {
+  animation: tick-commit 0.5s var(--ease-spring) 0.45s forwards;
+}
+@keyframes tick-commit {
+  to { transform: scale(1); }
+}
+
+/* Registration marks — print-style corner ticks on the headshot plate */
+.reg-mark {
+  position: absolute;
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-color: var(--color-ink-faint);
+  opacity: 0.7;
+}
+.dark .reg-mark {
+  border-color: var(--color-night-muted);
+  opacity: 0.55;
+}
+
+/* Artifact section anchors land clear of the sticky nav when rail links scroll */
+section[aria-labelledby] h2[id] {
+  scroll-margin-top: 5.5rem;
+}
+
+/* Nav wordmark underline — dashed ledger rule instead of a solid sweep */
+.nav-wordmark::after {
+  background: repeating-linear-gradient(
+    90deg,
+    var(--color-mauve) 0 6px,
+    transparent 6px 10px
+  );
+}
+.dark .nav-wordmark::after {
+  background: repeating-linear-gradient(
+    90deg,
+    var(--color-mauve-dark) 0 6px,
+    transparent 6px 10px
+  );
+}
+
+/* Reduced motion: strokes and ticks render fully drawn, no animation */
+@media (prefers-reduced-motion: reduce) {
+  .draw-stroke,
+  .draw-stroke.is-drawn,
+  .is-drawn .draw-stroke {
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+  .spark-bar,
+  .is-drawn .spark-bar {
+    transform: scaleY(1);
+    animation: none;
+  }
+  .tick-line,
+  .tick-line.is-drawn,
+  .tick-dot,
+  .tick-dot.is-committed {
+    transform: none;
+    animation: none;
   }
 }

@@ -7,6 +7,7 @@ import { Skills } from "@/components/skills";
 import { Education } from "@/components/education";
 import { LearnTeaser } from "@/components/learn-teaser";
 import { PageTransition } from '@/components/page-transition'
+import { Spine } from '@/components/spine'
 import { getAllBadges } from "@/lib/badges";
 
 export const metadata: Metadata = {
@@ -33,13 +34,16 @@ export default async function Home() {
 
   return (
     <PageTransition>
-      <Hero />
-      <Experience />
-      <Projects />
-      <Certifications badges={badges} />
-      <Skills />
-      <Education />
-      <LearnTeaser />
+      <div className="relative">
+        <Spine />
+        <Hero />
+        <Experience />
+        <Projects />
+        <Certifications badges={badges} />
+        <Skills />
+        <Education />
+        <LearnTeaser />
+      </div>
     </PageTransition>
   );
 }

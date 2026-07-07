@@ -41,7 +41,20 @@ export function Skills() {
       <SectionDivider />
 
       <div className="max-w-5xl mx-auto px-6 sm:px-8">
-        <SectionHeader number="04" label="Skills" title="Technical Stack" visible={visible} />
+        <SectionHeader
+          number="04"
+          label="Skills"
+          title="Technical Stack"
+          visible={visible}
+          align="right"
+          annotation={
+            <>
+              fig. 04 &middot; {skillCategories.length} categories &middot;{" "}
+              {skillCategories.reduce((n, c) => n + c.skills.length, 0)} skills
+            </>
+          }
+          spark={{ data: skillCategories.map((c) => c.skills.length), variant: "bars" }}
+        />
 
         {/* Skill categories */}
         <div className="space-y-8">

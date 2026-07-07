@@ -16,7 +16,14 @@ export function Education() {
       <SectionDivider />
 
       <div className="max-w-5xl mx-auto px-6 sm:px-8">
-        <SectionHeader number="05" label="Education" title="Education" visible={visible} />
+        <SectionHeader
+          number="05"
+          label="Education"
+          title="Education"
+          visible={visible}
+          annotation={<>fig. 05 &middot; MS MIS &rsquo;26 &middot; BA psychology &rsquo;20</>}
+          spark={{ data: [1, 1, 2, 2], variant: "step" }}
+        />
 
         {/* Content area */}
         <div className="max-w-2xl mx-auto">

@@ -1,3 +1,8 @@
+export interface ArtifactSection {
+  id: string // matches the h2 id inside the artifact component
+  label: string // short rail label — keep ≤ 13 chars so it fits the xl margin
+}
+
 export interface Artifact {
   slug: string
   title: string
@@ -6,6 +11,7 @@ export interface Artifact {
   number: string
   subtopics: string[]
   sectionCount: number
+  sections: ArtifactSection[]
 }
 
 export const ARTIFACTS: Artifact[] = [
@@ -17,6 +23,12 @@ export const ARTIFACTS: Artifact[] = [
     number: '01',
     subtopics: ['Loss curves', 'Learning rate', 'Batch variants', 'Gradient boosting connection'],
     sectionCount: 4,
+    sections: [
+      { id: 'gd-why-gradients', label: 'Why gradients' },
+      { id: 'gd-learning-rate', label: 'Learning rate' },
+      { id: 'gd-batch-variants', label: 'Batch vs SGD' },
+      { id: 'gd-vs-boosting', label: 'vs Boosting' },
+    ],
   },
   {
     slug: 'log-loss-cross-entropy',
@@ -26,6 +38,12 @@ export const ARTIFACTS: Artifact[] = [
     number: '02',
     subtopics: ['QQ plots', 'Log loss', 'Entropy & Gini', 'Unified connection'],
     sectionCount: 4,
+    sections: [
+      { id: 'll-qq-plots', label: 'QQ plots' },
+      { id: 'll-log-loss', label: 'Log loss' },
+      { id: 'll-entropy-gini', label: 'Entropy/Gini' },
+      { id: 'll-unified-connection', label: 'Connection' },
+    ],
   },
   {
     slug: 'pca',
@@ -35,6 +53,13 @@ export const ARTIFACTS: Artifact[] = [
     number: '03',
     subtopics: ['Covariance & eigenvectors', 'Scree plots', 'Standardization', 'PC scores', 'Misconceptions'],
     sectionCount: 5,
+    sections: [
+      { id: 'pca-what-finds', label: 'What it finds' },
+      { id: 'pca-how-many', label: 'How many PCs' },
+      { id: 'pca-standardize', label: 'Standardize' },
+      { id: 'pca-score-calc', label: 'PC scores' },
+      { id: 'pca-recipes', label: 'Recipes' },
+    ],
   },
   {
     slug: 'regularization',
@@ -44,6 +69,10 @@ export const ARTIFACTS: Artifact[] = [
     number: '04',
     subtopics: ['Ridge (L2)', 'Lasso (L1)', 'Lambda tuning', 'Bias-variance tradeoff'],
     sectionCount: 2,
+    sections: [
+      { id: 'reg-shrinkage', label: 'Shrinkage' },
+      { id: 'reg-bias-variance', label: 'Bias-variance' },
+    ],
   },
   {
     slug: 'clustering',
@@ -53,6 +82,11 @@ export const ARTIFACTS: Artifact[] = [
     number: '05',
     subtopics: ['K-means', 'Hierarchical', 'DBSCAN'],
     sectionCount: 3,
+    sections: [
+      { id: 'cl-kmeans', label: 'K-means' },
+      { id: 'cl-hierarchical', label: 'Hierarchical' },
+      { id: 'cl-dbscan', label: 'DBSCAN' },
+    ],
   },
   {
     slug: 'shap',
@@ -62,6 +96,12 @@ export const ARTIFACTS: Artifact[] = [
     number: '06',
     subtopics: ['Waterfall charts', 'Beeswarm plots', 'Global importance', 'Shapley math'],
     sectionCount: 4,
+    sections: [
+      { id: 'shap-waterfall', label: 'Waterfall' },
+      { id: 'shap-beeswarm', label: 'Beeswarm' },
+      { id: 'shap-global', label: 'Importance' },
+      { id: 'shap-math', label: 'Shapley math' },
+    ],
   },
   {
     slug: 'neural-networks',
@@ -71,6 +111,30 @@ export const ARTIFACTS: Artifact[] = [
     number: '07',
     subtopics: ['Neuron anatomy', 'XOR & depth', 'Activations', 'Backprop', 'Momentum', 'Training', 'Autoencoder vs PCA'],
     sectionCount: 7,
+    sections: [
+      { id: 'nn-section-1', label: 'Neuron' },
+      { id: 'nn-section-2', label: 'XOR & depth' },
+      { id: 'nn-section-3', label: 'Activations' },
+      { id: 'nn-section-4', label: 'Backprop' },
+      { id: 'nn-section-5', label: 'Momentum' },
+      { id: 'nn-section-6', label: 'Training' },
+      { id: 'nn-section-7', label: 'AE vs PCA' },
+    ],
+  },
+  {
+    slug: 'sql',
+    title: 'SQL / Querying Data',
+    shortTitle: 'SQL',
+    description: 'Run real SQL against a synthetic patient dataset — SQLite compiled to WebAssembly, with checked exercises from SELECT to window functions.',
+    number: '08',
+    subtopics: ['SELECT & filtering', 'Aggregation', 'Joins', 'Window functions'],
+    sectionCount: 4,
+    sections: [
+      { id: 'sql-select', label: 'SELECT' },
+      { id: 'sql-aggregate', label: 'Aggregation' },
+      { id: 'sql-joins', label: 'Joins' },
+      { id: 'sql-windows', label: 'Windows' },
+    ],
   },
 ]
 

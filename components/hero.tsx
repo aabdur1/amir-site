@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useCallback, useSyncExternalStore } from "react";
-import { HeroSpeckles } from "@/components/hero-speckles";
 import { InteractiveHeadshot } from "@/components/interactive-headshot";
-import { useHydrated } from "@/lib/hooks";
+import { useHydrated, useMagnetic } from "@/lib/hooks";
 import { ACCENT_STYLES } from "@/lib/styles";
 
 const reducedMotionSubscribe = (cb: () => void) => {
@@ -20,7 +19,7 @@ function RevealText({ text, baseDelay, mounted }: { text: string; baseDelay: num
   );
 
   return (
-    <span className="inline-block overflow-hidden align-bottom">
+    <span className="inline-block overflow-hidden align-bottom whitespace-nowrap">
       {text.split("").map((char, i) => (
         <span
           key={i}
@@ -83,7 +82,11 @@ export function Hero() {
   const badgesRef = useRef<HTMLDivElement>(null);
   const headshotRef = useRef<HTMLDivElement>(null);
   const scrollIndRef = useRef<HTMLDivElement>(null);
-  const lineRef = useRef<HTMLDivElement>(null);
+  const ctaPrimaryRef = useRef<HTMLAnchorElement>(null);
+  const ctaSecondaryRef = useRef<HTMLAnchorElement>(null);
+
+  useMagnetic(ctaPrimaryRef);
+  useMagnetic(ctaSecondaryRef);
 
   const updateParallax = useCallback(() => {
     if (!isInViewRef.current) return;
@@ -103,11 +106,6 @@ export function Hero() {
     move(ctaRef.current, SCROLL_RATES.cta);
     move(socialRef.current, SCROLL_RATES.social);
     move(badgesRef.current, SCROLL_RATES.badges);
-
-    // Vertical line fades out on scroll (only after user starts scrolling)
-    if (lineRef.current && y > 5) {
-      lineRef.current.style.opacity = `${Math.max(0, 1 - y / 500)}`;
-    }
 
     rafRef.current = 0;
   }, []);
@@ -162,18 +160,6 @@ export function Hero() {
       aria-label="Introduction"
       className="relative overflow-hidden min-h-[calc(100dvh-4.5rem)] flex items-center justify-center"
     >
-      <HeroSpeckles />
-
-      {/* Decorative vertical line — left accent, fades at edges */}
-      <div
-        ref={lineRef}
-        className="hero-line absolute left-12 lg:left-20 top-0 bottom-0 w-px hidden sm:block"
-        style={{
-          opacity: 0,
-          ...(mounted ? { animation: "fade-in 1.2s ease-out 0.3s forwards" } : {}),
-        }}
-      />
-
       <div className="relative w-full max-w-6xl mx-auto px-6 sm:px-12 lg:px-20 pt-8 pb-20 sm:py-20">
         {/* Main content grid — asymmetric editorial */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8 lg:gap-16 items-center">
@@ -196,7 +182,7 @@ export function Hero() {
             {/* Name — editorial scale */}
             <h1
               ref={nameRef}
-              className="text-[length:var(--step-5)] leading-[0.9] tracking-tight
+              className="text-[length:var(--step-6)] leading-[0.9] tracking-tight
                 text-ink dark:text-night-text font-[family-name:var(--font-display)] will-change-transform"
             >
               <RevealText text="Amir" baseDelay={0.3} mounted={mounted} />
@@ -204,16 +190,43 @@ export function Hero() {
               <RevealText text="Abdur-Rahim" baseDelay={0.5} mounted={mounted} />
             </h1>
 
-            {/* Gold accent rule */}
-            <div
-              ref={ruleRef}
-              className="mt-6 sm:mt-8 h-0.5 w-16 bg-mauve dark:bg-mauve-dark origin-left"
-              style={{
-                opacity: 0,
-                transform: "scaleX(0)",
-                ...(mounted ? { animation: "fade-in 0.4s ease-out 0.5s forwards, line-grow 0.8s ease-out 0.5s forwards" } : {}),
-              }}
-            />
+            {/* Baseline axis — the ledger's ruled line, drawn with ticks and a peach origin */}
+            <div ref={ruleRef} className="mt-6 sm:mt-8 will-change-transform">
+              <svg
+                aria-hidden="true"
+                focusable="false"
+                width="480"
+                height="20"
+                viewBox="0 0 480 20"
+                className="max-w-full overflow-visible text-mauve dark:text-mauve-dark"
+              >
+                <line
+                  className={`draw-stroke ${mounted ? "is-drawn" : ""}`}
+                  x1="0" y1="6" x2="480" y2="6"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  pathLength={100}
+                  style={{ animationDelay: "500ms" }}
+                />
+                {[120, 240, 360, 480].map((x, i) => (
+                  <line
+                    key={x}
+                    className={`draw-stroke ${mounted ? "is-drawn" : ""}`}
+                    x1={x} y1="6" x2={x} y2="14"
+                    stroke="currentColor"
+                    strokeWidth="1"
+                    opacity="0.45"
+                    pathLength={100}
+                    style={{ animationDelay: `${950 + i * 90}ms` }}
+                  />
+                ))}
+                <circle
+                  className={`tick-dot fill-peach dark:fill-peach-dark ${mounted ? "is-committed" : ""}`}
+                  cx="0" cy="6" r="3.5"
+                  style={{ transformOrigin: "0px 6px" }}
+                />
+              </svg>
+            </div>
 
             {/* Tagline — editorial italic serif */}
             <p
@@ -247,32 +260,37 @@ export function Hero() {
 
             {/* CTA pair */}
             <div ref={ctaRef} className="flex flex-wrap gap-3 items-center mt-7 will-change-transform">
+              {/* Magnetic CTAs — opacity-only entrance so the animation fill never
+                  blocks the inline magnetic transform */}
               <a
+                ref={ctaPrimaryRef}
                 href="mailto:amirabdurrahim@gmail.com"
-                className="btn-lift inline-flex items-center justify-center rounded-full px-6 py-3
+                className="inline-flex items-center justify-center rounded-full px-6 py-3
                   bg-mauve dark:bg-mauve-dark text-cream dark:text-night
                   text-[13px] tracking-wide font-[family-name:var(--font-badge)] font-medium
-                  hover:shadow-card"
+                  transition-shadow duration-300 hover:shadow-card"
                 style={{
                   opacity: 0,
-                  ...(mounted ? { animation: "fade-in-up 0.5s ease-out 1.1s forwards" } : {}),
+                  ...(mounted ? { animation: "fade-in 0.5s ease-out 1.1s forwards" } : {}),
                 }}
               >
                 Get in touch
               </a>
               <a
+                ref={ctaSecondaryRef}
                 href="/Amir_Abdur-Rahim_Resume.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="View resume (opens in new tab)"
-                className="btn-lift inline-flex items-center justify-center rounded-full px-6 py-3
+                className="inline-flex items-center justify-center rounded-full px-6 py-3
                   border border-ink/20 dark:border-night-border
                   text-ink dark:text-night-text
                   text-[13px] tracking-wide font-[family-name:var(--font-badge)]
+                  transition-[border-color,box-shadow] duration-300
                   hover:border-sapphire/50 dark:hover:border-sapphire-dark/50 hover:shadow-card"
                 style={{
                   opacity: 0,
-                  ...(mounted ? { animation: "fade-in-up 0.5s ease-out 1.2s forwards" } : {}),
+                  ...(mounted ? { animation: "fade-in 0.5s ease-out 1.2s forwards" } : {}),
                 }}
               >
                 View resume
@@ -384,6 +402,7 @@ export function Hero() {
       {/* Bottom scroll indicator */}
       <div
         ref={scrollIndRef}
+        aria-hidden="true"
         className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden sm:flex flex-col items-center gap-2 will-change-transform"
         style={{
           opacity: 0,

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useMemo, type PointerEvent as ReactPointerEvent } from 'react'
+import { useState, useRef, useEffect, useMemo, type PointerEvent as ReactPointerEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 import Link from 'next/link'
 import { SectionDivider } from '@/components/section-divider'
 import { useScrollReveal } from '@/lib/hooks'
@@ -67,14 +67,15 @@ function activationDerivative(net: number, act: Activation): number {
 }
 
 // --- Reusable slider row (used across sections) ---
-function SliderRow({ label, min, max, step, value, onChange }: {
-  label: string; min: number; max: number; step: number; value: number; onChange: (v: number) => void
+function SliderRow({ label, min, max, step, value, onChange, ariaLabel }: {
+  label: string; min: number; max: number; step: number; value: number; onChange: (v: number) => void; ariaLabel?: string
 }) {
   return (
     <label className="flex items-center gap-3 mb-2">
       <span className="w-8 text-[12px] font-[family-name:var(--font-mono)] text-ink-subtle dark:text-night-muted">{label}</span>
       <input type="range" min={min} max={max} step={step} value={value}
         onChange={e => onChange(parseFloat(e.target.value))}
+        aria-label={ariaLabel}
         className="flex-1 accent-teal dark:accent-teal-dark"
       />
       <span className="w-12 text-right text-[12px] font-[family-name:var(--font-mono)] text-ink dark:text-night-text">{value.toFixed(2)}</span>
@@ -304,25 +305,31 @@ function Section1() {
         </p>
       </div>
 
-      <canvas ref={canvasRef} className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded-lg" style={{ height: 320 }} />
+      <canvas
+        ref={canvasRef}
+        role="img"
+        aria-label={`Neuron anatomy diagram: three weighted inputs summed with a bias, passed through ${activation} activation, output ${out.toFixed(3)}`}
+        className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded-lg"
+        style={{ height: 320 }}
+      />
 
       <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
-          <p className="text-[11px] font-[family-name:var(--font-mono)] uppercase tracking-wider text-ink-subtle dark:text-night-muted mb-3">Inputs</p>
+          <p className="text-[12px] font-[family-name:var(--font-mono)] uppercase tracking-wider text-ink-subtle dark:text-night-muted mb-3">Inputs</p>
           {[0,1,2].map(i => (
             <SliderRow key={i} label={`x${i+1}`} min={-1} max={1} step={0.01} value={inputs[i]}
               onChange={(v) => setInputs(prev => { const next = [...prev] as [number,number,number]; next[i] = v; return next })} />
           ))}
         </div>
         <div>
-          <p className="text-[11px] font-[family-name:var(--font-mono)] uppercase tracking-wider text-ink-subtle dark:text-night-muted mb-3">Weights</p>
+          <p className="text-[12px] font-[family-name:var(--font-mono)] uppercase tracking-wider text-ink-subtle dark:text-night-muted mb-3">Weights</p>
           {[0,1,2].map(i => (
             <SliderRow key={i} label={`w${i+1}`} min={-2} max={2} step={0.01} value={weights[i]}
               onChange={(v) => setWeights(prev => { const next = [...prev] as [number,number,number]; next[i] = v; return next })} />
           ))}
         </div>
         <div>
-          <p className="text-[11px] font-[family-name:var(--font-mono)] uppercase tracking-wider text-ink-subtle dark:text-night-muted mb-3">Bias & activation</p>
+          <p className="text-[12px] font-[family-name:var(--font-mono)] uppercase tracking-wider text-ink-subtle dark:text-night-muted mb-3">Bias & activation</p>
           <SliderRow label="b" min={-2} max={2} step={0.01} value={bias} onChange={setBias} />
           <label className="block mt-4">
             <span className="text-[12px] text-ink-subtle dark:text-night-muted">Activation</span>
@@ -490,6 +497,33 @@ function Section2() {
     }
   }
 
+  // Keyboard alternative to pointer drag: arrows nudge the active endpoint, Enter cycles endpoints
+  const [kbTarget, setKbTarget] = useState<{ which: 1 | 2; end: 'a' | 'b' }>({ which: 1, end: 'a' })
+  const activeKbTarget = !hidden && kbTarget.which === 2 ? { which: 1 as const, end: 'a' as const } : kbTarget
+
+  function onCanvasKeyDown(e: ReactKeyboardEvent<HTMLCanvasElement>) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      const order: Array<{ which: 1 | 2; end: 'a' | 'b' }> = hidden
+        ? [{ which: 1, end: 'a' }, { which: 1, end: 'b' }, { which: 2, end: 'a' }, { which: 2, end: 'b' }]
+        : [{ which: 1, end: 'a' }, { which: 1, end: 'b' }]
+      const i = order.findIndex(o => o.which === activeKbTarget.which && o.end === activeKbTarget.end)
+      setKbTarget(order[(i + 1) % order.length])
+      return
+    }
+    let dx = 0, dy = 0
+    if (e.key === 'ArrowLeft') dx = -0.02
+    else if (e.key === 'ArrowRight') dx = 0.02
+    else if (e.key === 'ArrowUp') dy = -0.02
+    else if (e.key === 'ArrowDown') dy = 0.02
+    else return
+    e.preventDefault()
+    const clamp = (v: number) => Math.max(0.02, Math.min(0.98, v))
+    const setLine = activeKbTarget.which === 1 ? setLine1 : setLine2
+    const end = activeKbTarget.end
+    setLine(prev => ({ ...prev, [end]: { x: clamp(prev[end].x + dx), y: clamp(prev[end].y + dy) } }))
+  }
+
   const misclassified = points.filter(p => classifyPoint(p) !== p.cls).length
 
   return (
@@ -503,10 +537,14 @@ function Section2() {
       </div>
 
       <canvas ref={canvasRef}
+        role="img"
+        tabIndex={0}
+        aria-label={`XOR scatter plot with ${hidden ? 'two draggable decision lines' : 'one draggable decision line'}, ${misclassified} of 4 points misclassified. Arrow keys move line ${activeKbTarget.which} endpoint ${activeKbTarget.end.toUpperCase()}; press Enter to switch endpoints.`}
         className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded-lg cursor-grab active:cursor-grabbing touch-none"
         style={{ height: 380 }}
         onPointerDown={onPointerDown} onPointerMove={onPointerMove}
         onPointerUp={onPointerUp} onPointerCancel={onPointerUp}
+        onKeyDown={onCanvasKeyDown}
       />
 
       <div className="mt-4 flex items-center justify-between gap-4 flex-wrap">
@@ -559,6 +597,7 @@ function Section3() {
       <div className="flex gap-2 justify-center mb-4">
         {(['sigmoid','tanh','relu'] as Activation[]).map(a => (
           <button key={a} onClick={() => setHighlighted(a)}
+            aria-pressed={highlighted === a}
             className={`px-3 py-1.5 rounded-full text-[12px] font-[family-name:var(--font-mono)] border transition-colors ${
               highlighted === a
                 ? 'bg-teal/15 dark:bg-teal-dark/15 border-teal/40 dark:border-teal-dark/40 text-teal dark:text-teal-dark'
@@ -570,21 +609,21 @@ function Section3() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <p className="text-[11px] uppercase tracking-wider text-ink-subtle dark:text-night-muted mb-2 font-[family-name:var(--font-mono)]">Activation f(x)</p>
-          <canvas ref={curveCanvas} className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded" style={{ height: 180 }} />
+          <p className="text-[12px] uppercase tracking-wider text-ink-subtle dark:text-night-muted mb-2 font-[family-name:var(--font-mono)]">Activation f(x)</p>
+          <canvas ref={curveCanvas} role="img" aria-label={`Activation function curves with ${highlighted} highlighted`} className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded" style={{ height: 180 }} />
         </div>
         <div>
-          <p className="text-[11px] uppercase tracking-wider text-ink-subtle dark:text-night-muted mb-2 font-[family-name:var(--font-mono)]">Derivative f&apos;(x)</p>
-          <canvas ref={derivCanvas} className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded" style={{ height: 180 }} />
+          <p className="text-[12px] uppercase tracking-wider text-ink-subtle dark:text-night-muted mb-2 font-[family-name:var(--font-mono)]">Derivative f&apos;(x)</p>
+          <canvas ref={derivCanvas} role="img" aria-label={`Derivative curves with ${highlighted} highlighted`} className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded" style={{ height: 180 }} />
         </div>
       </div>
 
       <div className="mt-6">
         <div className="flex items-center gap-3 mb-2">
-          <span className="text-[11px] uppercase tracking-wider text-ink-subtle dark:text-night-muted font-[family-name:var(--font-mono)]">Stacked through {depth} layers</span>
-          <input type="range" min={1} max={8} step={1} value={depth} onChange={e => setDepth(parseInt(e.target.value))} className="flex-1 max-w-xs accent-teal dark:accent-teal-dark" />
+          <span className="text-[12px] uppercase tracking-wider text-ink-subtle dark:text-night-muted font-[family-name:var(--font-mono)]">Stacked through {depth} layers</span>
+          <input type="range" min={1} max={8} step={1} value={depth} onChange={e => setDepth(parseInt(e.target.value))} aria-label="Number of stacked layers" className="flex-1 max-w-xs accent-teal dark:accent-teal-dark" />
         </div>
-        <canvas ref={stackCanvas} className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded" style={{ height: 120 }} />
+        <canvas ref={stackCanvas} role="img" aria-label={`Gradient magnitude after passing through ${depth} stacked ${highlighted} layers`} className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded" style={{ height: 120 }} />
         <p className="mt-3 text-[13px] text-ink-subtle dark:text-night-muted">
           {highlighted === 'sigmoid' && 'Sigmoid\'s derivative caps at 0.25 — five layers in, the gradient is ≈ 0.001. This is why early layers in deep sigmoid nets barely learn.'}
           {highlighted === 'tanh'    && 'Tanh peaks at 1.0 — better than sigmoid, but typical inputs sit in the saturating tails where the derivative is small.'}
@@ -743,7 +782,19 @@ function Section4() {
         </p>
       </div>
 
-      <canvas ref={canvasRef} className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded-lg" style={{ height: 360 }} />
+      <canvas
+        ref={canvasRef}
+        role="img"
+        aria-label={`Two-layer network diagram, backprop stage ${stage} of 4: ${[
+          'initial weights all 0.3, target 1.0',
+          'forward pass — each node multiplies and applies sigmoid',
+          `error = ${bp.error.toFixed(4)}`,
+          'backward pass — delta values propagate',
+          'weights updated by w plus eta times delta times input',
+        ][stage]}`}
+        className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded-lg"
+        style={{ height: 360 }}
+      />
 
       <div className="mt-4 flex items-center justify-between gap-4">
         <div className="flex gap-2">
@@ -883,7 +934,6 @@ function Section5() {
   const canvasV = useRef<HTMLCanvasElement>(null)
   const canvasM = useRef<HTMLCanvasElement>(null)
   const [themeTick, setThemeTick] = useState(0)
-  const reduced = useMemo(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches, [])
 
   useEffect(() => {
     const obs = new MutationObserver(() => setThemeTick(t => t + 1))
@@ -904,6 +954,8 @@ function Section5() {
   // Animation loop
   useEffect(() => {
     if (!playing) return
+    // Read at effect time (not a mount-time snapshot) so a mid-session OS change is respected
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     // Advances both balls by one step; returns which (if any) diverged this frame.
     const integrate = (): 'vanilla' | 'momentum' | 'both' | 'none' => {
@@ -967,7 +1019,7 @@ function Section5() {
     }
     raf = requestAnimationFrame(step)
     return () => cancelAnimationFrame(raf)
-  }, [playing, landscape, lr, beta, reduced])
+  }, [playing, landscape, lr, beta])
 
   // Drawing
   useEffect(() => {
@@ -988,27 +1040,27 @@ function Section5() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <p className="text-[11px] uppercase tracking-wider text-mauve dark:text-mauve-dark mb-2 font-[family-name:var(--font-mono)]">Vanilla GD</p>
-          <canvas ref={canvasV} className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded" style={{ height: 280 }} />
+          <p className="text-[12px] uppercase tracking-wider text-mauve dark:text-mauve-dark mb-2 font-[family-name:var(--font-mono)]">Vanilla GD</p>
+          <canvas ref={canvasV} role="img" aria-label={`Vanilla gradient descent path on the ${landscape} loss landscape`} className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded" style={{ height: 280 }} />
         </div>
         <div>
-          <p className="text-[11px] uppercase tracking-wider text-teal dark:text-teal-dark mb-2 font-[family-name:var(--font-mono)]">Momentum</p>
-          <canvas ref={canvasM} className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded" style={{ height: 280 }} />
+          <p className="text-[12px] uppercase tracking-wider text-teal dark:text-teal-dark mb-2 font-[family-name:var(--font-mono)]">Momentum</p>
+          <canvas ref={canvasM} role="img" aria-label={`Momentum gradient descent path on the ${landscape} loss landscape`} className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded" style={{ height: 280 }} />
         </div>
       </div>
 
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
-          <label className="text-[11px] uppercase tracking-wider text-ink-subtle dark:text-night-muted font-[family-name:var(--font-mono)]">Landscape</label>
-          <select value={landscape} onChange={e => setLandscape(e.target.value as Landscape)}
+          <label htmlFor="nn-landscape" className="text-[12px] uppercase tracking-wider text-ink-subtle dark:text-night-muted font-[family-name:var(--font-mono)]">Landscape</label>
+          <select id="nn-landscape" value={landscape} onChange={e => setLandscape(e.target.value as Landscape)}
             className="mt-1 w-full bg-cream dark:bg-night-card border border-cream-border dark:border-night-border rounded px-3 py-2 text-[13px] font-[family-name:var(--font-mono)]">
             <option value="ravine">Ravine</option>
             <option value="saddle">Saddle</option>
             <option value="bumpy">Bumpy</option>
           </select>
         </div>
-        <SliderRow label="η" min={0.005} max={0.15} step={0.005} value={lr} onChange={setLr} />
-        <SliderRow label="β" min={0} max={0.99} step={0.01} value={beta} onChange={setBeta} />
+        <SliderRow label="η" ariaLabel="Learning rate" min={0.005} max={0.15} step={0.005} value={lr} onChange={setLr} />
+        <SliderRow label="β" ariaLabel="Momentum beta" min={0} max={0.99} step={0.01} value={beta} onChange={setBeta} />
       </div>
 
       <div className="mt-4 flex items-center gap-2 flex-wrap">
@@ -1026,7 +1078,7 @@ function Section5() {
           Reset
         </button>
         {diverged !== 'none' && (
-          <span className="ml-auto text-[12px] font-[family-name:var(--font-mono)] text-peach dark:text-peach-dark">
+          <span role="status" className="ml-auto text-[12px] font-[family-name:var(--font-mono)] text-peach dark:text-peach-dark">
             {diverged === 'both'
               ? 'Both diverged — try a smaller η'
               : diverged === 'vanilla'
@@ -1185,7 +1237,6 @@ function Section6() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const lossCanvasRef = useRef<HTMLCanvasElement>(null)
   const [themeTick, setThemeTick] = useState(0)
-  const reduced = useMemo(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches, [])
 
   useEffect(() => {
     const obs = new MutationObserver(() => setThemeTick(t => t + 1))
@@ -1205,6 +1256,8 @@ function Section6() {
   // Training loop — capped to ~30 epochs/sec
   useEffect(() => {
     if (!playing) return
+    // Read at effect time (not a mount-time snapshot) so a mid-session OS change is respected
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (reduced) {
       const newLosses: number[] = []
       for (let i = 0; i < 200; i++) {
@@ -1229,7 +1282,7 @@ function Section6() {
     }
     raf = requestAnimationFrame(loop)
     return () => cancelAnimationFrame(raf)
-  }, [playing, lr, reduced])
+  }, [playing, lr])
 
   const [accuracy, setAccuracy] = useState(0)
 
@@ -1258,12 +1311,12 @@ function Section6() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-2">
-          <canvas ref={canvasRef} className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded" style={{ height: 360 }} />
+          <canvas ref={canvasRef} role="img" aria-label={`MLP decision boundary on the ${kind} dataset at epoch ${epoch}, accuracy ${(accuracy * 100).toFixed(0)} percent`} className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded" style={{ height: 360 }} />
         </div>
         <div className="space-y-4">
           <div>
-            <label className="text-[11px] uppercase tracking-wider text-ink-subtle dark:text-night-muted font-[family-name:var(--font-mono)]">Dataset</label>
-            <select value={kind} onChange={e => setKind(e.target.value as DatasetKind)}
+            <label htmlFor="nn-dataset" className="text-[12px] uppercase tracking-wider text-ink-subtle dark:text-night-muted font-[family-name:var(--font-mono)]">Dataset</label>
+            <select id="nn-dataset" value={kind} onChange={e => setKind(e.target.value as DatasetKind)}
               className="mt-1 w-full bg-cream dark:bg-night-card border border-cream-border dark:border-night-border rounded px-3 py-2 text-[13px] font-[family-name:var(--font-mono)]">
               <option value="blobs">Blobs</option>
               <option value="moons">Moons</option>
@@ -1271,16 +1324,16 @@ function Section6() {
             </select>
           </div>
           <div>
-            <label className="text-[11px] uppercase tracking-wider text-ink-subtle dark:text-night-muted font-[family-name:var(--font-mono)]">Activation</label>
-            <select value={act} onChange={e => setAct(e.target.value as Activation)}
+            <label htmlFor="nn-activation" className="text-[12px] uppercase tracking-wider text-ink-subtle dark:text-night-muted font-[family-name:var(--font-mono)]">Activation</label>
+            <select id="nn-activation" value={act} onChange={e => setAct(e.target.value as Activation)}
               className="mt-1 w-full bg-cream dark:bg-night-card border border-cream-border dark:border-night-border rounded px-3 py-2 text-[13px] font-[family-name:var(--font-mono)]">
               <option value="relu">ReLU</option>
               <option value="sigmoid">Sigmoid</option>
               <option value="tanh">Tanh</option>
             </select>
           </div>
-          <SliderRow label="H" min={2} max={16} step={1} value={hidden} onChange={(v) => setHidden(Math.round(v))} />
-          <SliderRow label="η" min={0.05} max={3} step={0.05} value={lr} onChange={setLr} />
+          <SliderRow label="H" ariaLabel="Hidden units" min={2} max={16} step={1} value={hidden} onChange={(v) => setHidden(Math.round(v))} />
+          <SliderRow label="η" ariaLabel="Learning rate" min={0.05} max={3} step={0.05} value={lr} onChange={setLr} />
           <div className="flex gap-2">
             <button onClick={() => setPlaying(p => !p)}
               className="flex-1 px-4 py-1.5 rounded-full border border-teal/40 dark:border-teal-dark/40 bg-teal/10 dark:bg-teal-dark/10 text-teal dark:text-teal-dark text-[13px] font-[family-name:var(--font-mono)]">
@@ -1296,7 +1349,7 @@ function Section6() {
           <div className="text-[12px] text-ink-subtle dark:text-night-muted font-[family-name:var(--font-mono)]">
             epoch {epoch} {'\u00B7'} acc {(accuracy * 100).toFixed(0)}% {'\u00B7'} loss {losses.at(-1)?.toFixed(3) ?? '—'}
           </div>
-          <canvas ref={lossCanvasRef} className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded" style={{ height: 80 }} />
+          <canvas ref={lossCanvasRef} role="img" aria-label={`Training loss sparkline, latest loss ${losses.at(-1)?.toFixed(3) ?? 'not started'}`} className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded" style={{ height: 80 }} />
         </div>
       </div>
 
@@ -1514,6 +1567,7 @@ function Section7() {
       <div className="flex gap-2 justify-center mb-4">
         {(['linear','curve'] as AEDataset[]).map(k => (
           <button key={k} onClick={() => setKind(k)}
+            aria-pressed={kind === k}
             className={`px-3 py-1.5 rounded-full text-[12px] font-[family-name:var(--font-mono)] border transition-colors ${
               kind === k
                 ? 'bg-teal/15 dark:bg-teal-dark/15 border-teal/40 dark:border-teal-dark/40 text-teal dark:text-teal-dark'
@@ -1524,7 +1578,13 @@ function Section7() {
         ))}
       </div>
 
-      <canvas ref={canvasRef} className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded-lg" style={{ height: 280 }} />
+      <canvas
+        ref={canvasRef}
+        role="img"
+        aria-label={`Three panels comparing the original ${kind === 'linear' ? 'linear blob' : 'curved ring'} data with PCA reconstruction (MSE ${pcaErr.toFixed(4)}) and autoencoder reconstruction (MSE ${aeErr.toFixed(4)})`}
+        className="w-full bg-cream-dark/30 dark:bg-night-card/40 rounded-lg"
+        style={{ height: 280 }}
+      />
 
       <p className="mt-4 text-[13px] text-ink-subtle dark:text-night-muted text-center">
         {kind === 'linear'

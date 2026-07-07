@@ -29,6 +29,7 @@ export function LearnNav({ prev, next }: LearnNavProps) {
             <path d="M10 6H2M5 9L2 6l3-3" />
           </svg>
           <span className="font-[family-name:var(--font-mono)] text-[12px] tracking-wide uppercase">
+            <span className="sr-only">Previous: </span>
             {prev.shortTitle}
           </span>
         </Link>
@@ -41,6 +42,7 @@ export function LearnNav({ prev, next }: LearnNavProps) {
             hover:text-mauve dark:hover:text-mauve-dark transition-colors"
         >
           <span className="font-[family-name:var(--font-mono)] text-[12px] tracking-wide uppercase">
+            <span className="sr-only">Next: </span>
             {next.shortTitle}
           </span>
           <svg

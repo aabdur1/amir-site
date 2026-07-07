@@ -7,6 +7,7 @@ import 'yet-another-react-lightbox/styles.css'
 import type { Photo } from '@/lib/types'
 import { PhotoCard } from './photo-card'
 import { SortControls } from './sort-controls'
+import { SparkRule } from '@/components/spark-rule'
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr]
@@ -116,7 +117,13 @@ function CountUp({ target }: { target: number }) {
     return () => observer.disconnect()
   }, [animate])
 
-  return <span ref={spanRef}>0</span>
+  // Animated digits are hidden from AT; sr-only span carries the real count
+  return (
+    <>
+      <span ref={spanRef} aria-hidden="true">0</span>
+      <span className="sr-only">{target}</span>
+    </>
+  )
 }
 
 const BATCH_SIZE = 12
@@ -233,7 +240,9 @@ export function MasonryGrid({ photos }: { photos: Photo[] }) {
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-[family-name:var(--font-display)] text-ink dark:text-night-text text-center">
             Photography
           </h1>
-          <div className="mt-4 h-px w-16 bg-mauve dark:bg-mauve-dark" />
+          <div className="mt-4">
+            <SparkRule data={[2, 5, 3, 6, 4, 7, 6, 8]} variant="line" visible delay={400} />
+          </div>
           <p className="mt-5 text-sm text-ink-subtle dark:text-night-muted font-[family-name:var(--font-mono)]">
             <CountUp target={photos.length} /> images <span className="text-peach dark:text-peach-dark">&middot;</span> {deriveBrands(photos)}
           </p>

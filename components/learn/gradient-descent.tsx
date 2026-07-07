@@ -796,6 +796,7 @@ function Section2() {
         <button
           type="button"
           onClick={() => setCompareMode(true)}
+          aria-pressed={compareMode}
           className={`px-4 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
             compareMode
               ? 'border-mauve/30 dark:border-mauve-dark/30 bg-mauve/10 dark:bg-mauve-dark/10 text-mauve dark:text-mauve-dark'
@@ -1192,6 +1193,7 @@ function Section3() {
               key={v.key}
               type="button"
               onClick={() => setActive(v.key)}
+              aria-pressed={isActive}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
                 isActive
                   ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
@@ -1200,7 +1202,7 @@ function Section3() {
             >
               <span className={`w-2.5 h-2.5 rounded-full ${colorMap[v.key]} ${hasPath ? 'opacity-100' : 'opacity-30'}`} />
               {v.label}
-              <span className="text-[13px] text-ink-faint dark:text-night-muted">{v.desc}</span>
+              <span className="text-[13px] text-ink-subtle dark:text-night-muted">{v.desc}</span>
             </button>
           )
         })}
@@ -1595,7 +1597,7 @@ function Section4() {
           <span className="font-[family-name:var(--font-mono)] text-[13px] text-sapphire dark:text-sapphire-dark">
             w<sub>new</sub> = w<sub>old</sub> {'\u2212'} {'\u03B7'} {'\u00D7'} gradient
           </span>
-          <span className="block text-[12px] text-ink-faint dark:text-night-muted mt-0.5">
+          <span className="block text-[12px] text-ink-subtle dark:text-night-muted mt-0.5">
             Moving a parameter downhill
           </span>
         </div>
@@ -1603,7 +1605,7 @@ function Section4() {
           <span className="font-[family-name:var(--font-mono)] text-[13px] text-green-600 dark:text-green-400">
             F<sub>new</sub> = F<sub>old</sub> + {'\u03B7'} {'\u00D7'} tree(residuals)
           </span>
-          <span className="block text-[12px] text-ink-faint dark:text-night-muted mt-0.5">
+          <span className="block text-[12px] text-ink-subtle dark:text-night-muted mt-0.5">
             Adding a tree that corrects errors
           </span>
         </div>

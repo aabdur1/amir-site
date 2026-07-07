@@ -247,7 +247,7 @@ function Section1({ lambdaRaw, setLambdaRaw }: { lambdaRaw: number; setLambdaRaw
             : 'var(--color-red, #d20f39)'
         return (
           <div key={feat} className="flex-1 min-w-[48px]">
-            <div className="text-[11px] sm:text-[12px] text-ink-subtle dark:text-night-muted text-center mb-0.5 truncate">
+            <div className="text-[12px] text-ink-subtle dark:text-night-muted text-center mb-0.5 truncate">
               {feat}
             </div>
             <div className="h-[90px] sm:h-[110px] bg-cream-dark/60 dark:bg-night-card/60 rounded-lg relative overflow-hidden flex items-end justify-center">
@@ -267,7 +267,7 @@ function Section1({ lambdaRaw, setLambdaRaw }: { lambdaRaw: number; setLambdaRaw
               />
             </div>
             <div
-              className={`font-[family-name:var(--font-mono)] text-[11px] sm:text-[12px] text-center mt-0.5 ${
+              className={`font-[family-name:var(--font-mono)] text-[12px] text-center mt-0.5 ${
                 isZero
                   ? 'text-amber-600 dark:text-amber-300 font-medium'
                   : 'text-ink-subtle dark:text-night-muted'
@@ -329,7 +329,7 @@ function Section1({ lambdaRaw, setLambdaRaw }: { lambdaRaw: number; setLambdaRaw
           {lambda.toFixed(2)}
         </span>
       </div>
-      <div className="flex justify-between text-[13px] text-ink-faint dark:text-night-muted/60 px-[23px] pr-[56px] mb-3">
+      <div className="flex justify-between text-[13px] text-ink-subtle dark:text-night-muted px-[23px] pr-[56px] mb-3">
         <span>0 (no penalty)</span>
         <span>heavy penalty</span>
       </div>
@@ -745,7 +745,7 @@ function Section2({ lambdaRaw, setLambdaRaw }: { lambdaRaw: number; setLambdaRaw
           {lambda.toFixed(2)}
         </span>
       </div>
-      <div className="flex justify-between items-center text-[13px] text-ink-faint dark:text-night-muted/60 px-[23px] pr-[56px] mb-3">
+      <div className="flex justify-between items-center text-[13px] text-ink-subtle dark:text-night-muted px-[23px] pr-[56px] mb-3">
         <span>0 (no penalty)</span>
         <span>heavy penalty</span>
       </div>

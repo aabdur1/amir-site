@@ -1124,6 +1124,7 @@ function Section3() {
         <button
           type="button"
           onClick={() => setStandardized(false)}
+          aria-pressed={!standardized}
           className={`px-4 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
             !standardized
               ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
@@ -1135,6 +1136,7 @@ function Section3() {
         <button
           type="button"
           onClick={() => setStandardized(true)}
+          aria-pressed={standardized}
           className={`px-4 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
             standardized
               ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
@@ -1839,7 +1841,7 @@ function Section5() {
             >
               <div className={`text-[12px] font-medium mb-1.5 ${personColorClasses[i]}`}>
                 {s.name}{' '}
-                <span className="font-normal text-ink-faint dark:text-night-muted">{s.desc}</span>
+                <span className="font-normal text-ink-subtle dark:text-night-muted">{s.desc}</span>
               </div>
               <div className="font-[family-name:var(--font-mono)] text-[13px] leading-[1.8] text-ink-subtle dark:text-night-muted">
                 Height: {s.height} in<br />

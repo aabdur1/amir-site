@@ -33,9 +33,10 @@ export function LearnCard({ artifact, index, illustration }: LearnCardProps) {
         className="card-hover group block rounded-xl border border-cream-border dark:border-night-border
           bg-white dark:bg-night-card overflow-hidden transition-all duration-300"
       >
-        {/* SVG illustration area */}
-        <div className="flex items-center justify-center h-40 bg-cream-dark/50 dark:bg-night/60
-          border-b border-cream-border dark:border-night-border">
+        {/* SVG illustration area — is-drawn triggers the illustrations'
+            draw-stroke/spark-bar elements once the card reveals */}
+        <div className={`flex items-center justify-center h-40 bg-cream-dark/50 dark:bg-night/60
+          border-b border-cream-border dark:border-night-border ${visible ? 'is-drawn' : ''}`}>
           {illustration}
         </div>
 
@@ -46,9 +47,13 @@ export function LearnCard({ artifact, index, illustration }: LearnCardProps) {
             <span className="font-[family-name:var(--font-mono)] text-[12px] text-peach dark:text-peach-dark">
               {artifact.number}/
             </span>
-            <h3 className="font-[family-name:var(--font-display)] text-lg text-ink dark:text-night-text">
+            {/* inline text-shadow:none keeps the pre-h2 appearance — globals.css shadows all h2 (and .dark h2 outranks a utility class) */}
+            <h2
+              className="font-[family-name:var(--font-display)] text-lg text-ink dark:text-night-text"
+              style={{ textShadow: "none" }}
+            >
               {artifact.title}
-            </h3>
+            </h2>
           </div>
 
           {/* Subtopics */}

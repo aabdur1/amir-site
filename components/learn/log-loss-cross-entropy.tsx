@@ -362,6 +362,7 @@ function Section1() {
             key={v.key}
             type="button"
             onClick={() => switchDist(v.key)}
+            aria-pressed={distType === v.key}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
               distType === v.key
                 ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
@@ -369,7 +370,7 @@ function Section1() {
             }`}
           >
             {v.label}
-            <span className="text-[12px] text-ink-faint dark:text-night-muted">{v.desc}</span>
+            <span className="text-[12px] text-ink-subtle dark:text-night-muted">{v.desc}</span>
           </button>
         ))}
       </div>
@@ -790,6 +791,7 @@ function Section2() {
             <button
               type="button"
               onClick={() => setActualY(1)}
+              aria-pressed={actualY === 1}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
                 actualY === 1
                   ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
@@ -801,6 +803,7 @@ function Section2() {
             <button
               type="button"
               onClick={() => setActualY(0)}
+              aria-pressed={actualY === 0}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
                 actualY === 0
                   ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
@@ -825,6 +828,7 @@ function Section2() {
         <button
           type="button"
           onClick={() => { setMultiMode(false); if (sweepRef.current) { cancelAnimationFrame(sweepRef.current); sweepRef.current = null; setSweeping(false) } }}
+          aria-pressed={!multiMode}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
             !multiMode
               ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
@@ -836,6 +840,7 @@ function Section2() {
         <button
           type="button"
           onClick={() => { setMultiMode(true); if (sweepRef.current) { cancelAnimationFrame(sweepRef.current); sweepRef.current = null; setSweeping(false) } }}
+          aria-pressed={multiMode}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-colors ${
             multiMode
               ? 'border-sapphire/30 dark:border-sapphire-dark/30 bg-sapphire/10 dark:bg-sapphire-dark/10 text-sapphire dark:text-sapphire-dark font-semibold'
@@ -1346,7 +1351,7 @@ function Section4() {
       </h2>
       <p className="text-[15px] text-ink-subtle dark:text-night-muted leading-relaxed mb-4">
         One formula runs through the entire course. Every connection below is something you{'\u2019'}ve already seen {'\u2014'}{' '}
-        this just makes the chain explicit. Hover over any node to highlight it.
+        this just makes the chain explicit. Hover over or focus any node to highlight it.
       </p>
 
       {/* Chain visualization */}
@@ -1362,6 +1367,9 @@ function Section4() {
                   : 'opacity-100'
               }`}
               onMouseEnter={() => setHoveredIdx(idx)}
+              tabIndex={0}
+              onFocus={() => setHoveredIdx(idx)}
+              onBlur={() => setHoveredIdx(null)}
             >
               <div className={`text-[13px] font-medium ${node.colorClass}`}>
                 {node.title}
@@ -1371,7 +1379,7 @@ function Section4() {
               </div>
             </div>
             {idx < arrows.length && (
-              <div className={`pl-5 py-0.5 text-[13px] text-ink-faint dark:text-night-muted transition-opacity duration-200 ${
+              <div className={`pl-5 py-0.5 text-[13px] text-ink-subtle dark:text-night-muted transition-opacity duration-200 ${
                 hoveredIdx !== null ? 'opacity-40' : 'opacity-100'
               }`}>
                 {'\u2193'} {arrows[idx]}
@@ -1413,6 +1421,9 @@ function Section4() {
                       : 'opacity-100'
                   }`}
                   onMouseEnter={() => setHoveredIdx(row.chainIdx)}
+                  tabIndex={0}
+                  onFocus={() => setHoveredIdx(row.chainIdx)}
+                  onBlur={() => setHoveredIdx(null)}
                 >
                   <td className={`py-1.5 px-2 font-medium border-b border-cream-border/50 dark:border-night-border/50 ${row.colorClass}`}>
                     {row.name}

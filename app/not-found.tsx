@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PageTransition } from "@/components/page-transition";
+import { SparkRule } from "@/components/spark-rule";
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -27,8 +28,10 @@ export default function NotFound() {
             404
           </h1>
 
-          {/* Mauve accent rule */}
-          <div className="mt-6 mx-auto h-0.5 w-16 bg-mauve dark:bg-mauve-dark" />
+          {/* Flatline with a lost blip — the 404 of spark rules */}
+          <div className="mt-6 flex justify-center">
+            <SparkRule data={[2, 2, 2, 6, 0, 2, 2]} variant="line" visible delay={300} />
+          </div>
 
           {/* Witty message */}
           <p className="mt-6 text-xl sm:text-2xl font-[family-name:var(--font-badge)] italic

@@ -25,7 +25,20 @@ export function LearnTeaser() {
       <SectionDivider />
 
       <div className="max-w-5xl mx-auto px-6 sm:px-8">
-        <SectionHeader number="06" label="Learn" title="Learning in Public" visible={visible} />
+        <SectionHeader
+          number="06"
+          label="Learn"
+          title="Learning in Public"
+          visible={visible}
+          align="right"
+          annotation={
+            <>
+              fig. 06 &middot; {ARTIFACTS.length} explainers &middot;{" "}
+              {ARTIFACTS.reduce((n, a) => n + a.sectionCount, 0)} sections
+            </>
+          }
+          spark={{ data: [7, 4, 2.6, 1.9, 1.5, 1.3, 1.2], variant: "line" }}
+        />
 
         <p
           className="text-sm sm:text-base font-[family-name:var(--font-body)]
