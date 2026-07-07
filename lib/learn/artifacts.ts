@@ -127,13 +127,14 @@ export const ARTIFACTS: Artifact[] = [
     shortTitle: 'SQL',
     description: 'Run real SQL against a synthetic patient dataset — SQLite compiled to WebAssembly, with checked exercises from SELECT to window functions.',
     number: '08',
-    subtopics: ['SELECT & filtering', 'Aggregation', 'Joins', 'Window functions'],
-    sectionCount: 4,
+    subtopics: ['SELECT & filtering', 'Aggregation', 'Joins', 'Window functions', 'Challenges'],
+    sectionCount: 5,
     sections: [
       { id: 'sql-select', label: 'SELECT' },
       { id: 'sql-aggregate', label: 'Aggregation' },
       { id: 'sql-joins', label: 'Joins' },
       { id: 'sql-windows', label: 'Windows' },
+      { id: 'sql-challenge', label: 'Challenges' },
     ],
   },
   {
@@ -143,13 +144,14 @@ export const ARTIFACTS: Artifact[] = [
     description:
       'Drill pandas in the browser — Pyodide running real Python against the same synthetic patient dataset as the SQL sandbox, with checked exercises from filtering to window ops.',
     number: '09',
-    subtopics: ['Filtering', 'GroupBy & agg', 'Merging', 'Window ops'],
-    sectionCount: 4,
+    subtopics: ['Filtering', 'GroupBy & agg', 'Merging', 'Window ops', 'Challenges'],
+    sectionCount: 5,
     sections: [
       { id: 'py-filter', label: 'Filtering' },
       { id: 'py-groupby', label: 'Group & agg' },
       { id: 'py-merge', label: 'Merging' },
       { id: 'py-window', label: 'Windows' },
+      { id: 'py-challenge', label: 'Challenges' },
     ],
   },
 ]

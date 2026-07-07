@@ -613,9 +613,9 @@ interface SectionDef {
   insight: string
 }
 
-// The four sections; exercises attach by their `section` id, numbered
-// continuously across sections (ex. 01–11). Each mirrors the same-numbered
-// SQL section, so the SQL ↔ pandas mapping stays explicit.
+// The sections; exercises attach by their `section` id, numbered
+// continuously across sections. Each mirrors the same-numbered SQL
+// section, so the SQL ↔ pandas mapping stays explicit.
 const SECTIONS: SectionDef[] = [
   {
     id: 'py-filter',
@@ -652,6 +652,15 @@ const SECTIONS: SectionDef[] = [
       "SQL's window functions map to groupby operations that keep every row: cumcount() is ROW_NUMBER, cumsum() a running total, and sort_values + groupby.tail(1) the latest-row-per-group pattern.",
     insight:
       "groupby.agg collapses to one row per group; cumcount/cumsum/transform keep all the rows — that one distinction is the whole 'window function' idea. Sort first: cumulative operations honor the current row order.",
+  },
+  {
+    id: 'py-challenge',
+    number: '05',
+    title: 'Challenges',
+    intro:
+      'No new methods here — each of these chains filtering, merging, grouping, and window-style operations in one pipeline, the way real analyst work does.',
+    insight:
+      'Hard pipelines are written step by step: assign each intermediate to a name, print() its .head() to look at it, and only then chain the next step. The stdout box above every result exists for exactly that.',
   },
 ]
 
@@ -775,7 +784,7 @@ export function Python() {
     }
   }, [])
 
-  // Exercise numbering is continuous across sections (ex. 01–11)
+  // Exercise numbering is continuous across sections
   const startNumbers: number[] = []
   let acc = 1
   for (const sec of SECTIONS) {
@@ -794,7 +803,7 @@ export function Python() {
           Python / pandas
         </h1>
         <p className="text-[15px] text-ink-subtle dark:text-night-muted">
-          4 sections {'·'} 11 checked exercises {'·'} CPython + pandas running in your browser via WebAssembly
+          {SECTIONS.length} sections {'·'} {PY_EXERCISES.length} checked exercises {'·'} CPython + pandas running in your browser via WebAssembly
         </p>
         <div className="mt-4 h-px w-16 mx-auto bg-mauve dark:bg-mauve-dark" />
         <p role="status" className="mt-6 font-[family-name:var(--font-mono)] text-[12px] text-ink-subtle dark:text-night-muted">

@@ -210,6 +210,21 @@ assert(val('SELECT COUNT(*) FROM (SELECT 1 FROM encounters GROUP BY patient_id, 
 // exercise 11 — HbA1c series with tie-free per-patient timestamps
 assert(val("SELECT COUNT(*) FROM (SELECT e.patient_id FROM labs l JOIN encounters e ON e.encounter_id = l.encounter_id WHERE l.test_name = 'HbA1c' GROUP BY e.patient_id HAVING COUNT(*) >= 3)") >= 5, '>=5 patients with a 3+-result HbA1c series')
 assert(val("SELECT COUNT(*) FROM (SELECT 1 FROM labs l JOIN encounters e ON e.encounter_id = l.encounter_id WHERE l.test_name = 'HbA1c' GROUP BY e.patient_id, l.taken_at HAVING COUNT(*) > 1)") === 0, 'no per-patient HbA1c taken_at ties')
+// challenge-tier exercises (both sandboxes) lean on these shapes
+assert(val('SELECT COUNT(*) FROM medications WHERE end_date IS NULL') >= 10, '>=10 ongoing medications (IS NULL exercise)')
+assert(val('SELECT COUNT(*) FROM patients WHERE patient_id NOT IN (SELECT patient_id FROM medications)') >= 3, '>=3 patients with zero medications (anti-join exercise)')
+const activeAtAdmit = val(`SELECT COUNT(DISTINCT e.encounter_id) FROM encounters e JOIN medications m ON m.patient_id = e.patient_id
+  WHERE m.start_date <= e.admit_date AND (m.end_date IS NULL OR m.end_date >= e.admit_date)`)
+assert(activeAtAdmit >= 20 && activeAtAdmit <= 170, `meds-active-at-admit is a non-trivial subset (got ${activeAtAdmit} of ${encounters.length})`)
+assert(val(`SELECT COUNT(*) FROM (
+  SELECT e.patient_id, l.value, ROW_NUMBER() OVER (PARTITION BY e.patient_id ORDER BY l.taken_at DESC) AS rn
+  FROM labs l JOIN encounters e ON e.encounter_id = l.encounter_id WHERE l.test_name = 'HbA1c'
+) WHERE rn = 1 AND value > 6.5`) >= 3, '>=3 patients with latest HbA1c above 6.5 (challenge exercise)')
+assert(val(`SELECT COUNT(*) FROM (
+  SELECT f.patient_id FROM (SELECT patient_id FROM encounters GROUP BY patient_id HAVING COUNT(*) > 3) f
+  LEFT JOIN medications m ON m.patient_id = f.patient_id
+  GROUP BY f.patient_id HAVING COUNT(DISTINCT m.drug_name) = 0
+)`) >= 1, '>=1 zero-drug frequent utilizer (challenge zero-fill exercise)')
 db.close()
 
 // --- write the TS module ---
