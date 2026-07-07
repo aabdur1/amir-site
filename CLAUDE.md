@@ -1,6 +1,6 @@
 # amir-site
 
-Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero with CTA/resume links + 6 editorial resume sections) + photography gallery + interactive data mining explainers.
+Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero with CTA/resume links + 6 editorial resume sections) + photography gallery + interactive data mining explainers + /work case studies.
 
 ## Tech Stack
 
@@ -43,6 +43,8 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - **Gallery image loading.** BlurHash canvas placeholder shows instantly, actual image loads behind it, BlurHash fades out on load complete. No CSS blur filter needed — BlurHash provides real color data from the image.
 - **Branded OG images.** `app/opengraph-image.tsx`, `app/gallery/opengraph-image.tsx`, and `app/learn/opengraph-image.tsx` generate 1200x630 PNGs at build time using `ImageResponse` from `next/og`. Catppuccin Mocha branding with DM Serif Display font loaded from Google Fonts gstatic (with try/catch fallback if font fetch fails). No hardcoded `images` in metadata — Next.js auto-injects from these routes. `app/learn/[slug]/opengraph-image.tsx` renders a unique per-slug card (number, title, subtopics, the index-card illustration with Mocha colors hardcoded), served on demand (the route is ƒ dynamic). Satori gotchas learned there: JSX interpolation that yields multiple text-node children (e.g. `{number}/`) fails with "Expected <div> to have explicit display: flex" — fold into a single template string; the ◆ glyph triggers a runtime font-fallback fetch that can fail, so ornaments in the dynamic OG route are drawn (rotated square div) instead.
 - **Metadata-driven learn section.** `lib/learn/artifacts.ts` is the single source of truth for all artifact metadata (slug, title, description, subtopics, section count, and `sections` — the `{ id, label }` list driving the SectionRail). The index page, prev/next nav, section rail, per-slug OG image, sitemap entries, and JSON-LD `LearningResource`/`BreadcrumbList` schemas all derive from this array. Adding a new artifact: create the component (with stable ids on its section h2s), add an entry to the array.
+- **Metadata-driven /work case studies.** `lib/work/case-studies.ts` mirrors the learn architecture: one array drives the /work index (WorkCard grid), /work/[slug] pages (rendered data-only by `components/work/case-study-article.tsx` — title block, metric stat tiles, optional paired bars, numbered prose sections, outbound links), prev/next (`WorkNav`, rendered only when a neighbor exists — the single-entry case shows nothing), sitemap entries, per-slug OG card, and JSON-LD `CreativeWork`/`BreadcrumbList`. A section with `embed: true` renders the study's `embed` (Tableau) under its paragraphs. Six unverified draft studies are quarantined in `lib/work/unpublished-drafts.ts` (imported by nothing; verify numbers, move into CASE_STUDIES, renumber to publish). Discovery: homepage Projects card (internal `Link` variant — `url` starting with `/` renders a next/link without target=_blank) + footer Work link; deliberately NO third nav pill (320px nav balance).
+- **Tableau embed (click-gated iframe).** `components/work/tableau-embed.tsx`: the case study's Tableau Public story loads as a plain iframe ONLY after "Load the interactive story" is clicked — zero tableau.com bytes anywhere before that, and zero third-party JS ever (the Embedding API was deliberately skipped: unpinned `*.latest.min.js` + it would widen script-src; the iframe needs only frame-src). Author-set story size is data-driven (`embed.width/height` — 1016×991 for the airline story, verified against the live `#tab-dashboard-region` 1016×964 + 27px bottom strip); on narrow screens the frame pans inside its own `overflow-x-auto` wrapper so the page never scrolls horizontally. On-design placeholder (three-view SVG motif) + `role="status"` copy before/after load.
 - **Learn artifact error boundary.** `ArtifactErrorBoundary` class component wraps each artifact in `app/learn/[slug]/page.tsx`. Shows editorial-styled fallback with "Try again" button if a canvas/interaction throws.
 - **Learn artifacts with ssr: false.** 7 of 9 learn artifacts load with `ssr: false` — five (Log Loss, PCA, Clustering, SHAP, Neural Networks) use `Math.random()` in `useState` initializers or ref initializers; SQL and Python because their WASM engines are client-only. They're loaded via `components/learn/dynamic-artifacts.tsx` — a `'use client'` wrapper that re-exports them with `next/dynamic` `{ ssr: false }` to avoid hydration mismatches. Gradient Descent and Regularization use deterministic initial data and load with SSR.
 - **SQL sandbox artifact (08/).** `components/learn/sql.tsx`: sql.js is imported only here (ssr: false chunk → zero bytes outside `/learn/sql`); wasm served from `public/sql-wasm.wasm` — **re-copy from `node_modules/sql.js/dist/sql-wasm.wasm` when bumping the sql.js dependency**. Engine is a module singleton: seed DB built once from `lib/learn/sql-seed.ts`, `db.export()` buffer cached, **fresh `Database(seedBuffer)` per Run** (destructive statements can't leak; accepted MVP risk: queries run on the main thread). Seed data is generated by `scripts/generate-sql-seed.mjs` (deterministic LCG, committed output, in-script assertions enforce the teaching shapes — zero-encounter patients, tie-free ORDER BY / ROW_NUMBER columns, HbA1c series). Exercises in `lib/learn/sql-exercises.ts` are checked by `lib/learn/sql-check.ts`: column *count* (aliases pass), then positional cells — numbers 1e-9 tolerance, strings trimmed, NULL ≡ NULL, canonical row sort unless `ordered: true`. Engine-load failure renders an in-artifact fallback with retry (never throws to the ArtifactErrorBoundary). CSP needs `'wasm-unsafe-eval'` (next.config.ts `headers()`; verified live).
@@ -142,6 +144,12 @@ app/
   gallery/
     opengraph-image.tsx   # Gallery OG image (Catppuccin Mocha, 1200x630)
     page.tsx              # Photography gallery page
+  work/
+    page.tsx              # Work index: case-study card grid
+    opengraph-image.tsx   # Work OG image (Catppuccin Mocha, 1200x630)
+    [slug]/
+      page.tsx            # Case-study route: back link, article, conditional prev/next, JSON-LD ×2
+      opengraph-image.tsx # Per-slug OG card: number + title + tech + chart-motif plate (Mocha hardcoded)
   learn/
     page.tsx              # Learn index: card grid of 9 interactive explainers
     opengraph-image.tsx   # Learn OG image (Catppuccin Mocha, 1200x630)
@@ -174,6 +182,11 @@ components/
     masonry-grid.tsx      # Masonry layout with sort + lightbox + progressive loading (12 at a time)
     photo-card.tsx        # BlurHash placeholder + clip-path reveal + scroll parallax
     sort-controls.tsx     # Styled sort dropdown (menu/menuitem ARIA)
+  work/
+    work-card.tsx         # /work index card: accent stripe + provenance + tech pills, internal Link (client)
+    case-study-article.tsx# Data-driven case-study body: title block, metric tiles, paired bars, sections, links (client)
+    tableau-embed.tsx     # Click-gated Tableau Public iframe + on-design placeholder (client)
+    work-nav.tsx          # Prev/next between case studies (server; caller hides it when both are null)
   learn/
     learn-card.tsx        # Index page card (illustration + number + title + accent pills, is-drawn reveal)
     learn-nav.tsx         # Prev/next navigation between artifacts (server component)
@@ -201,6 +214,9 @@ lib/
     sql-check.ts          # Result-set comparator (positional, tolerant, ordered/unordered)
     python-data.ts        # GENERATED CSV rendering of the same dataset for 09/ Python — same generator run, same seed
     python-exercises.ts   # 11 pandas exercise definitions mirroring the SQL arc (prompt, hint, solution, resultType, ordered, tables)
+  work/
+    case-studies.ts       # Single source of truth for /work (currently: the Tableau airline story)
+    unpublished-drafts.ts # Six quarantined draft studies — imported by nothing, prose unverified
 scripts/
   add-photo.mjs           # One-command photo addition (supports multiple files): upload + thumbnail + blurhash + photos.json
   add-photo-gui.mjs       # Native macOS Finder picker → feeds selections to add-photo.mjs
@@ -237,7 +253,7 @@ Split across two files because Netlify only applies `netlify.toml` `[[headers]]`
 `next.config.ts` `headers()` (applies to all Next-served routes, i.e. every page):
 - **CSP:** `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'` + same-origin defaults, CloudFront/Credly img allowlist, `frame-ancestors 'none'`. `'unsafe-inline'` (not a hash) is load-bearing: the App Router injects per-page inline RSC flight scripts that can't be hash-pinned, and the presence of ANY hash makes browsers ignore `'unsafe-inline'` — never add a hash to script-src without switching to nonce middleware. `'wasm-unsafe-eval'` is required by sql.js on /learn/sql.
 - **X-Frame-Options / Referrer-Policy / Permissions-Policy / HSTS** (`max-age=63072000; includeSubDomains; preload`) ride along in the same block.
-- **Route-scoped CSP override:** a second `headers()` entry with `source: '/learn/python'` re-issues the CSP with `https://cdn.jsdelivr.net` added to `script-src` and `connect-src` (Pyodide). It must stay AFTER the `/(.*)'` block — for duplicate header keys the last matching source wins. The site-wide CSP stays CDN-free; never widen the generic rule for Pyodide.
+- **Route-scoped CSP overrides:** entries after the `/(.*)'` block re-issue the CSP per route — for duplicate header keys the last matching source wins. `/learn/python` adds `https://cdn.jsdelivr.net` to `script-src` + `connect-src` (Pyodide); `/work/airline-flight-patterns` adds `frame-src https://public.tableau.com` (the click-gated Tableau iframe — frame-src ONLY, no script-src change). The site-wide CSP stays third-party-free; never widen the generic rule for a single route's needs. Gotcha: `next dev` does NOT hot-reload next.config.ts — a dev server predating a CSP change keeps serving stale headers, which blocks new embeds/engines with Chrome's "This content is blocked" while looking like a site bug. Restart the dev server after any headers() change.
 
 `netlify.toml` (static assets only):
 - **nosniff + HSTS** on `/*` as asset-level defense in depth
