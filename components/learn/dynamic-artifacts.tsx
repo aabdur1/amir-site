@@ -38,3 +38,10 @@ export const SQL = dynamic(
   () => import('./sql').then(m => ({ default: m.SQL })),
   { ssr: false }
 )
+
+// Python is ssr: false for the same reason as SQL: its Pyodide engine
+// (loaded from the CDN on user click) is browser-only.
+export const Python = dynamic(
+  () => import('./python').then(m => ({ default: m.Python })),
+  { ssr: false }
+)

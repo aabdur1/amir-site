@@ -151,6 +151,27 @@ function SQLIllustration() {
   )
 }
 
+function PythonIllustration() {
+  return (
+    <svg width="80" height="64" viewBox="0 0 80 64" aria-hidden="true" focusable="false">
+      {/* DataFrame: frame + header rule + index column, one accent per row band */}
+      <rect x="8" y="8" width="64" height="48" rx="3" fill="none" className="stroke-peach dark:stroke-peach-dark draw-stroke" pathLength={100} strokeWidth="1.5" />
+      <line x1="8" y1="18" x2="72" y2="18" className="stroke-peach dark:stroke-peach-dark draw-stroke" pathLength={100} strokeWidth="1.5" style={{ animationDelay: '80ms' }} />
+      <line x1="21" y1="18" x2="21" y2="56" className="stroke-ink-faint dark:stroke-night-border" strokeWidth="1.2" strokeDasharray="3" />
+      {/* index ticks */}
+      <line x1="13" y1="26" x2="17" y2="26" className="stroke-ink-faint dark:stroke-night-border" strokeWidth="1.2" />
+      <line x1="13" y1="35" x2="17" y2="35" className="stroke-ink-faint dark:stroke-night-border" strokeWidth="1.2" />
+      <line x1="13" y1="44" x2="17" y2="44" className="stroke-ink-faint dark:stroke-night-border" strokeWidth="1.2" />
+      <line x1="13" y1="53" x2="17" y2="53" className="stroke-ink-faint dark:stroke-night-border" strokeWidth="1.2" />
+      {/* row bands */}
+      <rect x="26" y="23" width="34" height="5" rx="1" className="fill-sapphire dark:fill-sapphire-dark spark-bar" opacity="0.85" style={{ transformBox: 'fill-box' }} />
+      <rect x="26" y="32" width="42" height="5" rx="1" className="fill-mauve dark:fill-mauve-dark spark-bar" opacity="0.85" style={{ transformBox: 'fill-box', animationDelay: '70ms' }} />
+      <rect x="26" y="41" width="26" height="5" rx="1" className="fill-lavender dark:fill-lavender-dark spark-bar" opacity="0.85" style={{ transformBox: 'fill-box', animationDelay: '140ms' }} />
+      <rect x="26" y="50" width="38" height="5" rx="1" className="fill-peach dark:fill-peach-dark spark-bar" opacity="0.85" style={{ transformBox: 'fill-box', animationDelay: '210ms' }} />
+    </svg>
+  )
+}
+
 const ILLUSTRATIONS: Record<string, () => React.JSX.Element> = {
   'gradient-descent': GradientDescentIllustration,
   'log-loss-cross-entropy': LogLossIllustration,
@@ -160,6 +181,7 @@ const ILLUSTRATIONS: Record<string, () => React.JSX.Element> = {
   'shap': SHAPIllustration,
   'neural-networks': NeuralNetworksIllustration,
   'sql': SQLIllustration,
+  'python': PythonIllustration,
 }
 
 export default function LearnPage() {

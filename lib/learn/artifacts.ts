@@ -136,6 +136,22 @@ export const ARTIFACTS: Artifact[] = [
       { id: 'sql-windows', label: 'Windows' },
     ],
   },
+  {
+    slug: 'python',
+    title: 'Python / pandas',
+    shortTitle: 'Python',
+    description:
+      'Drill pandas in the browser — Pyodide running real Python against the same synthetic patient dataset as the SQL sandbox, with checked exercises from filtering to window ops.',
+    number: '09',
+    subtopics: ['Filtering', 'GroupBy & agg', 'Merging', 'Window ops'],
+    sectionCount: 4,
+    sections: [
+      { id: 'py-filter', label: 'Filtering' },
+      { id: 'py-groupby', label: 'Group & agg' },
+      { id: 'py-merge', label: 'Merging' },
+      { id: 'py-window', label: 'Windows' },
+    ],
+  },
 ]
 
 export function getArtifact(slug: string): Artifact | undefined {
