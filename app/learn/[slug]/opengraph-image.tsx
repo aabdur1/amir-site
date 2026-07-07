@@ -210,7 +210,7 @@ export default async function Image({
                 marginBottom: 12,
               }}
             >
-              {number}/
+              {`${number}/`}
             </div>
             <div
               style={{
@@ -279,7 +279,7 @@ export default async function Image({
               letterSpacing: '0.08em',
             }}
           >
-            amirabdurrahim.com/learn/{slug}
+            {`amirabdurrahim.com/learn/${slug}`}
           </div>
         </div>
       </div>
