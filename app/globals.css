@@ -527,7 +527,8 @@ a, button {
   stroke-dasharray: 100;
   stroke-dashoffset: 100;
 }
-.draw-stroke.is-drawn {
+.draw-stroke.is-drawn,
+.is-drawn .draw-stroke {
   animation: draw-stroke 1s cubic-bezier(0.33, 1, 0.68, 1) forwards;
 }
 @keyframes draw-stroke {
@@ -602,7 +603,8 @@ section[aria-labelledby] h2[id] {
 /* Reduced motion: strokes and ticks render fully drawn, no animation */
 @media (prefers-reduced-motion: reduce) {
   .draw-stroke,
-  .draw-stroke.is-drawn {
+  .draw-stroke.is-drawn,
+  .is-drawn .draw-stroke {
     stroke-dashoffset: 0;
     animation: none;
   }

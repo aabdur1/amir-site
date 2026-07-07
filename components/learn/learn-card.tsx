@@ -33,9 +33,10 @@ export function LearnCard({ artifact, index, illustration }: LearnCardProps) {
         className="card-hover group block rounded-xl border border-cream-border dark:border-night-border
           bg-white dark:bg-night-card overflow-hidden transition-all duration-300"
       >
-        {/* SVG illustration area */}
-        <div className="flex items-center justify-center h-40 bg-cream-dark/50 dark:bg-night/60
-          border-b border-cream-border dark:border-night-border">
+        {/* SVG illustration area — is-drawn triggers the illustrations'
+            draw-stroke/spark-bar elements once the card reveals */}
+        <div className={`flex items-center justify-center h-40 bg-cream-dark/50 dark:bg-night/60
+          border-b border-cream-border dark:border-night-border ${visible ? 'is-drawn' : ''}`}>
           {illustration}
         </div>
 

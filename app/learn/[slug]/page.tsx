@@ -95,11 +95,26 @@ export default async function LearnArtifactPage({
     },
   }
 
+  // JSON-LD BreadcrumbList schema — same hardcoded-values safety as above
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://amirabdurrahim.com' },
+      { '@type': 'ListItem', position: 2, name: 'Learn', item: 'https://amirabdurrahim.com/learn' },
+      { '@type': 'ListItem', position: 3, name: artifact.title, item: `https://amirabdurrahim.com/learn/${slug}` },
+    ],
+  }
+
   return (
     <PageTransition>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <article className="relative pt-12 pb-24">
         {/* Sticky section rail in the left margin (xl+ only) */}
@@ -132,21 +147,30 @@ export default async function LearnArtifactPage({
 
         {/* Artifact tab bar */}
         <nav aria-label="All explainers" className="mx-auto max-w-5xl px-6 sm:px-10 lg:px-12 mb-10">
-          <div className="flex gap-2 overflow-x-auto pb-2 -mb-2 scrollbar-none">
-            {ARTIFACTS.map((a) => (
-              <Link
-                key={a.slug}
-                href={`/learn/${a.slug}`}
-                aria-current={a.slug === slug ? 'page' : undefined}
-                className={`shrink-0 px-3.5 py-1.5 rounded-full text-[13px] font-[family-name:var(--font-mono)] tracking-wide border transition-colors ${
-                  a.slug === slug
-                    ? 'bg-mauve/10 dark:bg-mauve-dark/10 border-mauve/40 dark:border-mauve-dark/40 text-mauve dark:text-mauve-dark'
-                    : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:border-mauve/40 dark:hover:border-mauve-dark/40 hover:text-ink dark:hover:text-night-text'
-                }`}
-              >
-                {a.shortTitle}
-              </Link>
-            ))}
+          <div className="relative">
+            <div className="flex gap-2 overflow-x-auto pb-2 -mb-2 scrollbar-none">
+              {ARTIFACTS.map((a) => (
+                <Link
+                  key={a.slug}
+                  href={`/learn/${a.slug}`}
+                  aria-current={a.slug === slug ? 'page' : undefined}
+                  className={`shrink-0 px-3.5 py-1.5 rounded-full text-[13px] font-[family-name:var(--font-mono)] tracking-wide border transition-colors ${
+                    a.slug === slug
+                      ? 'bg-mauve/10 dark:bg-mauve-dark/10 border-mauve/40 dark:border-mauve-dark/40 text-mauve dark:text-mauve-dark'
+                      : 'border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:border-mauve/40 dark:hover:border-mauve-dark/40 hover:text-ink dark:hover:text-night-text'
+                  }`}
+                >
+                  {a.shortTitle}
+                </Link>
+              ))}
+            </div>
+            {/* Right fade — hints that the pill row scrolls on narrow screens.
+                Self-masking: invisible where the row doesn't reach the edge. */}
+            <div
+              aria-hidden="true"
+              className="lg:hidden pointer-events-none absolute inset-y-0 right-0 w-10
+                bg-gradient-to-l from-cream dark:from-night to-transparent"
+            />
           </div>
         </nav>
 

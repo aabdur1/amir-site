@@ -180,7 +180,16 @@ export default async function Image({
           >
             Interactive Explainer
           </div>
-          <div style={{ fontSize: 18, color: C.peach }}>◆</div>
+          {/* Diamond ornament drawn as a rotated square — the ◆ glyph would
+              need a runtime font fallback fetch that can fail in production */}
+          <div
+            style={{
+              width: 13,
+              height: 13,
+              backgroundColor: C.peach,
+              transform: 'rotate(45deg)',
+            }}
+          />
         </div>
 
         {/* Middle: title block + illustration card */}
