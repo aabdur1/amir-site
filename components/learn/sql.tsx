@@ -29,7 +29,11 @@ function loadEngine(): Promise<void> {
         engine = mod
       })
       .catch((err) => {
-        enginePromise = null // allow "Try again" to re-fetch
+        // Documents intent only: sql.js's initSqlJs() caches its own
+        // module-level promise and never clears it on rejection, so this
+        // reset can't actually trigger a re-fetch within the same page
+        // load. "Try again" reloads the page instead — see EngineFallback.
+        enginePromise = null
         throw err
       })
   }
@@ -52,7 +56,7 @@ function runQuery(sql: string): QueryResult | null {
 
 type EngineStatus = 'loading' | 'ready' | 'error'
 
-function useSqlEngine(): { status: EngineStatus; retry: () => void } {
+function useSqlEngine(): { status: EngineStatus } {
   const [status, setStatus] = useState<EngineStatus>(() => (engine ? 'ready' : 'loading'))
   useEffect(() => {
     if (status !== 'loading') return
@@ -69,8 +73,7 @@ function useSqlEngine(): { status: EngineStatus; retry: () => void } {
       cancelled = true
     }
   }, [status])
-  const retry = useCallback(() => setStatus('loading'), [])
-  return { status, retry }
+  return { status }
 }
 
 // === Shared UI helpers (self-contained, like every other artifact file) ===
@@ -373,8 +376,10 @@ function ArtifactSection({
 }
 
 // Engine-load failure stays inside the artifact (never thrown to the
-// ArtifactErrorBoundary) — same editorial styling, working retry.
-function EngineFallback({ onRetry }: { onRetry: () => void }) {
+// ArtifactErrorBoundary). sql.js caches its own init promise module-wide and
+// never resets it on rejection, so a soft retry can never re-fetch — the
+// only real retry is a fresh page load.
+function EngineFallback() {
   return (
     <div className="text-center py-20">
       <p className="font-[family-name:var(--font-mono)] text-[13px] tracking-[0.3em] uppercase mb-4 text-peach dark:text-peach-dark">
@@ -386,7 +391,7 @@ function EngineFallback({ onRetry }: { onRetry: () => void }) {
       <p className="text-[15px] text-ink-subtle dark:text-night-muted mb-8">
         The WebAssembly build of SQLite failed to download or initialize.
       </p>
-      <button type="button" onClick={onRetry} className={PILL_PRIMARY}>
+      <button type="button" onClick={() => window.location.reload()} className={PILL_PRIMARY}>
         Try again
       </button>
     </div>
@@ -394,7 +399,7 @@ function EngineFallback({ onRetry }: { onRetry: () => void }) {
 }
 
 export function SQL() {
-  const { status, retry } = useSqlEngine()
+  const { status } = useSqlEngine()
   const engineReady = status === 'ready'
 
   // Exercise numbering is continuous across sections (ex. 01–11)
@@ -426,7 +431,7 @@ export function SQL() {
       </div>
 
       {status === 'error' ? (
-        <EngineFallback onRetry={retry} />
+        <EngineFallback />
       ) : (
         <>
           {/* Dataset legend — plain-text schema reference (a diagram is out of scope) */}
