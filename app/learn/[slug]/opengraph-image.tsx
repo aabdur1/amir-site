@@ -124,6 +124,23 @@ function Illustration({ slug }: { slug: string }) {
           <circle cx="64" cy="32" r="4.5" fill={C.peach} />
         </svg>
       )
+    case 'sql':
+      return (
+        <svg {...common}>
+          <rect x="6" y="10" width="30" height="34" rx="3" fill="none" stroke={C.sapphire} strokeWidth="1.5" />
+          <line x1="6" y1="19" x2="36" y2="19" stroke={C.sapphire} strokeWidth="1.5" />
+          <line x1="11" y1="27" x2="31" y2="27" stroke={C.line} strokeWidth="1.2" strokeDasharray="3" />
+          <line x1="11" y1="33" x2="31" y2="33" stroke={C.line} strokeWidth="1.2" strokeDasharray="3" />
+          <line x1="11" y1="39" x2="31" y2="39" stroke={C.line} strokeWidth="1.2" strokeDasharray="3" />
+          <rect x="44" y="20" width="30" height="34" rx="3" fill="none" stroke={C.mauve} strokeWidth="1.5" />
+          <line x1="44" y1="29" x2="74" y2="29" stroke={C.mauve} strokeWidth="1.5" />
+          <line x1="49" y1="37" x2="69" y2="37" stroke={C.line} strokeWidth="1.2" strokeDasharray="3" />
+          <line x1="49" y1="43" x2="69" y2="43" stroke={C.line} strokeWidth="1.2" strokeDasharray="3" />
+          <line x1="49" y1="49" x2="69" y2="49" stroke={C.line} strokeWidth="1.2" strokeDasharray="3" />
+          <line x1="36" y1="30" x2="44" y2="34" stroke={C.peach} strokeWidth="1.5" />
+          <circle cx="40" cy="32" r="3" fill={C.peach} />
+        </svg>
+      )
     default:
       return (
         <svg {...common}>
