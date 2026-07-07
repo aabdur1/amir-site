@@ -148,7 +148,9 @@ export function PhotoCard({ photo, index, onClick }: PhotoCardProps) {
             alt={`Photograph by Amir Abdur-Rahim, ${photo.date} — ${photo.camera}, ${photo.lens}`}
             width={800}
             height={600}
-            unoptimized
+            // Grid cells are ~400px in the 3-col xl layout, ~50vw at 2-col, full width below sm.
+            // The optimizer serves responsive AVIF/WebP from these 1600px source thumbs.
+            sizes="(min-width: 1280px) 400px, (min-width: 640px) 50vw, 100vw"
             {...(index < 4 ? { priority: true, loading: 'eager' as const } : {})}
             onLoad={(e) => {
               const img = e.currentTarget

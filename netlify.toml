@@ -5,6 +5,12 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+# Allow the Image CDN to fetch gallery sources from CloudFront (next/image
+# remotePatterns should map this automatically; explicit allowlist is the
+# documented safety net — a miss here breaks images only in production)
+[images]
+  remote_images = ["https://d36t8s1mzbufg5.cloudfront.net/.*"]
+
 [[redirects]]
   from = "https://amirabdurrahim.dev/*"
   to = "https://amirabdurrahim.com/:splat"

@@ -135,7 +135,7 @@ export default function Nav() {
         </Link>
 
         {/* Right: Nav links + Dark mode toggle */}
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-3 sm:gap-5">
           <div ref={indicatorContainerRef} className="relative flex items-center gap-2">
             {/* Morphing indicator */}
             <div
@@ -156,7 +156,7 @@ export default function Nav() {
             aria-current={isLearn ? "page" : undefined}
             className={`nav-learn-pill group relative font-[family-name:var(--font-mono)] text-[13px]
               tracking-[0.15em] uppercase
-              px-3 sm:px-4 py-2 rounded-full border overflow-hidden
+              px-2.5 sm:px-4 py-2 rounded-full border overflow-hidden
               transition-all duration-300
               ${isLearn
                 ? "nav-learn-active border-transparent text-ink dark:text-night-text"
@@ -176,7 +176,7 @@ export default function Nav() {
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className={`h-3 overflow-hidden transition-all duration-300 ${
+                className={`max-sm:hidden h-3 overflow-hidden transition-all duration-300 ${
                   isLearn ? 'w-3 opacity-100' : 'w-0 opacity-0 group-hover:w-3 group-hover:opacity-100'
                 }`}
               >
@@ -192,7 +192,7 @@ export default function Nav() {
             aria-current={isGallery ? "page" : undefined}
             className={`nav-gallery-pill group relative font-[family-name:var(--font-mono)] text-[13px]
               tracking-[0.15em] uppercase
-              px-3 sm:px-4 py-2 rounded-full border overflow-hidden
+              px-2.5 sm:px-4 py-2 rounded-full border overflow-hidden
               transition-all duration-300
               ${isGallery
                 ? "nav-gallery-active border-transparent text-ink dark:text-night-text"
@@ -213,7 +213,7 @@ export default function Nav() {
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className={`h-3 overflow-hidden transition-all duration-300 ${
+                className={`max-sm:hidden h-3 overflow-hidden transition-all duration-300 ${
                   isGallery ? 'w-3 opacity-100' : 'w-0 opacity-0 group-hover:w-3 group-hover:opacity-100'
                 }`}
               >
