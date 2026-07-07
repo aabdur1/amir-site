@@ -31,3 +31,10 @@ export const NeuralNetworks = dynamic(
   () => import('./neural-networks').then(m => ({ default: m.NeuralNetworks })),
   { ssr: false }
 )
+
+// SQL is ssr: false for a different reason than the ones above: its sql.js
+// WebAssembly engine can only initialize in the browser.
+export const SQL = dynamic(
+  () => import('./sql').then(m => ({ default: m.SQL })),
+  { ssr: false }
+)

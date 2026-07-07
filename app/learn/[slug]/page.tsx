@@ -16,7 +16,7 @@ const Regularization = dynamic(() => import('@/components/learn/regularization')
 
 // These 4 use Math.random() in useState initializers — loaded via client
 // wrapper with ssr: false to avoid hydration mismatches
-import { LogLossCrossEntropy, PCA, Clustering, SHAP, NeuralNetworks } from '@/components/learn/dynamic-artifacts'
+import { LogLossCrossEntropy, PCA, Clustering, SHAP, NeuralNetworks, SQL } from '@/components/learn/dynamic-artifacts'
 
 export function generateStaticParams() {
   return ARTIFACTS.map((a) => ({ slug: a.slug }))
@@ -64,6 +64,7 @@ const ARTIFACT_COMPONENTS: Record<string, React.ComponentType> = {
   'clustering': Clustering,
   'shap': SHAP,
   'neural-networks': NeuralNetworks,
+  'sql': SQL,
 }
 
 export default async function LearnArtifactPage({

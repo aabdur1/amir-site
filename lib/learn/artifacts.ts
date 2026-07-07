@@ -121,6 +121,21 @@ export const ARTIFACTS: Artifact[] = [
       { id: 'nn-section-7', label: 'AE vs PCA' },
     ],
   },
+  {
+    slug: 'sql',
+    title: 'SQL / Querying Data',
+    shortTitle: 'SQL',
+    description: 'Run real SQL against a synthetic patient dataset — SQLite compiled to WebAssembly, with checked exercises from SELECT to window functions.',
+    number: '08',
+    subtopics: ['SELECT & filtering', 'Aggregation', 'Joins', 'Window functions'],
+    sectionCount: 4,
+    sections: [
+      { id: 'sql-select', label: 'SELECT' },
+      { id: 'sql-aggregate', label: 'Aggregation' },
+      { id: 'sql-joins', label: 'Joins' },
+      { id: 'sql-windows', label: 'Windows' },
+    ],
+  },
 ]
 
 export function getArtifact(slug: string): Artifact | undefined {
