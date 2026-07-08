@@ -6,6 +6,7 @@ import initSqlJs from 'sql.js'
 import type { Database, SqlJsStatic } from 'sql.js'
 import { useScrollReveal } from '@/lib/hooks'
 import { SectionDivider } from '@/components/section-divider'
+import { TableChips } from '@/components/learn/table-chips'
 import { SQL_SEED, SQL_SEED_COUNTS } from '@/lib/learn/sql-seed'
 import { SQL_EXERCISES, type SqlExercise, type SqlSectionId } from '@/lib/learn/sql-exercises'
 import { compareResults, type CheckResult, type QueryResult, type SqlValue } from '@/lib/learn/sql-check'
@@ -187,9 +188,7 @@ function Exercise({
         <p className="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.2em] uppercase text-peach dark:text-peach-dark">
           ex. {String(number).padStart(2, '0')}
         </p>
-        <p className="font-[family-name:var(--font-mono)] text-[12px] text-ink-subtle dark:text-night-muted">
-          {exercise.tables.join(' · ')}
-        </p>
+        <TableChips tables={exercise.tables} idPrefix={exercise.id} />
       </div>
       <p className="text-sm text-ink-subtle dark:text-night-muted leading-relaxed mb-4">{exercise.prompt}</p>
 
