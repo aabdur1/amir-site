@@ -26,6 +26,12 @@ const OUT_REPO = path.join(PUBLIC_WEBR, 'repo/bin/emscripten/contrib/4.6')
 const LOCK_PATH = path.resolve('scripts/webr-assets.lock.json')
 const UPDATE = process.argv.includes('--update')
 
+// PACKAGES.gz is generated locally by gzipping PACKAGES, and gzip output is
+// not byte-stable across zlib versions/platforms — so it is exempt from the
+// sha256 lock (its source of truth, the plain PACKAGES file, IS locked).
+// verifyLock still requires it to exist.
+const LOCK_EXEMPT = /(^|\/)PACKAGES\.gz$/
+
 // Packages that ship inside the webR runtime itself — excluded from the mirror.
 const BASE_PACKAGES = new Set([
   'R', 'base', 'compiler', 'datasets', 'grDevices', 'graphics', 'grid',
@@ -59,6 +65,9 @@ async function verifyLock() {
     const file = path.join(PUBLIC_WEBR, rel)
     if (!existsSync(file) || (await sha256(file)) !== expected) return false
   }
+  // PACKAGES.gz is lock-exempt (see LOCK_EXEMPT) but still must exist — a
+  // partially-deleted dir should still trigger repopulation.
+  if (!existsSync(path.join(OUT_REPO, 'PACKAGES.gz'))) return false
   console.log(`webr assets verified against lock (${Object.keys(lock.files).length} files) — nothing to do`)
   return true
 }
@@ -171,7 +180,9 @@ async function populate() {
 async function recordOrCheckLock() {
   const files = {}
   for (const file of (await listFiles(PUBLIC_WEBR)).sort()) {
-    files[path.relative(PUBLIC_WEBR, file)] = await sha256(file)
+    const rel = path.relative(PUBLIC_WEBR, file)
+    if (LOCK_EXEMPT.test(rel)) continue
+    files[rel] = await sha256(file)
   }
   if (existsSync(LOCK_PATH) && !UPDATE) {
     const lock = JSON.parse(await readFile(LOCK_PATH, 'utf8'))
