@@ -76,13 +76,28 @@ export function TableChips({ tables, idPrefix }: TableChipsProps) {
             schema={TABLE_SCHEMAS[table]}
             isOpen={hoveredTable === table || clickedTable === table}
             popoverId={`${idPrefix}-schema-${table}`}
-            onHoverOpen={() => setHoveredTable(table)}
+            onHoverOpen={() => {
+              setHoveredTable(table)
+              // Mirrors the click path's defensive clear below: hovering a
+              // sibling shouldn't leave another table's click-pin open too
+              // — keeps "only one at a time" symmetric across both paths.
+              setClickedTable((v) => (v !== null && v !== table ? null : v))
+            }}
             onHoverClose={() => setHoveredTable((v) => (v === table ? null : v))}
             onToggle={() => {
+              const closing = clickedTable === table
               setClickedTable((v) => (v === table ? null : table))
-              // A different chip's lingering hover shouldn't stay open once
-              // this one is explicitly toggled — keeps "only one at a time".
-              setHoveredTable((v) => (v && v !== table ? null : v))
+              if (closing) {
+                // Closing: also clear this chip's hover pin so the popover
+                // closes immediately under the cursor instead of lingering
+                // until mouse-leave (mouseenter already fired to open it).
+                setHoveredTable((v) => (v === table ? null : v))
+              } else {
+                // Opening: a different chip's lingering hover shouldn't stay
+                // open once this one is explicitly toggled — keeps "only one
+                // at a time".
+                setHoveredTable((v) => (v && v !== table ? null : v))
+              }
             }}
             onForceClose={() => {
               setHoveredTable((v) => (v === table ? null : v))
