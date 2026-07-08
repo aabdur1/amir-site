@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useScrollReveal } from '@/lib/hooks'
 import { SectionDivider } from '@/components/section-divider'
+import { TableChips } from '@/components/learn/table-chips'
 import { PY_CSV, PY_COUNTS } from '@/lib/learn/python-data'
 import { PY_EXERCISES, type PyExercise, type PySectionId } from '@/lib/learn/python-exercises'
 
@@ -497,9 +498,7 @@ function Exercise({
             </span>
           )}
         </p>
-        <p className="font-[family-name:var(--font-mono)] text-[12px] text-ink-subtle dark:text-night-muted">
-          {exercise.tables.join(' · ')}
-        </p>
+        <TableChips tables={exercise.tables} idPrefix={exercise.id} />
       </div>
       <p className="text-sm text-ink-subtle dark:text-night-muted leading-relaxed mb-4">{exercise.prompt}</p>
 
