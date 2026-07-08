@@ -45,6 +45,19 @@ const TABLEAU_CSP = renderCsp({
   'frame-src': 'https://public.tableau.com',
 });
 
+// public/webr/* ASSET responses only — never a document. On Netlify these
+// files come from the CDN with no CSP at all, and a same-origin classic
+// worker takes its CSP from its own response headers: that no-CSP state is
+// the verified-good one. Under `next dev`/`next start`, however, the '/(.*)'
+// block above WOULD attach the page CSP to webr-worker.js and strangle
+// webR's Emscripten dlopen path (it eval()s EM_JS stubs) — a dev-only silent
+// hang. This override keeps dev equivalent to prod. Restart the dev server
+// after changing it (headers() is not hot-reloaded).
+const WEBR_ASSETS_CSP = renderCsp({
+  ...CSP_DIRECTIVES,
+  'script-src': "'self' 'unsafe-eval' 'wasm-unsafe-eval'",
+});
+
 const nextConfig: NextConfig = {
   experimental: {
     viewTransition: true,
@@ -77,6 +90,10 @@ const nextConfig: NextConfig = {
       {
         source: '/work/airline-flight-patterns',
         headers: [{ key: 'Content-Security-Policy', value: TABLEAU_CSP }],
+      },
+      {
+        source: '/webr/:path*',
+        headers: [{ key: 'Content-Security-Policy', value: WEBR_ASSETS_CSP }],
       },
     ];
   },
