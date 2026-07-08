@@ -11,21 +11,21 @@ import { Spine } from '@/components/spine'
 import { getAllBadges } from "@/lib/badges";
 
 export const metadata: Metadata = {
-  title: { absolute: 'Amir Abdur-Rahim — Healthcare Meets Technology' },
-  description: 'Healthcare meets technology. Chicago.',
+  title: { absolute: 'Amir Abdur-Rahim — Healthcare Data Analyst' },
+  description: 'Turning clinical data into decisions. Chicago.',
   alternates: {
     canonical: 'https://amirabdurrahim.com',
   },
   openGraph: {
     title: 'Amir Abdur-Rahim',
-    description: 'Healthcare meets technology. Chicago.',
+    description: 'Turning clinical data into decisions. Chicago.',
     url: 'https://amirabdurrahim.com',
     type: 'profile',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Amir Abdur-Rahim',
-    description: 'Healthcare meets technology. Chicago.',
+    description: 'Turning clinical data into decisions. Chicago.',
   },
 }
 

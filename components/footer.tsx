@@ -26,7 +26,7 @@ export function Footer() {
         {/* Tagline */}
         <p className="font-[family-name:var(--font-badge)] italic text-sm sm:text-base
           text-ink-subtle dark:text-night-muted mb-6">
-          Healthcare meets technology
+          Turning clinical data into decisions
         </p>
 
         {/* Links row */}

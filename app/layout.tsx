@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     default: 'Amir Abdur-Rahim',
     template: '%s | Amir Abdur-Rahim',
   },
-  description: 'Amir Abdur-Rahim — software engineer, healthcare technologist, and photographer. MS in MIS at UIC. Chicago.',
+  description: 'Amir Abdur-Rahim — healthcare data analyst with Epic EHR experience, building clinical ML, BI, and documentation tools. MS in MIS at UIC. Chicago.',
   openGraph: {
     siteName: 'Amir Abdur-Rahim',
     type: 'website',
@@ -80,7 +80,7 @@ export default function RootLayout({
                 'https://www.linkedin.com/in/amir-abdur-rahim/',
                 'https://www.credly.com/users/amir-abdur-rahim',
               ],
-              jobTitle: 'Software Engineer',
+              jobTitle: 'Healthcare Data Analyst',
               alumniOf: {
                 '@type': 'CollegeOrUniversity',
                 name: 'University of Illinois Chicago',

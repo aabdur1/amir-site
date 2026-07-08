@@ -176,7 +176,7 @@ export function Hero() {
                 ...(mounted ? { animation: "fade-in-up 0.6s ease-out 0.1s forwards" } : {}),
               }}
             >
-              Software <span className="text-peach dark:text-peach-dark">&middot;</span> Healthcare <span className="text-peach dark:text-peach-dark">&middot;</span> Photography
+              Data <span className="text-peach dark:text-peach-dark">&middot;</span> Analytics <span className="text-peach dark:text-peach-dark">&middot;</span> Healthcare
             </p>
 
             {/* Name — editorial scale */}
@@ -231,7 +231,7 @@ export function Hero() {
             {/* Tagline — editorial italic serif */}
             <p
               ref={taglineRef}
-              className="text-[length:var(--step-1)] mt-5 sm:mt-6 max-w-lg
+              className="text-[length:var(--step-1)] mt-5 sm:mt-6 max-w-xl
                 font-[family-name:var(--font-badge)] italic
                 text-ink-subtle dark:text-night-muted leading-relaxed"
               style={{
@@ -239,9 +239,8 @@ export function Hero() {
                 ...(mounted ? { animation: "fade-in-up 0.6s ease-out 0.8s forwards" } : {}),
               }}
             >
-              Healthcare meets technology{" "}
-              <span className="text-peach dark:text-peach-dark not-italic">&#8212;</span>{" "}
-              <span className="text-ink dark:text-night-text not-italic font-[family-name:var(--font-body)] font-medium">Chicago.</span>
+              Turning clinical data into decisions{" "}
+              <span className="text-peach dark:text-peach-dark not-italic">&#8212;</span>&nbsp;<span className="text-ink dark:text-night-text not-italic font-[family-name:var(--font-body)] font-medium">Chicago.</span>
             </p>
 
             {/* Positioning blurb */}
