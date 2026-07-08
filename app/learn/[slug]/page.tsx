@@ -14,9 +14,9 @@ import dynamic from 'next/dynamic'
 const GradientDescent = dynamic(() => import('@/components/learn/gradient-descent').then(m => ({ default: m.GradientDescent })))
 const Regularization = dynamic(() => import('@/components/learn/regularization').then(m => ({ default: m.Regularization })))
 
-// These 7 load with ssr: false via the client wrapper — five use
-// Math.random() in useState initializers (hydration mismatch); SQL's and
-// Python's WASM engines are client-only
+// These 8 load with ssr: false via the client wrapper — five use
+// Math.random() in useState initializers (hydration mismatch); SQL's,
+// Python's, and R's (webR) WASM engines are client-only
 import { LogLossCrossEntropy, PCA, Clustering, SHAP, NeuralNetworks, SQL, Python, R } from '@/components/learn/dynamic-artifacts'
 
 export function generateStaticParams() {

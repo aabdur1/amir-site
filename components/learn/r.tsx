@@ -83,19 +83,29 @@ function loadEngine(onPhase: (phase: LoadPhase) => void): Promise<void> {
 
 // Runs execute inside the webR worker — the page stays responsive, so the
 // "Running…" state is real (no paint-then-block setTimeout like 08/ and 09/).
+// Runs are serialized through a module-level chain: the two globalEnv binds
+// and the eval must land as one unit, or two exercise cards running at once
+// could check one card's code against the other's solution (and persist a
+// false pass). The worker is single-threaded anyway — this costs nothing.
+let runChain: Promise<unknown> = Promise.resolve()
+
 async function runExercise(userCode: string, exercise: RExercise): Promise<RunPayload> {
-  const webR = webRInstance
-  if (!webR) throw new Error('R engine not ready')
-  // User code travels as a bound R variable, never string-interpolated —
-  // no escaping problems. resultType/ordered come from our own literals.
-  await webR.objs.globalEnv.bind('.webr_user_code', userCode)
-  await webR.objs.globalEnv.bind('.webr_solution_code', exercise.solution)
-  const raw = await webR.evalRString(
-    `.webr_run_and_check(.webr_user_code, .webr_solution_code, ${
-      exercise.ordered ? 'TRUE' : 'FALSE'
-    }, '${exercise.resultType}')`
-  )
-  return JSON.parse(raw) as RunPayload
+  const run = runChain.then(async () => {
+    const webR = webRInstance
+    if (!webR) throw new Error('R engine not ready')
+    // User code travels as a bound R variable, never string-interpolated —
+    // no escaping problems. resultType/ordered come from our own literals.
+    await webR.objs.globalEnv.bind('.webr_user_code', userCode)
+    await webR.objs.globalEnv.bind('.webr_solution_code', exercise.solution)
+    const raw = await webR.evalRString(
+      `.webr_run_and_check(.webr_user_code, .webr_solution_code, ${
+        exercise.ordered ? 'TRUE' : 'FALSE'
+      }, '${exercise.resultType}')`
+    )
+    return JSON.parse(raw) as RunPayload
+  })
+  runChain = run.catch(() => {})
+  return run
 }
 
 type EngineStatus = 'idle' | LoadPhase | 'ready' | 'error'
@@ -181,7 +191,7 @@ function InsightBox({ children }: { children: ReactNode }) {
 
 function formatCell(v: Cell): string {
   if (v === null) return 'NA'
-  if (typeof v === 'boolean') return v ? 'True' : 'False'
+  if (typeof v === 'boolean') return v ? 'TRUE' : 'FALSE'
   if (typeof v === 'number' && !Number.isInteger(v)) return String(Math.round(v * 10000) / 10000)
   return String(v)
 }
