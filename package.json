@@ -4,9 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/fetch-webr.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "fetch-webr": "node scripts/fetch-webr.mjs",
+    "verify-r": "node scripts/verify-r-exercises.mjs"
   },
   "dependencies": {
     "blurhash": "^2.0.5",
@@ -14,6 +17,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "sql.js": "^1.14.1",
+    "webr": "0.6.0",
     "yet-another-react-lightbox": "^3.29.1"
   },
   "devDependencies": {

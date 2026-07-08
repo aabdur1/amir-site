@@ -43,6 +43,18 @@
   [headers.values]
     Cache-Control = "public, max-age=86400"
 
+# webR runtime is version-keyed (/webr/0.6.0/) so immutable is safe; the
+# package mirror path is not versioned, so it gets the sql-wasm treatment.
+[[headers]]
+  for = "/webr/0.6.0/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/webr/repo/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
 [[headers]]
   for = "/_next/static/*"
   [headers.values]
