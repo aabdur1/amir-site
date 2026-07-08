@@ -133,11 +133,13 @@ async function fetchCredlyBadges(): Promise<Badge[]> {
   }
 }
 
-/** Get all badges — Credly + manual, sorted newest first */
+/** Get all badges — Credly + manual, sorted newest first (unknown dates last) */
 export async function getAllBadges(): Promise<Badge[]> {
   const credlyBadges = await fetchCredlyBadges();
   const all = [...credlyBadges, ...manualBadges];
-  return all.sort((a, b) => b.date.localeCompare(a.date));
+  // "unknown" sorts as "" so undated badges land at the bottom, not the top
+  const sortKey = (date: string) => (date === "unknown" ? "" : date);
+  return all.sort((a, b) => sortKey(b.date).localeCompare(sortKey(a.date)));
 }
 
 /** Badge grouping for the Certifications section */
