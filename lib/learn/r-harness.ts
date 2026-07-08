@@ -103,7 +103,7 @@ suppressPackageStartupMessages(library(dplyr))
     if (is.null(tu) || is.null(te)) return(eq)
     eq[both] <- abs(tu[both] - te[both]) < 1
   } else if (is.numeric(u) && is.numeric(e)) {
-    eq[both] <- abs(u[both] - e[both]) <= .webr_eps
+    eq[both] <- (u[both] == e[both]) | (abs(u[both] - e[both]) <= .webr_eps)
   } else if (is.logical(u) && is.logical(e)) {
     eq[both] <- u[both] == e[both]
   } else if (!is.numeric(u) && !is.numeric(e)) {
@@ -151,6 +151,8 @@ suppressPackageStartupMessages(library(dplyr))
   }
   for (j in seq_len(ncol(u))) {
     eq <- .webr_col_equal(u[[j]], e[[j]])
+    # an NA in eq (e.g. time vs unparseable string) means mismatch, never a crash
+    eq[is.na(eq)] <- FALSE
     if (!all(eq)) {
       i <- which(!eq)[1]
       return(list(pass = FALSE, reason = paste0(
@@ -205,7 +207,7 @@ suppressPackageStartupMessages(library(dplyr))
 }
 
 .webr_json <- function(payload) {
-  as.character(jsonlite::toJSON(payload, auto_unbox = TRUE, na = 'null', null = 'null'))
+  as.character(jsonlite::toJSON(payload, auto_unbox = TRUE, na = 'null', null = 'null', digits = 10))
 }
 
 .webr_run_and_check <- function(user_code, solution_code, ordered, result_type) {
