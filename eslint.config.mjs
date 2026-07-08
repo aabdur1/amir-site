@@ -12,6 +12,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "public/webr/**", // vendor webR runtime populated by scripts/fetch-webr.mjs
   ]),
 ]);
 
