@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og'
 
-export const alt = 'Amir Abdur-Rahim — Healthcare meets technology. Chicago.'
+export const alt = 'Amir Abdur-Rahim — Turning clinical data into decisions. Chicago.'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -65,19 +65,20 @@ export default async function Image() {
             letterSpacing: '0.02em',
           }}
         >
-          Healthcare meets technology — Chicago.
+          Turning clinical data into decisions — Chicago.
         </div>
 
-        {/* Diamond ornament */}
+        {/* Diamond ornament drawn as a rotated square — the ◆ glyph would
+            need a runtime font fallback fetch that can fail in production */}
         <div
           style={{
             marginTop: 48,
-            fontSize: 18,
-            color: '#fab387',
+            width: 13,
+            height: 13,
+            backgroundColor: '#fab387',
+            transform: 'rotate(45deg)',
           }}
-        >
-          ◆
-        </div>
+        />
       </div>
     ),
     {

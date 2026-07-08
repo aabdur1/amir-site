@@ -83,16 +83,17 @@ export default async function Image() {
           Amir Abdur-Rahim
         </div>
 
-        {/* Diamond ornament */}
+        {/* Diamond ornament drawn as a rotated square — the ◆ glyph would
+            need a runtime font fallback fetch that can fail in production */}
         <div
           style={{
             marginTop: 48,
-            fontSize: 18,
-            color: '#fab387',
+            width: 13,
+            height: 13,
+            backgroundColor: '#fab387',
+            transform: 'rotate(45deg)',
           }}
-        >
-          ◆
-        </div>
+        />
       </div>
     ),
     {
