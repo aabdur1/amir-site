@@ -13,6 +13,7 @@ import { cp, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/pr
 import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
+import { gzipSync } from 'node:zlib'
 
 const WEBR_VERSION = '0.6.0'
 const TARBALL_URL = `https://github.com/r-wasm/webr/releases/download/v${WEBR_VERSION}/webr-${WEBR_VERSION}.tar.gz`
@@ -125,9 +126,19 @@ async function populate() {
   const workerFile = files.find((f) => path.basename(f) === 'webr-worker.js')
   if (!workerFile) throw new Error('webr-worker.js not found in the release tarball')
   const distDir = path.dirname(workerFile)
+  // The REPL demo app (index.html, repl.*, assets/, and the bundler-only
+  // webr.mjs loader) must never be served from our domain — only the
+  // worker-essential runtime files, mirroring the .map exclusion below.
+  const EXCLUDED_RUNTIME_NAMES = new Set(['index.html', 'repl.html', 'repl.js', 'repl.css', 'webr.mjs'])
   await cp(distDir, OUT_RUNTIME, {
     recursive: true,
-    filter: (src) => !src.endsWith('.map'),
+    filter: (src) => {
+      if (src.endsWith('.map')) return false
+      const rel = path.relative(distDir, src)
+      if (rel === 'assets' || rel.startsWith(`assets${path.sep}`)) return false
+      if (EXCLUDED_RUNTIME_NAMES.has(rel)) return false
+      return true
+    },
   })
   console.log(`runtime -> public/webr/${WEBR_VERSION}/`)
 
@@ -147,7 +158,11 @@ async function populate() {
     stanzas.push(raw)
     console.log(`  ${tgz}`)
   }
-  await writeFile(path.join(OUT_REPO, 'PACKAGES'), stanzas.join('\n\n') + '\n')
+  const packagesContent = stanzas.join('\n\n') + '\n'
+  await writeFile(path.join(OUT_REPO, 'PACKAGES'), packagesContent)
+  // webR probes for PACKAGES.gz alongside PACKAGES — write it too so the
+  // index lookup doesn't 404 on every engine load.
+  await writeFile(path.join(OUT_REPO, 'PACKAGES.gz'), gzipSync(packagesContent))
   console.log(`mirrored ${closure.length} packages: ${closure.join(', ')}`)
 
   await rm(work, { recursive: true, force: true })
