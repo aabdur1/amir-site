@@ -10,7 +10,7 @@ export function useHydrated() {
 }
 
 /*
- * Magnetic hover — element subtly pulls toward the cursor (4px max).
+ * Magnetic hover — element subtly pulls toward the cursor (~2px peak; MAX = 4 is a hard clamp the pull math never reaches).
  * Promoted from nav.tsx so hero CTAs and future interactive pills share it.
  * RAF + lerp with convergence check; gated behind (pointer: fine).
  */

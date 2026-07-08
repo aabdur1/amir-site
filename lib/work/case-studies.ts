@@ -164,6 +164,7 @@ export function getAdjacentCaseStudies(slug: string): {
   next: CaseStudy | null
 } {
   const index = CASE_STUDIES.findIndex((c) => c.slug === slug)
+  if (index === -1) return { prev: null, next: null }
   return {
     prev: index > 0 ? CASE_STUDIES[index - 1] : null,
     next: index < CASE_STUDIES.length - 1 ? CASE_STUDIES[index + 1] : null,

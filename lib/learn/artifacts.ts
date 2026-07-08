@@ -179,6 +179,7 @@ export function getArtifact(slug: string): Artifact | undefined {
 
 export function getAdjacentArtifacts(slug: string): { prev: Artifact | null; next: Artifact | null } {
   const index = ARTIFACTS.findIndex((a) => a.slug === slug)
+  if (index === -1) return { prev: null, next: null }
   return {
     prev: index > 0 ? ARTIFACTS[index - 1] : null,
     next: index < ARTIFACTS.length - 1 ? ARTIFACTS[index + 1] : null,
