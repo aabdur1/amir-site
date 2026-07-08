@@ -20,7 +20,7 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - **Fonts via next/font/google.** DM Serif Display (headings), DM Sans (body), Share Tech Mono (mono/tags), Lora (credential badges). Loaded as CSS variables (`--font-display`, `--font-body`, `--font-mono`, `--font-badge`) in `app/layout.tsx`.
 - **Dark mode via class toggle.** Uses `.dark` class on `<html>`. Custom variant defined in globals.css: `@custom-variant dark (&:where(.dark, .dark *));`. Blocking inline `<script>` in `layout.tsx` prevents flash of wrong theme on load. Toggle uses View Transitions API (`startViewTransition`) with circular clip-path reveal when supported, falling back to `.theme-transitioning` class for 300ms crossfade.
 - **No icon libraries.** Icons are inline SVGs.
-- **Client components marked explicitly.** Components using `"use client"`: nav, dark-mode-toggle, hero, animated-text, living-field, spine, count-up, interactive-headshot, certifications, experience, projects, featured-project, skills, education, footer, scroll-progress, page-transition, learn-teaser. Gallery components (masonry-grid, photo-card, sort-controls) are also client components. Learn components (learn-card, section-rail, gradient-descent, log-loss-cross-entropy, pca, regularization, clustering, shap, neural-networks, sql, python, r) are client components. learn-nav, section-header, section-divider, and spark-rule are server components.
+- **Client components marked explicitly.** Components using `"use client"`: nav, dark-mode-toggle, hero, animated-text, living-field, spine, count-up, interactive-headshot, certifications, experience, projects, featured-project, skills, education, footer, scroll-progress, page-transition, learn-teaser. Gallery components (masonry-grid, photo-card, sort-controls) are also client components. Learn components (learn-card, section-rail, gradient-descent, log-loss-cross-entropy, pca, regularization, clustering, shap, neural-networks, sql, python, r, table-chips) are client components. learn-nav, section-header, section-divider, and spark-rule are server components.
 - **No shorthand/longhand mixing in inline styles.** Always fold `animationDelay` into the `animation` shorthand to avoid React warnings.
 
 ## Key Patterns
@@ -154,7 +154,7 @@ app/
       page.tsx            # Case-study route: back link, article, conditional prev/next, JSON-LD ×2
       opengraph-image.tsx # Per-slug OG card: number + title + tech + chart-motif plate (Mocha hardcoded)
   learn/
-    page.tsx              # Learn index: card grid of 9 interactive explainers
+    page.tsx              # Learn index: card grid of 10 interactive explainers
     opengraph-image.tsx   # Learn OG image (Catppuccin Mocha, 1200x630)
     [slug]/
       page.tsx            # Dynamic route: section rail, back link, tab bar (+scroll fade), artifact component, error boundary, prev/next nav, JSON-LD ×2
@@ -217,7 +217,7 @@ lib/
     sql-seed.ts           # GENERATED deterministic healthcare seed (patients/encounters/labs/medications) — regenerate via scripts/generate-sql-seed.mjs
     sql-exercises.ts      # 19 exercise definitions (prompt, hint, solution, ordered, tables)
     sql-check.ts          # Result-set comparator (positional, tolerant, ordered/unordered)
-    python-data.ts        # GENERATED CSV rendering of the same dataset for 09/ Python — same generator run, same seed
+    python-data.ts        # GENERATED CSV rendering of the same dataset — parsed by 09/ Python (pandas) AND 10/ R (read.csv); same generator run, same seed
     python-exercises.ts   # 19 pandas exercise definitions mirroring the SQL arc (prompt, hint, solution, resultType, ordered, tables)
     schema.ts             # GENERATED table/column/type/row-count metadata for the schema-popover chips — same generator run, zero extra PRNG calls
     r-harness.ts          # R_SETUP_CODE — master frames + fresh-env runner + positional checker (R side of 10/)
