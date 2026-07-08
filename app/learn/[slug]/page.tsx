@@ -17,7 +17,7 @@ const Regularization = dynamic(() => import('@/components/learn/regularization')
 // These 7 load with ssr: false via the client wrapper — five use
 // Math.random() in useState initializers (hydration mismatch); SQL's and
 // Python's WASM engines are client-only
-import { LogLossCrossEntropy, PCA, Clustering, SHAP, NeuralNetworks, SQL, Python } from '@/components/learn/dynamic-artifacts'
+import { LogLossCrossEntropy, PCA, Clustering, SHAP, NeuralNetworks, SQL, Python, R } from '@/components/learn/dynamic-artifacts'
 
 export function generateStaticParams() {
   return ARTIFACTS.map((a) => ({ slug: a.slug }))
@@ -67,6 +67,7 @@ const ARTIFACT_COMPONENTS: Record<string, React.ComponentType> = {
   'neural-networks': NeuralNetworks,
   'sql': SQL,
   'python': Python,
+  'r': R,
 }
 
 export default async function LearnArtifactPage({
