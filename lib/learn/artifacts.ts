@@ -154,6 +154,23 @@ export const ARTIFACTS: Artifact[] = [
       { id: 'py-challenge', label: 'Challenges' },
     ],
   },
+  {
+    slug: 'r',
+    title: 'R / dplyr',
+    shortTitle: 'R',
+    description:
+      'Wrangle the same synthetic patient dataset in R — webR running real R and dplyr in your browser, self-hosted, with checked exercises from filter() to window operations.',
+    number: '10',
+    subtopics: ['Filtering', 'Group & summarise', 'Joins', 'Window ops', 'Challenges'],
+    sectionCount: 5,
+    sections: [
+      { id: 'r-filter', label: 'Filtering' },
+      { id: 'r-group', label: 'Group & agg' },
+      { id: 'r-join', label: 'Joins' },
+      { id: 'r-window', label: 'Windows' },
+      { id: 'r-challenge', label: 'Challenges' },
+    ],
+  },
 ]
 
 export function getArtifact(slug: string): Artifact | undefined {

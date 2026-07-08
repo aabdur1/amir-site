@@ -157,6 +157,19 @@ function Illustration({ slug }: { slug: string }) {
           <rect x="26" y="50" width="38" height="5" rx="1" fill={C.peach} opacity="0.85" />
         </svg>
       )
+    case 'r':
+      return (
+        <svg {...common}>
+          <rect x="8" y="8" width="26" height="10" rx="5" fill="none" stroke={C.sapphire} strokeWidth="1.5" />
+          <rect x="8" y="27" width="26" height="10" rx="5" fill="none" stroke={C.mauve} strokeWidth="1.5" />
+          <rect x="8" y="46" width="26" height="10" rx="5" fill="none" stroke={C.lavender} strokeWidth="1.5" />
+          <path d="M34 13 H41 V32 H48 M34 32 H48 M34 51 H41 V32" fill="none" stroke={C.line} strokeWidth="1.2" strokeDasharray="3" />
+          <rect x="48" y="20" width="26" height="24" rx="3" fill="none" stroke={C.peach} strokeWidth="1.5" />
+          <line x1="48" y1="28" x2="74" y2="28" stroke={C.peach} strokeWidth="1.5" />
+          <rect x="52" y="32" width="18" height="3.5" rx="1" fill={C.sapphire} opacity="0.85" />
+          <rect x="52" y="38" width="12" height="3.5" rx="1" fill={C.mauve} opacity="0.85" />
+        </svg>
+      )
     default:
       return (
         <svg {...common}>

@@ -172,6 +172,22 @@ function PythonIllustration() {
   )
 }
 
+function RIllustration() {
+  return (
+    <svg width="80" height="64" viewBox="0 0 80 64" aria-hidden="true" focusable="false">
+      {/* piped verbs flowing into a result table */}
+      <rect x="8" y="8" width="26" height="10" rx="5" fill="none" className="stroke-sapphire dark:stroke-sapphire-dark draw-stroke" pathLength={100} strokeWidth="1.5" />
+      <rect x="8" y="27" width="26" height="10" rx="5" fill="none" className="stroke-mauve dark:stroke-mauve-dark draw-stroke" pathLength={100} strokeWidth="1.5" style={{ animationDelay: '100ms' }} />
+      <rect x="8" y="46" width="26" height="10" rx="5" fill="none" className="stroke-lavender dark:stroke-lavender-dark draw-stroke" pathLength={100} strokeWidth="1.5" style={{ animationDelay: '200ms' }} />
+      <path d="M34 13 H41 V32 H48 M34 32 H48 M34 51 H41 V32" fill="none" className="stroke-ink-faint dark:stroke-night-border" strokeWidth="1.2" strokeDasharray="3" />
+      <rect x="48" y="20" width="26" height="24" rx="3" fill="none" className="stroke-peach dark:stroke-peach-dark draw-stroke" pathLength={100} strokeWidth="1.5" style={{ animationDelay: '300ms' }} />
+      <line x1="48" y1="28" x2="74" y2="28" className="stroke-peach dark:stroke-peach-dark draw-stroke" pathLength={100} strokeWidth="1.5" style={{ animationDelay: '380ms' }} />
+      <rect x="52" y="32" width="18" height="3.5" rx="1" className="fill-sapphire dark:fill-sapphire-dark spark-bar" opacity="0.85" style={{ transformBox: 'fill-box', animationDelay: '440ms' }} />
+      <rect x="52" y="38" width="12" height="3.5" rx="1" className="fill-mauve dark:fill-mauve-dark spark-bar" opacity="0.85" style={{ transformBox: 'fill-box', animationDelay: '510ms' }} />
+    </svg>
+  )
+}
+
 const ILLUSTRATIONS: Record<string, () => React.JSX.Element> = {
   'gradient-descent': GradientDescentIllustration,
   'log-loss-cross-entropy': LogLossIllustration,
@@ -182,6 +198,7 @@ const ILLUSTRATIONS: Record<string, () => React.JSX.Element> = {
   'neural-networks': NeuralNetworksIllustration,
   'sql': SQLIllustration,
   'python': PythonIllustration,
+  'r': RIllustration,
 }
 
 export default function LearnPage() {

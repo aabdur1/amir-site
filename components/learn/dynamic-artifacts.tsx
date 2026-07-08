@@ -45,3 +45,10 @@ export const Python = dynamic(
   () => import('./python').then(m => ({ default: m.Python })),
   { ssr: false }
 )
+
+// R is ssr: false for the same reason as SQL and Python: its webR engine
+// (self-hosted, loaded on user click) is browser-only.
+export const R = dynamic(
+  () => import('./r').then(m => ({ default: m.R })),
+  { ssr: false }
+)
