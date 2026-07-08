@@ -176,7 +176,7 @@ async function recordOrCheckLock() {
   console.log(`lock recorded (${Object.keys(files).length} files) — commit scripts/webr-assets.lock.json`)
 }
 
-if (!(await verifyLock())) {
+if (UPDATE || !(await verifyLock())) {
   await populate()
   await recordOrCheckLock()
 }
