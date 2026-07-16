@@ -10,8 +10,10 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
     "fetch-webr": "node scripts/fetch-webr.mjs",
-    "verify-r": "node scripts/verify-r-exercises.mjs"
+    "verify-r": "node scripts/verify-r-exercises.mjs",
+    "verify-python": "node scripts/verify-python-exercises.mjs"
   },
   "dependencies": {
     "blurhash": "^2.0.5",
@@ -23,6 +25,7 @@
     "yet-another-react-lightbox": "^3.29.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
@@ -35,6 +38,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "jsdom": "^29.1.1",
+    "pyodide": "^314.0.2",
     "sharp": "^0.34.5",
     "tailwindcss": "^4",
     "typescript": "^5",

@@ -13,6 +13,10 @@
 # testing
 /coverage
 
+# playwright e2e artifacts (traces/screenshots on failure, html report)
+/test-results/
+/playwright-report/
+
 # next.js
 /.next/
 /out/
