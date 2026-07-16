@@ -29,6 +29,33 @@ export function Footer() {
           Turning clinical data into decisions
         </p>
 
+        {/* Closing CTA — frictionless contact at end-of-scroll (mirrors the hero pair) */}
+        <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
+          <a
+            href="mailto:amirabdurrahim@gmail.com"
+            className="inline-flex items-center justify-center rounded-full px-6 py-3
+              bg-mauve dark:bg-mauve-dark text-cream dark:text-night
+              text-[13px] tracking-wide font-[family-name:var(--font-badge)] font-medium
+              transition-shadow duration-300 hover:shadow-card"
+          >
+            Get in touch
+          </a>
+          <a
+            href="/Amir_Abdur-Rahim_Resume.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="View resume (opens in new tab)"
+            className="inline-flex items-center justify-center rounded-full px-6 py-3
+              border border-ink/20 dark:border-night-border
+              text-ink dark:text-night-text
+              text-[13px] tracking-wide font-[family-name:var(--font-badge)]
+              transition-[border-color,box-shadow] duration-300
+              hover:border-sapphire/50 dark:hover:border-sapphire-dark/50 hover:shadow-card"
+          >
+            View resume
+          </a>
+        </div>
+
         {/* Links row */}
         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 mb-8">
           <Link
@@ -68,17 +95,6 @@ export function Footer() {
               py-3 px-1 transition-all duration-200"
           >
             LinkedIn
-          </a>
-          <span aria-hidden="true" className="text-cream-border dark:text-night-border text-[12px]">&#9670;</span>
-          <a
-            href="mailto:amirabdurrahim@gmail.com"
-            className="text-xs tracking-[0.15em] uppercase font-[family-name:var(--font-mono)]
-              text-ink-subtle dark:text-night-muted hover:text-ink dark:hover:text-night-text
-              hover:-translate-y-px hover:underline hover:decoration-sapphire dark:hover:decoration-sapphire-dark
-              hover:underline-offset-4 hover:decoration-2
-              py-3 px-1 transition-all duration-200"
-          >
-            Email
           </a>
         </div>
 
