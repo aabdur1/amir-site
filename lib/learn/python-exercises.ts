@@ -1,6 +1,8 @@
-// lib/learn/python-exercises.ts — the 19 checked exercises for the 09/ Python
-// artifact. They mirror the 08/ SQL exercises one-for-one on the same dataset,
-// so the SQL ↔ pandas mapping is explicit; each section escalates and the
+// lib/learn/python-exercises.ts — the 24 checked exercises for the 09/ Python
+// artifact. Outside the reshape section they mirror the 08/ SQL exercises
+// one-for-one on the same dataset, so the SQL ↔ pandas mapping is explicit;
+// the reshape section is deliberately unmirrored — pivot/melt is the one core
+// pandas verb family with no SQL equivalent. Each section escalates and the
 // final challenge section combines concepts.
 //
 // Contract: every prompt ends with "Assign your answer to result." The checker
@@ -16,7 +18,13 @@
 //   resultType: 'dataframe' | 'series' (table-shaped, compared positionally)
 //               | 'scalar' (single value, compared with 1e-9 tolerance)
 
-export type PySectionId = 'py-filter' | 'py-groupby' | 'py-merge' | 'py-window' | 'py-challenge'
+export type PySectionId =
+  | 'py-filter'
+  | 'py-groupby'
+  | 'py-reshape'
+  | 'py-merge'
+  | 'py-window'
+  | 'py-challenge'
 
 export interface PyExercise {
   id: string
@@ -131,7 +139,75 @@ result.columns = ['dept', 'pct']`,
     tables: ['encounters'],
   },
 
-  // --- 03/ Merging & the fan-out trap ---
+  // --- 03/ Reshape & pivot ---
+  {
+    id: 'py-reshape-grid',
+    section: 'py-reshape',
+    prompt:
+      'Turn the per-department-per-year encounter counts into a grid: one row per department, one column per year of admit_date (2024, 2025, 2026), encounter counts in the cells — four columns, dept then the three year columns. Assign your answer to result.',
+    hint:
+      "Build the long counts first (the groupby-per-year pattern from 02/), then .pivot(index='dept', columns='yr', values='n') — the three arguments are grid positions: index picks the row labels, columns the column headers, values the cell contents. Nothing is aggregated; pivot only rearranges, and it works here because groupby already left exactly one row per (dept, yr) pair. SQL has no verb for this — you'd hand-write a CASE WHEN column per year. tidyr calls it pivot_wider. Finish with .reset_index() to move dept back out of the index (the unreset form also passes).",
+    solution: `counts = encounters.assign(yr=encounters['admit_date'].dt.year).groupby(['dept', 'yr'], as_index=False).agg(n=('encounter_id', 'count'))
+result = counts.pivot(index='dept', columns='yr', values='n').reset_index()`,
+    resultType: 'dataframe',
+    ordered: false,
+    tables: ['encounters'],
+  },
+  {
+    id: 'py-reshape-dupes',
+    section: 'py-reshape',
+    prompt:
+      "First run this and watch it fail: labs.pivot(index='encounter_id', columns='test_name', values='value') — it raises a ValueError, because 109 (encounter_id, test_name) pairs appear more than once (the same test repeated within one encounter, up to 4 times), and pivot cannot decide which reading a cell should hold. Then write the fix: the same wide panel via pivot_table with aggfunc='mean', which averages the repeats — six columns, encounter_id plus one column per test_name, one row per encounter. Assign your answer to result.",
+    hint:
+      "'ValueError: Index contains duplicate entries, cannot reshape' is the most-asked pivot question there is, and the answer is one distinction: pivot() only reshapes, so every (index, columns) pair must map to exactly one value — duplicates make a grid cell ambiguous and it refuses to guess. pivot_table() aggregates first and reshapes second, so duplicates are fine: aggfunc='mean' collapses each repeated pair to its average before it lands in the cell. Expect NaN where an encounter never had a test — pivoting manufactures a cell for every combination.",
+    solution: `result = labs.pivot_table(index='encounter_id', columns='test_name', values='value', aggfunc='mean').reset_index()`,
+    resultType: 'dataframe',
+    ordered: false,
+    tables: ['labs'],
+  },
+  {
+    id: 'py-reshape-margins',
+    section: 'py-reshape',
+    prompt:
+      "Extend the wide lab panel with grand totals: the same pivot_table with margins=True adds an 'All' row and an 'All' column — with aggfunc='mean', the All row holds each test's mean over every encounter, and the All column each encounter's mean across its own readings. Seven columns — encounter_id, the five tests, All — and 189 rows. Assign your answer to result.",
+    hint:
+      "One keyword: margins=True (margins_name defaults to 'All'). The margins are recomputed from the raw readings, not by averaging your row means — the same way SQL's ROLLUP recomputes each subtotal from the underlying rows, which matters whenever group sizes differ. mean skips NaN cells rather than poisoning the total, so sparsely-tested encounters still get an honest All value.",
+    solution: `result = labs.pivot_table(index='encounter_id', columns='test_name', values='value', aggfunc='mean', margins=True).reset_index()`,
+    resultType: 'dataframe',
+    ordered: false,
+    tables: ['labs'],
+  },
+  {
+    id: 'py-reshape-melt',
+    section: 'py-reshape',
+    prompt:
+      'Melt the wide panel back to long: rebuild the mean panel from the previous exercises, then return one row per encounter per test that was actually taken — three columns, encounter_id, test_name, mean_value. Assign your answer to result.',
+    hint:
+      "melt is pivot's inverse — tidyr calls the pair pivot_wider / pivot_longer. id_vars names the columns that stay as identifiers, value_vars the ones to collapse (defaulting to everything else), and var_name / value_name name the two new columns. The round trip is not lossless: pivoting manufactured a NaN cell for every test an encounter never had — 940 cells from 432 real means — and melt dutifully turns every one back into a row. Mask with .notna() to keep only the readings that exist (tidyr's values_drop_na).",
+    solution: `wide = labs.pivot_table(index='encounter_id', columns='test_name', values='value', aggfunc='mean').reset_index()
+melted = wide.melt(id_vars='encounter_id', var_name='test_name', value_name='mean_value')
+result = melted[melted['mean_value'].notna()]`,
+    resultType: 'dataframe',
+    ordered: false,
+    tables: ['labs'],
+  },
+  {
+    id: 'py-reshape-challenge',
+    section: 'py-reshape',
+    prompt:
+      'The payoff of going wide: in the long labs table, comparing two different tests for the same encounter is impossible without a self-merge. Pivot the mean panel wide, attach each department from encounters, and return every encounter in the diabetic range on both measures — mean Glucose above 126 and mean HbA1c above 6.5 — four columns: encounter_id, dept, Glucose, HbA1c. Assign your answer to result.',
+    hint:
+      "Wide panel first, then .merge(encounters[['encounter_id', 'dept']], on='encounter_id') — merge gets its own section next; the one-key inner form is all you need here. Once Glucose and HbA1c sit on the same row, the filter is two masks with & — the cross-test comparison the long format could not express. And the encounters missing either test drop out by themselves: NaN compares False against everything, so NaN > 126 quietly excludes them — the comparison rule that usually bites is, for once, doing exactly what you want.",
+    solution: `wide = labs.pivot_table(index='encounter_id', columns='test_name', values='value', aggfunc='mean').reset_index()
+merged = wide.merge(encounters[['encounter_id', 'dept']], on='encounter_id')
+flagged = merged[(merged['Glucose'] > 126) & (merged['HbA1c'] > 6.5)]
+result = flagged[['encounter_id', 'dept', 'Glucose', 'HbA1c']]`,
+    resultType: 'dataframe',
+    ordered: false,
+    tables: ['encounters', 'labs'],
+  },
+
+  // --- 04/ Merging & the fan-out trap ---
   {
     id: 'py-merge-inner',
     section: 'py-merge',
@@ -198,7 +274,7 @@ result = active['encounter_id'].nunique()`,
     tables: ['encounters', 'medications'],
   },
 
-  // --- 04/ Window operations ---
+  // --- 05/ Window operations ---
   {
     id: 'py-window-cumcount',
     section: 'py-window',
@@ -255,7 +331,7 @@ result['days_since_prev'] = (ordered['admit_date'] - prev).dt.days`,
     tables: ['encounters'],
   },
 
-  // --- 05/ Challenges ---
+  // --- 06/ Challenges ---
   {
     id: 'py-challenge-hba1c',
     section: 'py-challenge',
