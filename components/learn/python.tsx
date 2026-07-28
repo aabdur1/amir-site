@@ -613,8 +613,9 @@ interface SectionDef {
 }
 
 // The sections; exercises attach by their `section` id, numbered
-// continuously across sections. Each mirrors the same-numbered SQL
-// section, so the SQL ↔ pandas mapping stays explicit.
+// continuously across sections. All but Reshape mirror an SQL section, so
+// the SQL ↔ pandas mapping stays explicit; Reshape is the one deliberate
+// exception — pivot/melt has no SQL equivalent.
 const SECTIONS: SectionDef[] = [
   {
     id: 'py-filter',
@@ -635,8 +636,17 @@ const SECTIONS: SectionDef[] = [
       'The WHERE / HAVING split is just mask placement: filter the raw frame before groupby (WHERE), filter the aggregated result after (HAVING). Same rule as SQL — if the condition mentions an aggregate, it goes after.',
   },
   {
-    id: 'py-merge',
+    id: 'py-reshape',
     number: '03',
+    title: 'Reshape & pivot',
+    intro:
+      "pivot turns long into wide — index picks the row labels, columns the headers, values the cells. It only rearranges, so every (index, columns) pair must be unique; pivot_table aggregates the duplicates away, and melt is the inverse. This is the one section with no SQL twin: SQL's closest move is a hand-written CASE WHEN column per category.",
+    insight:
+      "pivot() reshapes, pivot_table() aggregates — 'ValueError: Index contains duplicate entries, cannot reshape' is pivot telling you two values claim the same cell, and pivot_table(aggfunc=...) is the answer. Expect NaN in the cells that never happened, and remember melt turns each of those NaNs right back into a row unless you drop them.",
+  },
+  {
+    id: 'py-merge',
+    number: '04',
     title: 'Merging & the fan-out trap',
     intro:
       "merge lines two frames up on key columns — how='inner' keeps only matches, how='left' keeps every left-side row with NaN where the right side is missing. One-to-many merges multiply rows: the same fan-out that corrupts SQL counts corrupts pandas counts.",
@@ -645,7 +655,7 @@ const SECTIONS: SectionDef[] = [
   },
   {
     id: 'py-window',
-    number: '04',
+    number: '05',
     title: 'Window operations',
     intro:
       "SQL's window functions map to groupby operations that keep every row: cumcount() is ROW_NUMBER, cumsum() a running total, and sort_values + groupby.tail(1) the latest-row-per-group pattern.",
@@ -654,7 +664,7 @@ const SECTIONS: SectionDef[] = [
   },
   {
     id: 'py-challenge',
-    number: '05',
+    number: '06',
     title: 'Challenges',
     intro:
       'No new methods here — each of these chains filtering, merging, grouping, and window-style operations in one pipeline, the way real analyst work does.',

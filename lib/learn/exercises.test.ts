@@ -3,7 +3,10 @@
 // artifacts. Pure data testing: no sql.js/Pyodide/webR engines are run.
 //
 // Verified against the actual data (not just the docs):
-// - Each array has exactly 19 entries.
+// - SQL and R have 19 entries; Python has 24 — it carries a reshape/pivot
+//   section ('py-reshape', 5 exercises) that has no SQL equivalent (SQL has
+//   no reshape verb) and no R counterpart (tidyr never ships in the 10/
+//   artifact, only dplyr).
 // - Python AND R prompts all end with "Assign your answer to result."
 //   (period included — the python-exercises.ts doc comment quotes the phrase
 //   with the period inside the sentence; the data agrees for both languages).
@@ -11,14 +14,15 @@
 // - The SQL ↔ Python/R mirror is NOT strictly positional: SQL has a DISTINCT
 //   exercise ('select-distinct') with no Python/R counterpart, and Python/R
 //   have a cumulative-sum window exercise with no SQL counterpart. Python ↔ R
-//   ARE strictly positional (same section boundaries, tables, ordered flags,
-//   scalar positions). Tests below assert the structure that actually holds.
+//   ARE strictly positional once the Python-only reshape section is excluded
+//   (same section boundaries, tables, ordered flags, scalar positions).
+//   Tests below assert the structure that actually holds.
 
 import { SQL_EXERCISES } from '@/lib/learn/sql-exercises'
 import { PY_EXERCISES } from '@/lib/learn/python-exercises'
 import { R_EXERCISES } from '@/lib/learn/r-exercises'
 
-const EXPECTED_COUNT = 19
+const MIRRORED_COUNT = 19 // SQL and R; also Python once py-reshape is excluded
 const KNOWN_TABLES = ['patients', 'encounters', 'labs', 'medications']
 
 /** Loosely-typed view shared by all three exercise shapes. */
@@ -36,6 +40,8 @@ interface AnyExercise {
 interface LanguageSpec {
   name: string
   exercises: readonly AnyExercise[]
+  /** Total exercise count for this language. */
+  count: number
   /** Canonical section ids in reading order. */
   sectionOrder: string[]
   /** Entries per section, in sectionOrder order (counted from the data). */
@@ -53,6 +59,7 @@ interface LanguageSpec {
 const SQL_SPEC: LanguageSpec = {
   name: 'SQL (SQL_EXERCISES)',
   exercises: SQL_EXERCISES,
+  count: 19,
   sectionOrder: ['sql-select', 'sql-aggregate', 'sql-joins', 'sql-windows', 'sql-challenge'],
   sectionCounts: [4, 5, 5, 3, 2],
   idPrefix: null,
@@ -65,8 +72,9 @@ const SQL_SPEC: LanguageSpec = {
 const PY_SPEC: LanguageSpec = {
   name: 'Python (PY_EXERCISES)',
   exercises: PY_EXERCISES,
-  sectionOrder: ['py-filter', 'py-groupby', 'py-merge', 'py-window', 'py-challenge'],
-  sectionCounts: [3, 5, 5, 4, 2],
+  count: 24,
+  sectionOrder: ['py-filter', 'py-groupby', 'py-reshape', 'py-merge', 'py-window', 'py-challenge'],
+  sectionCounts: [3, 5, 5, 5, 4, 2],
   idPrefix: 'py-',
   resultTypes: ['dataframe', 'series', 'scalar'],
   promptEnding: 'Assign your answer to result.',
@@ -77,6 +85,7 @@ const PY_SPEC: LanguageSpec = {
 const R_SPEC: LanguageSpec = {
   name: 'R (R_EXERCISES)',
   exercises: R_EXERCISES,
+  count: 19,
   sectionOrder: ['r-filter', 'r-group', 'r-join', 'r-window', 'r-challenge'],
   sectionCounts: [3, 5, 5, 4, 2],
   idPrefix: 'r-',
@@ -89,8 +98,8 @@ const SPECS = [SQL_SPEC, PY_SPEC, R_SPEC]
 
 for (const spec of SPECS) {
   describe(spec.name, () => {
-    it(`has exactly ${EXPECTED_COUNT} exercises`, () => {
-      expect(spec.exercises).toHaveLength(EXPECTED_COUNT)
+    it(`has exactly ${spec.count} exercises`, () => {
+      expect(spec.exercises).toHaveLength(spec.count)
     })
 
     it('every exercise has a non-empty prompt, hint, and solution', () => {
@@ -202,10 +211,16 @@ for (const spec of SPECS) {
 }
 
 describe('cross-language mirroring', () => {
-  it('all three arrays have the same length (19)', () => {
-    expect(SQL_EXERCISES.length).toBe(EXPECTED_COUNT)
-    expect(PY_EXERCISES.length).toBe(EXPECTED_COUNT)
-    expect(R_EXERCISES.length).toBe(EXPECTED_COUNT)
+  // Python's reshape section is deliberately unmirrored — SQL has no reshape
+  // verb (that gap is the section's premise) and the R artifact never loads
+  // tidyr. Excluding it recovers the exact 19-exercise mirrored sequence.
+  const PY_MIRRORED = PY_EXERCISES.filter((ex) => ex.section !== 'py-reshape')
+  const PY_MIRRORED_ORDER = PY_SPEC.sectionOrder.filter((s) => s !== 'py-reshape')
+
+  it('SQL and R have 19 exercises; Python has 19 outside its reshape section', () => {
+    expect(SQL_EXERCISES.length).toBe(MIRRORED_COUNT)
+    expect(R_EXERCISES.length).toBe(MIRRORED_COUNT)
+    expect(PY_MIRRORED.length).toBe(MIRRORED_COUNT)
   })
 
   it('ids are unique across all three arrays combined', () => {
@@ -222,14 +237,14 @@ describe('cross-language mirroring', () => {
     expect(sql).toEqual([...KNOWN_TABLES].sort())
   })
 
-  describe('Python ↔ R are strictly positional (one-for-one)', () => {
+  describe('Python ↔ R are strictly positional (one-for-one, reshape excluded)', () => {
     it('entry i uses the same tables, ordered flag, and section ordinal in both languages', () => {
-      for (let i = 0; i < EXPECTED_COUNT; i++) {
-        const py = PY_EXERCISES[i]
+      for (let i = 0; i < MIRRORED_COUNT; i++) {
+        const py = PY_MIRRORED[i]
         const r = R_EXERCISES[i]
         expect(r.tables, `index ${i}: ${py.id} vs ${r.id} tables`).toEqual(py.tables)
         expect(r.ordered, `index ${i}: ${py.id} vs ${r.id} ordered`).toBe(py.ordered)
-        const pyOrdinal = PY_SPEC.sectionOrder.indexOf(py.section)
+        const pyOrdinal = PY_MIRRORED_ORDER.indexOf(py.section)
         const rOrdinal = R_SPEC.sectionOrder.indexOf(r.section)
         expect(rOrdinal, `index ${i}: ${py.id} (${py.section}) vs ${r.id} (${r.section})`).toBe(
           pyOrdinal,
@@ -237,12 +252,12 @@ describe('cross-language mirroring', () => {
       }
     })
 
-    it('scalar results sit at the same position: the "active medication" count (index 12)', () => {
+    it('scalar results sit at the same mirrored position: the "active medication" count (index 12)', () => {
       const pyScalars = PY_EXERCISES.filter((ex) => ex.resultType === 'scalar').map((ex) => ex.id)
       const rScalars = R_EXERCISES.filter((ex) => ex.resultType === 'scalar').map((ex) => ex.id)
       expect(pyScalars).toEqual(['py-merge-active'])
       expect(rScalars).toEqual(['r-join-active'])
-      expect(PY_EXERCISES[12].id).toBe('py-merge-active')
+      expect(PY_MIRRORED[12].id).toBe('py-merge-active')
       expect(R_EXERCISES[12].id).toBe('r-join-active')
     })
 
@@ -255,17 +270,23 @@ describe('cross-language mirroring', () => {
 
   describe('SQL ↔ Python/R mirror by topic, not strictly by position', () => {
     // SQL's 'select-distinct' has no Python/R counterpart; Python/R's
-    // cumulative-sum window exercise has no SQL counterpart. The section
-    // shapes lock that documented divergence in: SQL 4/5/5/3/2 vs 3/5/5/4/2.
-    it('section shapes differ exactly by the DISTINCT ↔ cumsum swap', () => {
+    // cumulative-sum window exercise has no SQL counterpart; and Python alone
+    // carries the reshape section. The section shapes lock those documented
+    // divergences in: SQL 4/5/5/3/2 vs Python 3/5/5/5/4/2 vs R 3/5/5/4/2.
+    it('section shapes differ exactly by the DISTINCT ↔ cumsum swap plus the Python-only reshape section', () => {
       const shape = (exs: readonly AnyExercise[], order: string[]) =>
         order.map((s) => exs.filter((ex) => ex.section === s).length)
       expect(shape(SQL_EXERCISES, SQL_SPEC.sectionOrder)).toEqual([4, 5, 5, 3, 2])
-      expect(shape(PY_EXERCISES, PY_SPEC.sectionOrder)).toEqual([3, 5, 5, 4, 2])
+      expect(shape(PY_EXERCISES, PY_SPEC.sectionOrder)).toEqual([3, 5, 5, 5, 4, 2])
       expect(shape(R_EXERCISES, R_SPEC.sectionOrder)).toEqual([3, 5, 5, 4, 2])
       expect(SQL_EXERCISES.some((ex) => ex.id === 'select-distinct')).toBe(true)
       expect(PY_EXERCISES.some((ex) => ex.id === 'py-window-cumsum')).toBe(true)
       expect(R_EXERCISES.some((ex) => ex.id === 'r-window-cumsum')).toBe(true)
+      // The duplicate-key pivot failure is the reshape section's anchor.
+      const sectionSet = (exs: readonly AnyExercise[]) => new Set(exs.map((ex) => ex.section))
+      expect(PY_EXERCISES.some((ex) => ex.id === 'py-reshape-dupes')).toBe(true)
+      expect(sectionSet(SQL_EXERCISES).has('sql-reshape')).toBe(false)
+      expect(sectionSet(R_EXERCISES).has('r-reshape')).toBe(false)
     })
 
     it('the ordered (ORDER-BY-pinned) exercises are the same three topics in every language', () => {
@@ -286,10 +307,11 @@ describe('cross-language mirroring', () => {
       }
       // Last two — the HbA1c follow-up and medication-burden challenges.
       for (const exs of [SQL_EXERCISES, PY_EXERCISES, R_EXERCISES] as const) {
-        expect(exs[17].id).toMatch(/challenge-hba1c$/)
-        expect(exs[17].tables).toEqual(['patients', 'encounters', 'labs'])
-        expect(exs[18].id).toMatch(/challenge-burden$/)
-        expect(exs[18].tables).toEqual(['patients', 'encounters', 'medications'])
+        const n = exs.length
+        expect(exs[n - 2].id).toMatch(/challenge-hba1c$/)
+        expect(exs[n - 2].tables).toEqual(['patients', 'encounters', 'labs'])
+        expect(exs[n - 1].id).toMatch(/challenge-burden$/)
+        expect(exs[n - 1].tables).toEqual(['patients', 'encounters', 'medications'])
       }
     })
   })

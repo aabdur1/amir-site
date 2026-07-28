@@ -144,11 +144,12 @@ export const ARTIFACTS: Artifact[] = [
     description:
       'Drill pandas in the browser — Pyodide running real Python against the same synthetic patient dataset as the SQL sandbox, with checked exercises from filtering to window ops.',
     number: '09',
-    subtopics: ['Filtering', 'GroupBy & agg', 'Merging', 'Window ops', 'Challenges'],
-    sectionCount: 5,
+    subtopics: ['Filtering', 'GroupBy & agg', 'Reshape & pivot', 'Merging', 'Window ops', 'Challenges'],
+    sectionCount: 6,
     sections: [
       { id: 'py-filter', label: 'Filtering' },
       { id: 'py-groupby', label: 'Group & agg' },
+      { id: 'py-reshape', label: 'Reshape' },
       { id: 'py-merge', label: 'Merging' },
       { id: 'py-window', label: 'Windows' },
       { id: 'py-challenge', label: 'Challenges' },
