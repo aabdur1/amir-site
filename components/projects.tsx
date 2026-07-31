@@ -21,10 +21,10 @@ const projects = [
     subtitle: "Clinical ML from Acoustic Features",
     provenance: "Graduate coursework · UIC MS MIS",
     description:
-      "Binary classification of Parkinson's patients vs healthy controls from sustained vowel recordings (n=81). Extracted 167 acoustic features (MFCCs, jitter/shimmer, spectral contrast) across 4 classifier families; LR odds ratios, Hosmer-Lemeshow calibration, and Youden's J threshold optimization for clinical interpretability.",
+      "Binary classification of Parkinson's patients vs healthy controls from sustained vowel recordings (n=81). Extracted 167 acoustic features (MFCCs, jitter/shimmer, spectral contrast) across 4 classifier families; LR odds ratios, Hosmer-Lemeshow calibration, and Youden's J threshold optimization for clinical interpretability. Best model AUC 0.94 (0.88–0.90 cross-validated).",
     pills: ["Python", "scikit-learn", "Parselmouth", "librosa"],
     accent: "mauve" as const,
-    url: null,
+    url: "https://github.com/aabdur1/parkinsons-voice-screening",
   },
   {
     name: "WIEIAD Risk Scoring",
