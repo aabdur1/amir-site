@@ -41,9 +41,13 @@ export interface CaseStudyEmbed {
   url: string
   // Iframe title + placeholder copy.
   title: string
-  // Author-set fixed size of the Tableau story, used to shape the frame.
+  // Author-set fixed size of the Tableau viz, used to shape the frame.
   width: number
   height: number
+  // Placeholder motif + button/status noun ("story" / "dashboard").
+  kind: 'story' | 'dashboard'
+  // Mono caption line on the click-gate placeholder.
+  caption: string
 }
 
 export interface CaseStudy {
@@ -95,6 +99,8 @@ export const CASE_STUDIES: CaseStudy[] = [
       title: 'US Airline Flight Patterns — interactive Tableau story',
       width: 1016,
       height: 991,
+      kind: 'story',
+      caption: 'interactive tableau story · four captioned points',
     },
     sections: [
       {
