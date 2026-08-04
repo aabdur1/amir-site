@@ -9,7 +9,8 @@ import type { CaseStudy } from './case-studies'
 //
 // To publish one: verify every number and claim against the source project,
 // move the entry into CASE_STUDIES in lib/work/case-studies.ts, renumber the
-// `number` fields (Tableau currently holds '01'), and delete it here.
+// `number` fields (Spotify Listening currently holds '01', the airline story
+// '02'), and delete it here.
 // ============================================================================
 
 export const UNPUBLISHED_DRAFTS: CaseStudy[] = [
