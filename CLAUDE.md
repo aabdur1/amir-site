@@ -290,6 +290,9 @@ npm run start     # Serve production build locally
 npm run lint      # ESLint (flat config via eslint.config.mjs, not next lint)
 npm run fetch-webr  # populate public/webr/ (runs automatically as prebuild)
 npm run verify-r    # run all 19 R solutions through the checker (webR in Node)
+npm test           # vitest unit suite (jsdom + Testing Library)
+npm run test:e2e   # Playwright E2E (auto-starts next dev)
+npm run verify-python  # Pyodide-in-Node exercise check (needs network on cold cache)
 ```
 
 **Known lint errors (pre-existing, not regressions):** 2 errors — `interactive-headshot.tsx` (react-hooks/immutability — `animate` accessed before declaration) and `masonry-grid.tsx` (react-hooks/set-state-in-effect — setState in the shuffle/sort effect body). Both safe to ignore.
