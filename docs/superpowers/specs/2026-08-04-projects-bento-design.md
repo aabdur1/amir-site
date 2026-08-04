@@ -46,11 +46,17 @@ with:
 
 > Multimodal analysis of 1,100+ 'What I Eat in a Day' TikToks — Whisper,
 > OCR, and CLIP features scored across five ED risk signals;
-> coded-hashtag videos showed 2× signal prevalence. Gemini whole-video
-> analysis of 467 video-days against HEI-2020.
+> coded-hashtag videos showed 2× the mainstream signal prevalence. Gemini
+> whole-video analysis of 467 video-days against HEI-2020.
 
-(~25% shorter; keeps every number: 1,100+, five signals, 2×, 467,
-HEI-2020. Drops the MyPlate clause and the "Final iteration:" scaffold.)
+(~25% shorter; keeps every number and the mainstream-vs-coded comparator.
+Drops the MyPlate clause and the "Final iteration:" scaffold.)
+
+**DocDefend+ URL fix (in passing):** the card's `url` changes from the
+stale `https://docdefend.vercel.app` (verified 308 → www.docdefend.health)
+to the canonical `https://www.docdefend.health`. The same stale link in
+`lib/work/unpublished-drafts.ts` gets the identical one-line fix so the
+future DocDefend+ publication doesn't inherit it.
 
 The `n = {projects.length} builds` annotation (9) and the
 "all case studies →" header link are untouched.
@@ -106,6 +112,14 @@ The `n = {projects.length} builds` annotation (9) and the
 
 - `npm test` (296), `npm run test:e2e` (18), `tsc --noEmit`, lint (only
   the 2 known errors), production build.
+- **No marquee, Theli standard, count honest:** `featured-project.tsx`
+  must not exist (already deleted in PR #18; the plan carries an explicit
+  verification step), Theli must render as a standard-tier card, and the
+  header annotation must render "n = 9 builds" AND equal
+  `projects.length` in the live DOM. (Amir's "n = 8 builds" screenshot
+  was diagnosed as a cached pre-Spotify build: 7 grid cards + 1 marquee
+  under the old `projects.length + 1` formula; production currently
+  renders 9.)
 - Browser: 320px (single column, correct order, no horizontal scroll),
   768px (emphasized 2-up, standard 2-up), 1280px (bento reads: full-width
   plate card → 2 emphasized → 3×2 standard), dark mode (plate reads as
