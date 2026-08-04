@@ -163,3 +163,5 @@ projects list) and the site-next-steps memory.
 - **Third nav pill for /work** — previously decided against (320px nav
   balance); discovery stays homepage card + footer link.
 - **Hand-rolled interactive findings** — rejected in approach selection.
+- **Top Tracks view** (queued in the dashboard repo) → re-measure embed
+  height, update view-count copy and section 4 heading; data-only change.
