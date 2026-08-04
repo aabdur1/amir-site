@@ -77,6 +77,16 @@ const projects = [
     url: null,
   },
   {
+    name: "My Spotify Listening, 2021–2026",
+    subtitle: "Personal-Data Pipeline & Tableau Dashboard",
+    provenance: "Personal project · Full case study",
+    description:
+      "4.7 years of my own Spotify extended streaming history — 61,230 raw plays cleaned to 57,200 music streams with pandas, genre-enriched via the Last.fm API (~98.3% artist coverage), and published as a seven-view Tableau dashboard: midday listening peaks, a 45.7% skip-rate anchor, and the week's one silent hour. Includes the live interactive viz.",
+    pills: ["Tableau", "Python", "pandas", "Last.fm API"],
+    accent: "sapphire" as const,
+    url: "/work/spotify-listening",
+  },
+  {
     name: "US Airline Flight Patterns",
     subtitle: "Tableau Data-Visualization Story",
     provenance: "Coursework · IDS 405 · Full case study",
