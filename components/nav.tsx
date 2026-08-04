@@ -11,10 +11,12 @@ export default function Nav() {
   const isHome = pathname === "/";
   const isGallery = pathname === "/gallery";
   const isLearn = pathname.startsWith("/learn");
+  const isWork = pathname.startsWith("/work");
 
   // Direct ref mutation avoids re-rendering the nav tree on every scroll frame
   const nameRef = useRef<HTMLAnchorElement>(null);
   const rafRef = useRef<number>(0);
+  const workPillRef = useRef<HTMLAnchorElement>(null);
   const learnPillRef = useRef<HTMLAnchorElement>(null);
   const galleryPillRef = useRef<HTMLAnchorElement>(null);
   const indicatorRef = useRef<HTMLDivElement>(null);
@@ -47,6 +49,7 @@ export default function Nav() {
     };
   }, [isHome, handleScroll, updateOpacity]);
 
+  useMagnetic(workPillRef);
   useMagnetic(learnPillRef);
   useMagnetic(galleryPillRef);
 
@@ -55,7 +58,13 @@ export default function Nav() {
     const indicator = indicatorRef.current
     if (!indicator) return
 
-    const activeRef = isLearn ? learnPillRef : isGallery ? galleryPillRef : null
+    const activeRef = isWork
+      ? workPillRef
+      : isLearn
+        ? learnPillRef
+        : isGallery
+          ? galleryPillRef
+          : null
 
     if (!activeRef?.current) {
       indicator.style.opacity = '0'
@@ -64,8 +73,12 @@ export default function Nav() {
 
     const pill = activeRef.current
 
-    // Color: sapphire for Gallery, mauve for Learn
-    const accent = isGallery ? 'var(--color-sapphire)' : 'var(--color-mauve)'
+    // Color: peach for Work, sapphire for Gallery, mauve for Learn
+    const accent = isWork
+      ? 'var(--color-peach)'
+      : isGallery
+        ? 'var(--color-sapphire)'
+        : 'var(--color-mauve)'
     indicator.style.backgroundColor = `color-mix(in srgb, ${accent} 12%, transparent)`
     indicator.style.borderColor = `color-mix(in srgb, ${accent} 40%, transparent)`
 
@@ -92,6 +105,7 @@ export default function Nav() {
 
     // Re-measure whenever ANY pill resizes (e.g. hover expands arrow on sibling)
     const ro = new ResizeObserver(measureInstant)
+    if (workPillRef.current) ro.observe(workPillRef.current)
     if (learnPillRef.current) ro.observe(learnPillRef.current)
     if (galleryPillRef.current) ro.observe(galleryPillRef.current)
 
@@ -104,14 +118,14 @@ export default function Nav() {
       ro.disconnect()
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, isLearn, isGallery])
+  }, [pathname, isWork, isLearn, isGallery])
 
   return (
     <nav
       className="sticky top-0 z-40 bg-cream/70 dark:bg-night/70 backdrop-blur-lg
         transition-colors duration-300"
     >
-      <div className="mx-auto flex h-[4.25rem] max-w-6xl items-center justify-between px-6 sm:px-10 lg:px-12">
+      <div className="mx-auto flex h-[4.25rem] max-w-6xl items-center justify-between px-4 sm:px-10 lg:px-12">
         {/* Left: Name — ghosted at top, progressively fades in on scroll */}
         <Link
           ref={nameRef}
@@ -135,8 +149,8 @@ export default function Nav() {
         </Link>
 
         {/* Right: Nav links + Dark mode toggle */}
-        <div className="flex items-center gap-3 sm:gap-5">
-          <div ref={indicatorContainerRef} className="relative flex items-center gap-2">
+        <div className="flex items-center gap-2 sm:gap-5">
+          <div ref={indicatorContainerRef} className="relative flex items-center gap-1.5 sm:gap-2">
             {/* Morphing indicator */}
             <div
               ref={indicatorRef}
@@ -149,14 +163,50 @@ export default function Nav() {
                 opacity: 0,
               }}
             />
+          {/* Work — pill with arrow that expands on hover */}
+          <Link
+            ref={workPillRef}
+            href="/work"
+            aria-current={isWork ? "page" : undefined}
+            className={`nav-work-pill group relative font-[family-name:var(--font-mono)] text-[12px] sm:text-[13px]
+              tracking-[0.1em] sm:tracking-[0.15em] uppercase
+              px-2 sm:px-4 py-2 rounded-full border overflow-hidden
+              transition-all duration-300
+              ${isWork
+                ? "nav-work-active border-transparent text-ink dark:text-night-text"
+                : "border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:border-peach/60 dark:hover:border-peach-dark/60 hover:text-ink dark:hover:text-night-text"
+              }`}
+          >
+            <span className={`relative z-10 flex items-center transition-all duration-300 ${
+              isWork ? 'gap-1.5' : 'gap-0 group-hover:gap-1.5'
+            }`}>
+              Work
+              <svg
+                aria-hidden="true"
+                focusable="false"
+                viewBox="0 0 12 12"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={`max-sm:hidden h-3 overflow-hidden transition-all duration-300 ${
+                  isWork ? 'w-3 opacity-100' : 'w-0 opacity-0 group-hover:w-3 group-hover:opacity-100'
+                }`}
+              >
+                <path d="M2 6h8M7 3l3 3-3 3" />
+              </svg>
+            </span>
+          </Link>
+
           {/* Learn — pill with arrow that expands on hover */}
           <Link
             ref={learnPillRef}
             href="/learn"
             aria-current={isLearn ? "page" : undefined}
-            className={`nav-learn-pill group relative font-[family-name:var(--font-mono)] text-[13px]
-              tracking-[0.15em] uppercase
-              px-2.5 sm:px-4 py-2 rounded-full border overflow-hidden
+            className={`nav-learn-pill group relative font-[family-name:var(--font-mono)] text-[12px] sm:text-[13px]
+              tracking-[0.1em] sm:tracking-[0.15em] uppercase
+              px-2 sm:px-4 py-2 rounded-full border overflow-hidden
               transition-all duration-300
               ${isLearn
                 ? "nav-learn-active border-transparent text-ink dark:text-night-text"
@@ -190,9 +240,9 @@ export default function Nav() {
             ref={galleryPillRef}
             href="/gallery"
             aria-current={isGallery ? "page" : undefined}
-            className={`nav-gallery-pill group relative font-[family-name:var(--font-mono)] text-[13px]
-              tracking-[0.15em] uppercase
-              px-2.5 sm:px-4 py-2 rounded-full border overflow-hidden
+            className={`nav-gallery-pill group relative font-[family-name:var(--font-mono)] text-[12px] sm:text-[13px]
+              tracking-[0.1em] sm:tracking-[0.15em] uppercase
+              px-2 sm:px-4 py-2 rounded-full border overflow-hidden
               transition-all duration-300
               ${isGallery
                 ? "nav-gallery-active border-transparent text-ink dark:text-night-text"

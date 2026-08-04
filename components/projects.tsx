@@ -5,7 +5,6 @@ import { useScrollReveal } from "@/lib/hooks";
 import { ACCENT_STYLES } from "@/lib/styles";
 import { SectionDivider } from "@/components/section-divider";
 import { SectionHeader } from "@/components/section-header";
-import { FeaturedProject } from "@/components/featured-project";
 
 const STRIPE_STYLES = {
   sapphire: "border-t-sapphire dark:border-t-sapphire-dark",
@@ -27,14 +26,14 @@ const projects = [
     url: "https://github.com/aabdur1/parkinsons-voice-screening",
   },
   {
-    name: "WIEIAD Risk Scoring",
-    subtitle: "Multimodal ED-Signal & Diet-Quality Pipeline",
-    provenance: "Graduate coursework · UIC MS MIS",
+    name: "My Spotify Listening, 2021–2026",
+    subtitle: "Personal-Data Pipeline & Tableau Dashboard",
+    provenance: "Personal project · Full case study",
     description:
-      "Multimodal analysis of 1,100+ 'What I Eat in a Day' TikToks — Whisper, OCR, and CLIP features with LLM rubric scoring across MyPlate nutrition and five ED risk signals; a mainstream vs. coded-hashtag comparison found 2× signal prevalence. Final iteration: Gemini whole-video analysis of 467 video-days against HEI-2020.",
-    pills: ["Whisper", "CLIP", "Gemini", "LLM"],
-    accent: "lavender" as const,
-    url: null,
+      "4.7 years of my own Spotify extended streaming history — 61,230 raw plays cleaned to 57,200 music streams with pandas, genre-enriched via the Last.fm API (~98.3% artist coverage), and published as a seven-view Tableau dashboard: midday listening peaks, a 45.7% skip-rate anchor, and the week's one silent hour. Includes the live interactive viz.",
+    pills: ["Tableau", "Python", "pandas", "Last.fm API"],
+    accent: "sapphire" as const,
+    url: "/work/spotify-listening",
   },
   {
     name: "DocDefend+",
@@ -47,14 +46,24 @@ const projects = [
     url: "https://docdefend.vercel.app",
   },
   {
-    name: "StudentPM",
-    subtitle: "Project Management Application",
+    name: "WIEIAD Risk Scoring",
+    subtitle: "Multimodal ED-Signal & Diet-Quality Pipeline",
     provenance: "Graduate coursework · UIC MS MIS",
     description:
-      "JavaFX desktop app with MVC architecture, SQLite integration, and user authentication.",
-    pills: ["JavaFX", "MVC", "SQLite", "Auth"],
-    accent: "sapphire" as const,
-    url: "https://github.com/aabdur1",
+      "Multimodal analysis of 1,100+ 'What I Eat in a Day' TikToks — Whisper, OCR, and CLIP features with LLM rubric scoring across MyPlate nutrition and five ED risk signals; a mainstream vs. coded-hashtag comparison found 2× signal prevalence. Final iteration: Gemini whole-video analysis of 467 video-days against HEI-2020.",
+    pills: ["Whisper", "CLIP", "Gemini", "LLM"],
+    accent: "lavender" as const,
+    url: null,
+  },
+  {
+    name: "Theli",
+    subtitle: "Privacy-first iOS Nutrition Scanner",
+    provenance: "Independent product · Coming soon — App Store",
+    description:
+      "Barcode lookup + on-device label OCR, Apple Health sync. No accounts, no ads, no tracking.",
+    pills: ["Swift 6", "SwiftUI", "Vision OCR", "HealthKit"],
+    accent: "rosewater" as const,
+    url: "https://theli.app",
   },
   {
     name: "LightERP",
@@ -77,14 +86,14 @@ const projects = [
     url: null,
   },
   {
-    name: "My Spotify Listening, 2021–2026",
-    subtitle: "Personal-Data Pipeline & Tableau Dashboard",
-    provenance: "Personal project · Full case study",
+    name: "StudentPM",
+    subtitle: "Project Management Application",
+    provenance: "Graduate coursework · UIC MS MIS",
     description:
-      "4.7 years of my own Spotify extended streaming history — 61,230 raw plays cleaned to 57,200 music streams with pandas, genre-enriched via the Last.fm API (~98.3% artist coverage), and published as a seven-view Tableau dashboard: midday listening peaks, a 45.7% skip-rate anchor, and the week's one silent hour. Includes the live interactive viz.",
-    pills: ["Tableau", "Python", "pandas", "Last.fm API"],
+      "JavaFX desktop app with MVC architecture, SQLite integration, and user authentication.",
+    pills: ["JavaFX", "MVC", "SQLite", "Auth"],
     accent: "sapphire" as const,
-    url: "/work/spotify-listening",
+    url: "https://github.com/aabdur1",
   },
   {
     name: "US Airline Flight Patterns",
@@ -116,11 +125,31 @@ export function Projects() {
           title="Things I've Built"
           visible={visible}
           align="right"
-          annotation={<>fig. 02 &middot; n = {projects.length + 1} builds &middot; clinical ML to iOS</>}
+          annotation={<>fig. 02 &middot; n = {projects.length} builds &middot; clinical ML to iOS</>}
           spark={{ data: [2, 4, 3, 5, 4, 6, 7], variant: "bars" }}
         />
 
-        <FeaturedProject visible={visible} />
+        {/* Header-area link to the case-study index */}
+        <div
+          className="flex justify-center sm:justify-end -mt-6 mb-8"
+          style={{
+            opacity: 0,
+            ...(visible ? { animation: "fade-in 0.6s ease-out 400ms forwards" } : {}),
+          }}
+        >
+          <Link
+            href="/work"
+            className="inline-flex items-center gap-2 py-3 text-sm font-[family-name:var(--font-body)]
+              text-ink-subtle dark:text-night-muted
+              hover:text-ink dark:hover:text-night-text
+              transition-colors duration-200"
+          >
+            all case studies
+            <svg aria-hidden="true" focusable="false" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+              <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
+            </svg>
+          </Link>
+        </div>
 
         {/* Project grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">

@@ -343,6 +343,30 @@ h1, h2 {
   transform: scaleX(1);
 }
 
+/* Nav work pill — peach background fill sweep on hover */
+.nav-work-pill::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: rgba(254, 100, 11, 0.08);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s var(--ease-spring);
+}
+
+.dark .nav-work-pill::before {
+  background: rgba(250, 179, 135, 0.1);
+}
+
+.nav-work-pill:hover::before {
+  transform: scaleX(1);
+}
+
+.nav-work-pill.nav-work-active::before {
+  transform: scaleX(1);
+}
+
 /* Nav gallery pill — background fill sweep on hover */
 .nav-gallery-pill::before {
   content: "";
