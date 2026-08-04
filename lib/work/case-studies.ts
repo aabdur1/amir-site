@@ -41,9 +41,13 @@ export interface CaseStudyEmbed {
   url: string
   // Iframe title + placeholder copy.
   title: string
-  // Author-set fixed size of the Tableau story, used to shape the frame.
+  // Author-set fixed size of the Tableau viz, used to shape the frame.
   width: number
   height: number
+  // Placeholder motif + button/status noun ("story" / "dashboard").
+  kind: 'story' | 'dashboard'
+  // Mono caption line on the click-gate placeholder.
+  caption: string
 }
 
 export interface CaseStudy {
@@ -71,8 +75,96 @@ export interface CaseStudy {
 
 export const CASE_STUDIES: CaseStudy[] = [
   {
-    slug: 'airline-flight-patterns',
+    slug: 'spotify-listening',
     number: '01',
+    title: 'My Spotify Listening, 2021–2026',
+    shortTitle: 'Spotify Listening',
+    summary:
+      'A personal-data pipeline from my own Spotify extended streaming history: 61,230 raw plays cleaned with pandas, genre-enriched via the Last.fm API, and published as a seven-view Tableau dashboard covering 4.7 years of listening.',
+    lead:
+      'My heaviest listening block is weekday midday, not evening — and midday is also where I skip hardest, peaking at 52.9% on Wednesdays at 1pm against a 45.7% overall skip rate. This dashboard turns 4.7 years of my own Spotify history into seven linked views, including the window where bass music overtook hip-hop and the one hour of the week I have never played music at all.',
+    role: 'Solo pipeline, analysis, and dashboard',
+    provenance: 'Personal project · my own Spotify data',
+    accent: 'sapphire',
+    depth: 'full',
+    tech: ['Tableau', 'Python', 'pandas', 'Last.fm API'],
+    metrics: [
+      { value: '1,437', label: 'Hours of music, Dec 2021 – Jul 2026' },
+      { value: '57,200', label: 'Music streams kept of 61,230 raw plays' },
+      { value: '3,341', label: 'Distinct artists across 8,408 tracks' },
+      { value: '45.7%', label: 'Average skip rate (plays under 30 seconds)' },
+    ],
+    embed: {
+      url: 'https://public.tableau.com/views/MySpotifyListening2021-2026/MySpotifyListening20212026',
+      title: 'My Spotify Listening, 2021–2026 — interactive Tableau dashboard',
+      width: 1000,
+      height: 3177,
+      kind: 'dashboard',
+      caption: 'interactive tableau dashboard · seven linked views',
+    },
+    sections: [
+      {
+        heading: 'The finding',
+        body: [
+          'Three things came out of 4.7 years of my own listening data. The clearest: my heaviest listening happens on weekday middays — the hour-by-day heatmap peaks between roughly 11am and 3pm early in the week — and that same block is where I skip hardest, topping out at 52.9% at Wednesday 1pm against my 45.7% overall rate. That pairing reads like background listening: lots of starts, quick judgments.',
+          'Second, the genre mix has a clean before-and-after. Hip-hop/rap carried 2022; bass music takes the top share in the window of my first festivals — Heatwave and North Coast, summer 2023 — and holds it from then on. The annotated line on the dashboard is not a slow drift. It is a handoff.',
+          'And one negative-space finding: Friday at 3am is the only hour of the week with zero plays across the entire 4.7-year window.',
+        ],
+      },
+      {
+        heading: 'Context',
+        body: [
+          'This is a personal project, not coursework: my own data, my own questions. Spotify provides a full-history export on request — Privacy Settings, then "extended streaming history" — and everything here is built from that export: pandas notebooks for cleaning and features, the Last.fm API for genres, Tableau Public for the dashboard.',
+          'The dashboard is deliberately styled to sit inside this site: Catppuccin Latte palette, colorblind-validated, with a DM Serif Display title card. Load it below and it should read like a page of this site that happens to be Tableau.',
+        ],
+      },
+      {
+        heading: 'The data and the pipeline',
+        body: [
+          'The export arrives as JSON: 61,230 raw play records from December 2021 through July 2026. A set of numbered pandas notebooks concatenates the files, localizes timestamps, applies a real-listen threshold, and derives sessions, skip flags — a skip is a play under 30 seconds — and first-play discovery dates. Excluding podcasts leaves 57,200 music streams: 1,437 hours across 3,341 artists and 8,408 tracks.',
+          'The export carries no genre field, so genres come from the Last.fm API: one cached lookup per artist, mapped into six groups — bass music, hip-hop/rap, electronic, classical/score, house/dance, and everything else. Coverage is about 98.3% of artists.',
+          'The raw export is personal data, so it never leaves my machine. The repo gitignores it, and what Tableau receives are aggregate CSV extracts, not row-level plays.',
+        ],
+      },
+      {
+        heading: 'Seven views, one parameter',
+        embed: true,
+        body: [
+          'The dashboard is seven linked views on one tall canvas. An all-time KPI row sits on top; below it, a monthly-hours line annotated with eras (the February 2023 low of 5.39 hours, the first-festivals window, the start of my MS program, the May 2026 peak of 67.94 hours), a 100% stacked genre mix, an hour-by-day heatmap, a diverging skip-rate heatmap, and top artists colored by genre group with cross-chart hover.',
+          'A global Year Select parameter drives five of the seven views. The KPI row ignores it on purpose, so the headline numbers stay whole-history while everything below re-slices. The skip definition and the podcast exclusion are stated on the dashboard itself — the numbers carry their caveats with them.',
+        ],
+      },
+      {
+        heading: 'What the analysis showed',
+        body: [
+          'The midday block is the clearest result: listening concentrates around weekday middays, and skip rate rises with it. High-volume hours are also high-churn hours. The diverging heatmap makes that visible because it is anchored at my own 45.7% average rather than at zero — a red cell means skippier than my normal, not skippy in the abstract.',
+          'The genre handoff holds up against the annotations: hip-hop/rap dominant through 2022, bass music taking the top share in the months around summer 2023, the same window as my first festivals. Correlation is not causation, but the timing is unambiguous — and it is the kind of ground truth you only have when the analyst is also the subject.',
+          'The honest limitations: a 30-second skip threshold is a proxy for intent, not a measurement of it; genre labels are Last.fm community tags mapped by me into six groups; and the export covers Spotify only, so anything played elsewhere is invisible. All three are stated on the dashboard or in the pipeline rather than smoothed over.',
+        ],
+      },
+      {
+        heading: 'What I would extend',
+        body: [
+          'The repo is queued for a public release: aggregated extracts plus a reproduce path, since anyone can request their own extended streaming history from Spotify. A Top Tracks view is queued for the dashboard itself. Beyond that, the pipeline already computes session and discovery-date features the dashboard does not use yet — session length by time of day, and how long a newly discovered artist survives in rotation, are the two analyses I would build next.',
+        ],
+      },
+    ],
+    links: [
+      {
+        label: 'View on Tableau Public',
+        href: 'https://public.tableau.com/app/profile/amir.abdur.rahim/viz/MySpotifyListening2021-2026/MySpotifyListening20212026',
+        external: true,
+      },
+      {
+        label: 'See my full Tableau portfolio',
+        href: 'https://public.tableau.com/app/profile/amir.abdur.rahim/vizzes',
+        external: true,
+      },
+    ],
+  },
+  {
+    slug: 'airline-flight-patterns',
+    number: '02',
     title: 'US Airline Flight Patterns',
     shortTitle: 'Flight Patterns',
     summary:
@@ -95,6 +187,8 @@ export const CASE_STUDIES: CaseStudy[] = [
       title: 'US Airline Flight Patterns — interactive Tableau story',
       width: 1016,
       height: 991,
+      kind: 'story',
+      caption: 'interactive tableau story · four captioned points',
     },
     sections: [
       {

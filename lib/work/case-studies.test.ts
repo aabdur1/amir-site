@@ -6,13 +6,13 @@ import { ACCENT_STYLES } from '@/lib/styles'
 // exists), sitemap entries, per-slug OG cards, and JSON-LD all derive from it.
 // The array is deliberately small (drafts are quarantined in
 // unpublished-drafts.ts), so these tests are written to hold at any length —
-// including the current single-entry case.
+// including the current two-entry case.
 
 describe('CASE_STUDIES data integrity', () => {
-  it('is a non-empty array (currently a single published study)', () => {
+  it('is a non-empty array (currently two published studies)', () => {
     expect(CASE_STUDIES.length).toBeGreaterThan(0)
     // Pin the current count so an accidental publish/unpublish is noticed.
-    expect(CASE_STUDIES).toHaveLength(1)
+    expect(CASE_STUDIES).toHaveLength(2)
   })
 
   it('has unique, non-empty, URL-safe slugs', () => {
@@ -154,12 +154,15 @@ describe('getCaseStudy', () => {
 })
 
 describe('getAdjacentCaseStudies', () => {
-  it('the single published study has no prev and no next (WorkNav renders nothing)', () => {
-    // With one entry, index 0 is both first and last: index > 0 is false and
-    // index < length - 1 (0 < 0) is false — both neighbors must be null.
-    const only = CASE_STUDIES[0]
-    const { prev, next } = getAdjacentCaseStudies(only.slug)
+  it('spotify-listening (first) has no prev and airline-flight-patterns as next', () => {
+    const { prev, next } = getAdjacentCaseStudies('spotify-listening')
     expect(prev).toBeNull()
+    expect(next).toBe(getCaseStudy('airline-flight-patterns'))
+  })
+
+  it('airline-flight-patterns (last) has spotify-listening as prev and no next', () => {
+    const { prev, next } = getAdjacentCaseStudies('airline-flight-patterns')
+    expect(prev).toBe(getCaseStudy('spotify-listening'))
     expect(next).toBeNull()
   })
 

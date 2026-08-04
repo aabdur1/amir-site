@@ -35,11 +35,12 @@ const PYTHON_CSP = renderCsp({
   'connect-src': `${CSP_DIRECTIVES['connect-src']} https://cdn.jsdelivr.net`,
 });
 
-// /work/airline-flight-patterns only: the click-gated Tableau Public story
-// embeds as a plain iframe, so only frame-src widens (default-src 'self' is
-// the fallback that would otherwise block it). No script-src change — the
-// Embedding API was deliberately skipped to keep third-party JS out of the
-// page context.
+// /work/:path* only: click-gated Tableau Public vizzes embed as plain
+// iframes, so only frame-src widens (default-src 'self' is the fallback that
+// would otherwise block them). Route-scoped to the case-study surface so the
+// site-wide policy never loosens, and generalized so a new Tableau case
+// study needs no config edit. No script-src change — the Embedding API was
+// deliberately skipped to keep third-party JS out of the page context.
 const TABLEAU_CSP = renderCsp({
   ...CSP_DIRECTIVES,
   'frame-src': 'https://public.tableau.com',
@@ -88,7 +89,7 @@ const nextConfig: NextConfig = {
         headers: [{ key: 'Content-Security-Policy', value: PYTHON_CSP }],
       },
       {
-        source: '/work/airline-flight-patterns',
+        source: '/work/:path*',
         headers: [{ key: 'Content-Security-Policy', value: TABLEAU_CSP }],
       },
       {
