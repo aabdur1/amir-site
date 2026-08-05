@@ -44,4 +44,35 @@ describe('CaseStudyPlate', () => {
       }
     }
   })
+
+  // Regression guard for a bug that shipped: the responsive gate was on the
+  // marks themselves (`reg-mark ... hidden lg:block`), which is INERT.
+  // `.reg-mark` declares `display: block` unlayered in globals.css, and
+  // unlayered CSS outranks Tailwind's `@layer utilities` `.hidden` regardless
+  // of specificity — so the marks rendered at every breakpoint and clipped the
+  // image corners on mobile. jsdom does not model cascade layers, so this can
+  // only be asserted structurally: the gate must live on the wrapper.
+  it('gates the marks on a wrapper element, never on the marks themselves', () => {
+    const { container } = render(<CaseStudyPlate plate={plate} />)
+    const marks = Array.from(container.querySelectorAll('.reg-mark'))
+    expect(marks).toHaveLength(4)
+
+    for (const mark of marks) {
+      expect(mark.className).not.toMatch(/\bhidden\b/)
+      expect(mark.className).not.toMatch(/\blg:block\b/)
+    }
+
+    const wrapper = marks[0].parentElement
+    expect(wrapper).not.toBeNull()
+    // All four marks must share the one gated wrapper.
+    for (const mark of marks) {
+      expect(mark.parentElement).toBe(wrapper)
+    }
+    expect(wrapper!.className).toMatch(/\bhidden\b/)
+    expect(wrapper!.className).toMatch(/\blg:block\b/)
+    // The wrapper carries no .reg-mark class, so nothing unlayered competes
+    // with `.hidden` on it.
+    expect(wrapper!.classList.contains('reg-mark')).toBe(false)
+    expect(wrapper).toHaveAttribute('aria-hidden', 'true')
+  })
 })
