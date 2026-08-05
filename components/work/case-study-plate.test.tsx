@@ -20,16 +20,28 @@ describe('CaseStudyPlate', () => {
     expect(screen.getByText(plate.caption)).toBeInTheDocument()
   })
 
-  it('renders four registration marks, each with a visible border edge', () => {
+  it('renders four registration marks with correct position-to-edge mappings', () => {
     const { container } = render(<CaseStudyPlate plate={plate} />)
     const marks = container.querySelectorAll('.reg-mark')
     expect(marks).toHaveLength(4)
-    // .reg-mark sets border-color only — without a border-width utility the
-    // mark is invisible. Every mark must carry two edge classes.
-    for (const mark of Array.from(marks)) {
-      const cls = mark.className
-      expect(/border-[tb]\b/.test(cls)).toBe(true)
-      expect(/border-[lr]\b/.test(cls)).toBe(true)
+
+    // Each corner's mark must be found by its position classes and verified
+    // to have exactly the correct edge pair for that corner.
+    const corners = [
+      { posClasses: ['top-0', 'left-0'], edgeClasses: ['border-t', 'border-l'] },
+      { posClasses: ['top-0', 'right-0'], edgeClasses: ['border-t', 'border-r'] },
+      { posClasses: ['bottom-0', 'left-0'], edgeClasses: ['border-b', 'border-l'] },
+      { posClasses: ['bottom-0', 'right-0'], edgeClasses: ['border-b', 'border-r'] },
+    ]
+
+    for (const corner of corners) {
+      const mark = Array.from(marks).find((m) =>
+        corner.posClasses.every((cls) => m.className.includes(cls)),
+      )
+      expect(mark).toBeDefined()
+      for (const edgeClass of corner.edgeClasses) {
+        expect(mark?.className).toContain(edgeClass)
+      }
     }
   })
 })
