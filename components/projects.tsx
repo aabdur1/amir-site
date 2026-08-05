@@ -35,7 +35,7 @@ const projects = [
       "Full-stack app using Claude AI to validate whether clinical notes support billing codes before claim submission. Defensibility scoring, E/M recommendations, and financial impact analysis.",
     pills: ["React", "Express", "Claude API", "Tailwind"],
     accent: "sapphire" as const,
-    url: "https://www.docdefend.health",
+    url: "/work/docdefend-agent",
     tier: "emphasized" as const,
   },
   {
