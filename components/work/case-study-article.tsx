@@ -4,11 +4,19 @@ import { useScrollReveal } from '@/lib/hooks'
 import { ACCENT_STYLES } from '@/lib/styles'
 import { SectionDivider } from '@/components/section-divider'
 import { TableauEmbed } from '@/components/work/tableau-embed'
+import { GroundingPipeline } from '@/components/work/grounding-pipeline'
+import { CaseStudyPlate } from '@/components/work/case-study-plate'
 import type { CaseStudy, CaseStudyBar, CaseStudySection } from '@/lib/work/case-studies'
 
 // Renders a case study's content from its data entry — the client half of
 // app/work/[slug]/page.tsx, mirroring how learn artifact components own their
 // content under a thin server shell.
+
+// Maps a study's figure.kind to its component. Adding a diagram means adding
+// a kind to CaseStudyFigure and an entry here — no per-study renderer edits.
+const FIGURES: Record<string, () => React.ReactElement> = {
+  'grounding-pipeline': GroundingPipeline,
+}
 
 function MetricTiles({ metrics }: { metrics: NonNullable<CaseStudy['metrics']> }) {
   return (
@@ -98,6 +106,22 @@ function ArticleSection({
       {section.embed && study.embed && (
         <div className="mt-8">
           <TableauEmbed embed={study.embed} />
+        </div>
+      )}
+      {section.figure && study.figure && FIGURES[study.figure.kind] && (
+        <div className="mt-8">
+          {(() => {
+            const Figure = FIGURES[study.figure.kind]
+            return <Figure />
+          })()}
+          <p className="mt-4 text-center font-[family-name:var(--font-mono)] text-[12px] text-ink-subtle dark:text-night-muted">
+            {study.figure.caption}
+          </p>
+        </div>
+      )}
+      {section.plate && study.plate && (
+        <div className="mt-8">
+          <CaseStudyPlate plate={study.plate} />
         </div>
       )}
     </section>
