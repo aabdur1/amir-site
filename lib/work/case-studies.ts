@@ -28,12 +28,35 @@ export interface CaseStudyBar {
   to: { value: number; label: string }
 }
 
+export interface CaseStudyFigure {
+  // Selects the drawn diagram component. Add a kind here and a matching entry
+  // in FIGURES (case-study-article.tsx) to introduce a new one.
+  kind: 'grounding-pipeline'
+  // Mono caption rendered under the figure — say what the marks mean.
+  caption: string
+}
+
+export interface CaseStudyPlate {
+  // Local path under /public. Rendered as a "mounted print" inside fixed
+  // registration marks, same treatment as the Spotify featured card.
+  src: string
+  alt: string
+  // Intrinsic pixel dimensions of the asset, for next/image.
+  width: number
+  height: number
+  caption: string
+}
+
 export interface CaseStudySection {
   heading: string
   // Each paragraph is one string; rendered as its own <p>.
   body: string[]
   // Render the study's embed (if any) under this section's paragraphs.
   embed?: boolean
+  // Render the study's drawn figure under this section's paragraphs.
+  figure?: boolean
+  // Render the study's screenshot plate under this section's paragraphs.
+  plate?: boolean
 }
 
 export interface CaseStudyEmbed {
@@ -69,6 +92,8 @@ export interface CaseStudy {
   metrics?: CaseStudyMetric[]
   bars?: CaseStudyBar[]
   embed?: CaseStudyEmbed
+  figure?: CaseStudyFigure
+  plate?: CaseStudyPlate
   sections: CaseStudySection[]
   links: CaseStudyLink[]
 }

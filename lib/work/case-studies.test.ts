@@ -135,6 +135,51 @@ describe('CASE_STUDIES sections, metrics, links, embed', () => {
       }
     },
   )
+
+  it.each(CASE_STUDIES.map((c) => [c.slug, c] as const))(
+    '%s: any section flagged figure: true requires the study to define a figure, at most one such section',
+    (_slug, c) => {
+      const figureSections = c.sections.filter((s) => s.figure === true)
+      if (figureSections.length > 0) {
+        expect(c.figure).toBeDefined()
+      }
+      expect(figureSections.length).toBeLessThanOrEqual(1)
+    },
+  )
+
+  it.each(CASE_STUDIES.map((c) => [c.slug, c] as const))(
+    '%s: any section flagged plate: true requires the study to define a plate, at most one such section',
+    (_slug, c) => {
+      const plateSections = c.sections.filter((s) => s.plate === true)
+      if (plateSections.length > 0) {
+        expect(c.plate).toBeDefined()
+      }
+      expect(plateSections.length).toBeLessThanOrEqual(1)
+    },
+  )
+
+  it.each(CASE_STUDIES.map((c) => [c.slug, c] as const))(
+    '%s: figure (when present) has a known kind and a non-empty caption',
+    (_slug, c) => {
+      if (!c.figure) return
+      expect(['grounding-pipeline']).toContain(c.figure.kind)
+      expect(c.figure.caption.trim().length).toBeGreaterThan(0)
+    },
+  )
+
+  it.each(CASE_STUDIES.map((c) => [c.slug, c] as const))(
+    '%s: plate (when present) has a local src, alt text, positive integer dimensions, and a caption',
+    (_slug, c) => {
+      if (!c.plate) return
+      expect(c.plate.src).toMatch(/^\/[\w\-/]+\.(png|jpg|webp)$/)
+      expect(c.plate.alt.trim().length).toBeGreaterThan(0)
+      expect(c.plate.caption.trim().length).toBeGreaterThan(0)
+      expect(Number.isInteger(c.plate.width)).toBe(true)
+      expect(Number.isInteger(c.plate.height)).toBe(true)
+      expect(c.plate.width).toBeGreaterThan(0)
+      expect(c.plate.height).toBeGreaterThan(0)
+    },
+  )
 })
 
 describe('getCaseStudy', () => {
