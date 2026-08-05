@@ -245,15 +245,17 @@ app stays linked from the study itself.
   img: "/badges/kaggle-google-ai-agents.png",
   org: "Kaggle × Google",
   date: "2026-07",
-  url: KAGGLE_BADGE_URL,
+  url: "https://www.kaggle.com/certification/badges/amirabdurrahim/108",
 }
 ```
 
-`Badge.url` is a required `string`, so this cannot be omitted. Resolution order:
-Amir's personal Kaggle badge verification link if he has one (preferred — it verifies
-*him*), otherwise the official course page. Whichever is used must return 200, which
-verification gate 7 already enforces. This is the one input the implementation needs
-from Amir; everything else is derivable from source.
+Badge URL supplied by Amir and verified 200 on 2026-08-04. It is his personal
+certification badge, so it verifies *him* rather than merely linking the course.
+
+**Asset is already in place:** `public/badges/kaggle-google-ai-agents.png`, 537×572,
+transparent background — Amir cropped the badge mark out of the wide certificate, so
+no further cropping is needed. Renamed from the original spaces-and-punctuation
+filename to match the kebab-case convention of the other four manual badges.
 
 `badgeGroup()` classifies via `DATA_PATTERN = /looker|lookml|bigquery|snow|data/i`,
 which would put this in "Cloud & Security". Extend to
