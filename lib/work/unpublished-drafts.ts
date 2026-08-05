@@ -212,7 +212,7 @@ export const UNPUBLISHED_DRAFTS: CaseStudy[] = [
     links: [
       {
         label: 'Live demo',
-        href: 'https://docdefend.vercel.app',
+        href: 'https://www.docdefend.health',
         external: true,
       },
       // TODO(amir): add the DocDefend+ GitHub repo and/or Kaggle writeup link
