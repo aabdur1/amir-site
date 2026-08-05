@@ -1,8 +1,16 @@
 # DocDefend+ Case Study — Design
 
 **Date:** 2026-08-04
-**Status:** Approved, ready for implementation plan
+**Status:** Approved by Amir 2026-08-05, ready for implementation plan
 **Scope:** Add `/work/docdefend-agent` as case study 03; add the Kaggle x Google AI Agents cert as a manual badge.
+
+### Revisions
+
+| Date | Change |
+|---|---|
+| 2026-08-04 | Initial spec. Header read "Approved" before Amir had actually reviewed it — premature. |
+| 2026-08-04 | Kaggle badge URL supplied and verified; badge asset added and renamed. Last open input closed. |
+| 2026-08-05 | Independent review ([review doc](./2026-08-04-docdefend-case-study-design-review.md)) re-verified every number against source; all hold. Applied its edits 1, 4, 5 — interviewee de-identification tightened from *by role* to *by specialty only*, status line corrected, title-length check added. Edit 2 already applied; edit 3 stale (see review disposition). Amir signed off. |
 
 ## Problem
 
@@ -27,7 +35,7 @@ limitations list. That is a real finding with real evidence.
 |---|---|---|
 | Page count | **One page, agent-led** | The site's case-study format needs a verified headline number; only the agent supplies one. Two pages would split one project and leave the venture half metric-less. |
 | Arc | Shipped an MVP → found its structural weakness → fixed it with enforcement | Stronger than either half alone. |
-| Interviewees | **De-identified by role**; only public-capacity figures named | Discovery notes contain candid practice-level detail (a clinician's ~10% denial rate, a coding-accuracy estimate) published without consent otherwise. |
+| Interviewees | **De-identified by specialty only** — no employer type, tenure, or pronouns; only public-capacity figures named | Discovery notes contain candid practice-level detail (a clinician's ~10% denial rate, a self-estimated coding accuracy) published without consent otherwise. Specialty + employer type + tenure + a gendered pronoun, printed next to named public figures on a site tied to Amir's identity, is re-identifying to anyone in the class or the interviewee's own circle. The numbers carry the argument; the biography does not. |
 | Visual | **Drawn architecture SVG + screenshot plate** | The diagram carries the argument; the plate proves it shipped. No new dependencies. |
 | Accent | `sapphire` | Matches DocDefend's existing projects-card accent so card and study read as one project. 01 is also sapphire; they are never adjacent and number/title disambiguate. |
 | Slug | `docdefend-agent` | |
@@ -173,14 +181,20 @@ demo data.
    LLM-as-judge).
 
 2. **Context** — IDS 594 (Entrepreneurship with AI) at UIC; the MVP is a team project,
-   the agent is solo work for the Kaggle intensive. What discovery established, all
-   attributed by role: a VA physiatrist put her own coding accuracy at 75–80% after
-   15 years; a family-medicine physician in private practice outsources coding entirely
-   and runs ~10% denials while feeling undercoded; an anesthesiologist at a county
-   hospital pointed to EMR transitions as a miscoding source. Name only public-capacity
-   figures (the course instructor, the guest-speaker CEO, the named advisor). Land the
-   positioning: the note gets written by one system, the codes get picked by another,
-   payers use AI to deny, and nobody checks whether the note supports the codes.
+   the agent is solo work for the Kaggle intensive. What discovery established,
+   **attributed by specialty only** — no employer type, no tenure, no gendered
+   pronouns: a physiatrist self-estimated their coding accuracy at 75–80%; a
+   family-medicine physician outsources coding entirely and runs ~10% denials while
+   feeling undercoded; an anesthesiologist pointed to EMR transitions as a miscoding
+   source. Name only public-capacity figures (the course instructor, the guest-speaker
+   CEO, the named advisor). Land the positioning: the note gets written by one system,
+   the codes get picked by another, payers use AI to deny, and nobody checks whether
+   the note supports the codes.
+
+   **Drafting constraint:** when writing this prose, do not reintroduce identifying
+   detail that is present in the source discovery notes — employer ("VA", "private
+   practice in Dallas", "county hospital"), tenure ("after 15 years"), or pronouns.
+   Restructure sentences rather than reaching for "he"/"she".
 
 3. **What a one-shot call cannot do** — The MVP's analysis is a single Claude call
    returning structured JSON. It can describe a plausible nonexistent code, and it can
@@ -282,6 +296,10 @@ Before the PR is considered done:
 8. Every number on the page traces to a row in the Verified facts table.
 9. `/work` index shows three cards; prev/next chains 01 → 02 → 03 correctly.
 10. OG card renders for the new slug (Satori: no multi-text-node interpolation, no ◆ glyph).
+11. Long-title check. This title is a two-part shape ("DocDefend+ — Grounding a Billing
+    Agent in Real Terminology Data") where 01 and 02 are plain. `shortTitle` should
+    absorb most of it, but eyeball the `/work` index card, the prev/next labels, and
+    the OG card for wrapping or truncation.
 
 ## Out of scope
 
