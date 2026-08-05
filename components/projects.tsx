@@ -183,8 +183,7 @@ const MOTIFS: Record<string, () => React.JSX.Element> = {
   "Parkinson's Voice Screening": ParkinsonsMotif,
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function CardArrow({ external }: { external: boolean }) {
+function CardArrow() {
   return (
     <div className="absolute top-4 right-4 text-ink-faint/40 dark:text-night-muted/40
       group-hover:text-ink-muted dark:group-hover:text-night-muted
@@ -240,7 +239,7 @@ function CardBody({ project, emphasized, drawn }: { project: Project; emphasized
           </span>
         ))}
       </div>
-      {project.url && <CardArrow external={!project.url.startsWith("/")} />}
+      {project.url && <CardArrow />}
     </>
   );
 }
