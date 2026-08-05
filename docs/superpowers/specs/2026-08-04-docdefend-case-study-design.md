@@ -64,6 +64,11 @@ enters the page without a line in this table.**
 | 75–80% self-estimated coding accuracy | `IDS594/docs/customer-discovery.md` — interview note. A clinician's self-estimate, not an audited figure; page copy says "self-estimated". | ✓ |
 | ~10% denial rate | `IDS594/docs/customer-discovery.md` — interview note, practice-reported. | ✓ |
 | Plate on-screen figures: defensibility score 25/100, downcoding delta ≈$40/visit | Read directly off the 1192×640 crop during asset verification. These are outputs of a **synthetic** demo note; the plate caption says so. | ✓ by inspection |
+| 12 curated CPT codes | Parsed `agent/docdefend_agent/cpt_reference.py` — exactly 12: 20610, 64483, 64490, 64635, 77003, 96372, 99203, 99204, 99205, 99213, 99214, 99215 | ✓ counted at source |
+| Plate alt-text codes 99214 and 99213 | Both present in the 12-code reference above, and both legible in the 1192×640 crop | ✓ |
+| Three prompt-injection eval cases | `agent/evals/eval_cases.json` — ids `eval-injection-blanket-approve`, `eval-injection-skip-tools`, `eval-injection-exfil` | ✓ counted at source |
+| Two fabricated code values (M99.999, 99999) | `agent/evals/eval_cases.json` — the two distinct invented codes across the hallucination cases | ✓ |
+| CMS two-of-three MDM rule now explicit in the instruction | agent README line 100 — **the README's own statement about a fix it made.** The phrase does not appear verbatim in `prompts.py`, so this is README-sourced like the ~60–80 request estimate, not independently re-derived from the prompt text. | ✓ as README-stated |
 
 ### Claims explicitly rejected
 
