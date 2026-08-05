@@ -6,7 +6,7 @@ import { ACCENT_STYLES } from '@/lib/styles'
 // exists), sitemap entries, per-slug OG cards, and JSON-LD all derive from it.
 // The array is deliberately small (drafts are quarantined in
 // unpublished-drafts.ts), so these tests are written to hold at any length —
-// including the current two-entry case.
+// including the current three-entry case.
 
 describe('CASE_STUDIES data integrity', () => {
   it('is a non-empty array (currently three published studies)', () => {
