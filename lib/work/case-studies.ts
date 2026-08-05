@@ -272,6 +272,100 @@ export const CASE_STUDIES: CaseStudy[] = [
       },
     ],
   },
+  {
+    slug: 'docdefend-agent',
+    number: '03',
+    title: 'DocDefend+ — Grounding a Billing Agent in Real Terminology Data',
+    shortTitle: 'DocDefend+',
+    summary:
+      'An ADK and Gemini agent that verifies every billing code against live NLM terminology data before it may enter a defensibility report, with a two-boundary PII firewall and a deterministic reconciler that overrides unbacked grounding claims. 16 of 16 evaluation cases pass, across 110 checks.',
+    lead:
+      'A language model asked to review a billing code can describe one that does not exist — confidently, in fluent clinical English. A prompt can ask a model to be careful; it cannot make it check. This agent makes an ungrounded code structurally unshippable: every code is verified against live NLM terminology data before it can enter the report, and a deterministic reconciler overrides any grounding the model claims but the tools never backed.',
+    role: 'Solo agent design, guardrails, and evaluation — the underlying MVP is a team project',
+    provenance: 'Graduate coursework · UIC MS MIS · agent built for the Kaggle × Google 5-Day AI Agents Intensive',
+    accent: 'sapphire',
+    depth: 'full',
+    tech: ['Google ADK', 'Gemini', 'MCP', 'Python', 'Claude API', 'React'],
+    metrics: [
+      { value: '16/16', label: 'Evaluation cases passed (110/110 checks)' },
+      { value: '68', label: 'Unit tests passing, zero API calls' },
+      { value: '2', label: 'PII firewall boundaries, 6 identifier kinds' },
+      { value: '12.2s', label: 'Average per live evaluation case' },
+    ],
+    figure: {
+      kind: 'grounding-pipeline',
+      caption: 'fig. 03 · every hard-edged stage is deterministic code — only the rounded one guesses',
+    },
+    plate: {
+      src: '/work/docdefend-plate.png',
+      alt: 'The DocDefend+ interface: a clinical note on the left, and on the right a defensibility score of 25 out of 100, an "Overcoded" flag, a selected code of 99214 against a documented level of 99213, and a warning that downcoding would reduce reimbursement by about $40 per visit.',
+      width: 1192,
+      height: 640,
+      caption: 'the underlying app · synthetic note, demo-grade rates',
+    },
+    sections: [
+      {
+        heading: 'The finding',
+        body: [
+          'A single language-model call can bless a billing code that does not exist. It can also bless a real code the documentation does not support. Both produce the same outcome for a practice: a claim that gets denied, downcoded, or flagged in an audit. The model is not being careless — emitting text is the only move it has. It never checks anything.',
+          'So I stopped asking it to be careful and made checking structural. Every code the agent reports must first come back from a terminology tool queried against live NLM data. A tracker records what the tools actually returned, and after the run a reconciler compares the report against that record — any code claiming to be grounded without tool backing is downgraded to NOT_SUPPORTED and flagged high risk. A model that lies about its own grounding cannot ship the lie.',
+          'Run against gemini-2.5-flash at temperature 0 on 16 July 2026, the suite passes 16 of 16 cases across 110 assertions, including three prompt-injection attempts and two fabricated codes. Every assertion is deterministic — there is no model judging the model.',
+        ],
+      },
+      {
+        heading: 'Context',
+        body: [
+          'DocDefend+ started as a team project for IDS 594, Entrepreneurship with AI, at UIC: a pre-claim QA layer for small medical practices. A provider or billing coder pastes a clinical note, selects the CPT and ICD-10 codes they intend to bill, and gets back a defensibility report. The agent described here is separate, solo work, built afterward for the Kaggle and Google 5-Day AI Agents Intensive.',
+          'The problem came out of customer discovery rather than a whiteboard. A physiatrist self-estimated their own coding accuracy at 75 to 80 percent. A family-medicine physician outsources coding entirely to a third party and runs roughly 10 percent denials while believing the practice is undercoded. An anesthesiologist pointed to EMR transitions as a reliable source of miscoding. None of them described a documentation problem — they described a verification gap.',
+          'That gap is the whole thesis. An AI scribe writes the note. A billing company picks the codes. Payers increasingly use automated review to deny or downcode. Nobody checks whether the note actually supports the codes before the claim goes out.',
+        ],
+      },
+      {
+        heading: 'What a one-shot call cannot do',
+        body: [
+          'The original app makes one Claude call per analysis and asks for structured JSON back. That works well for reading a note and reasoning about medical decision-making complexity. It cannot verify that a code exists, because nothing in the loop ever leaves the model.',
+          'This is the clinical version of a failure mode that shows up wherever models name things: a plausible identifier, correctly formatted, described fluently, that simply is not real. Prompting harder does not fix it. Neither does temperature 0 — a deterministic wrong answer is still wrong. The fix has to sit outside the model.',
+        ],
+      },
+      {
+        heading: 'How grounding is enforced',
+        figure: true,
+        body: [
+          'The instruction forbids describing any code from memory and routes each code type to its own tool — CPT and E/M to a curated reference, ICD-10 to a search against NLM data. The terminology lookups come from an MCP server I built separately against the NLM public APIs.',
+          'Deterministic code sits at every boundary. A structural gate allowlists which tools may run at all. A PII firewall masks identifiers twice: once before anything reaches Gemini, and again on every outgoing tool argument, covering six identifier kinds. A tracker records only codes a tool actually returned — results marked not-found are never counted as grounded.',
+          'Then the output gate. After the run, the reconciler compares what the report claims against what the tools verified, and downgrades every unbacked claim. Tool errors are held distinct from genuine no-matches: on a network failure the agent retries, and on repeated failure it reports the code as unverifiable rather than invalid. It fails closed in both directions.',
+        ],
+      },
+      {
+        heading: 'Evaluating it honestly',
+        plate: true,
+        body: [
+          'The suite is 16 labelled cases: grounded real codes, fabricated codes, over- and under-coded E/M levels, real codes the documentation does not support, three prompt-injection attempts, the PII firewall, and malformed input rejected before the model is ever called. Thirteen run live against the API; three are static and need no network. All 110 assertions are deterministic.',
+          'An earlier identical run scored 14 of 16. Both failures were real and both were fixed: the model once emitted an out-of-vocabulary value for a medical-decision-making element, so the permitted vocabulary is now pinned in the instruction; and it made a borderline call between two E/M levels, so the CMS two-of-three rule is now explicit. Worth stating plainly — model output varies between runs even at temperature 0, so a future run may not be a clean sweep. The deterministic guardrails do not vary, which is precisely the argument for putting the guarantees there instead of in the prompt.',
+          'One practical note from the run. The free tier allowed about five requests a minute and roughly twenty a day, against a suite that needs sixty to eighty. The full pass used a billed key, and a static-only mode exists so the deterministic cases stay runnable at zero cost.',
+        ],
+      },
+      {
+        heading: 'Limitations',
+        body: [
+          'Name detection is regex-only. Labelled names are masked; a name in unlabelled prose is not. Real de-identification needs a local model or a named-entity pass, which is the next thing I would build. Date masking is deliberately over-broad — every full date is treated as an identifier, so visit dates get masked too, because over-redaction is the safe direction to err.',
+          'Grounded means the code exists in real terminology data. It does not mean the documentation supports it — that judgment lives in a separate status field, and conflating the two would be exactly the kind of overclaim this project exists to prevent. The CPT reference is 12 curated codes with approximate national rates, because CPT is licensed and absent from free NLM data, so every dollar figure is demo-grade. Time-based E/M billing is not modelled at all.',
+          'And the honest headline: this runs on synthetic notes. There has been no pilot, no accuracy validation against real claim outcomes, and no clinical use. Real validation needs real notes, which needs compliance work that has not been funded. Until then the eval suite measures whether the guardrails hold — not whether the clinical judgment is correct.',
+        ],
+      },
+      {
+        heading: 'What I would extend',
+        body: [
+          'Three things, in order. Replace regex name detection with a local de-identification pass, so the firewall stops depending on how a note happens to be formatted. Add time-based E/M as a billing path — it is a legitimate route under CMS and common for new patients, and its absence was the first gap a physician found when reviewing the product. Then validation: a set of notes with known claim outcomes, scored against the agent, which is the only evidence that would justify calling any of this accurate.',
+        ],
+      },
+    ],
+    links: [
+      { label: 'Try the live app', href: 'https://www.docdefend.health', external: true },
+      { label: 'Agent source on GitHub', href: 'https://github.com/aabdur1/docdefend-mvp', external: true },
+      { label: 'The MCP server I built', href: 'https://github.com/aabdur1/healthcare-terminology-mcp', external: true },
+    ],
+  },
 ]
 
 export function getCaseStudy(slug: string): CaseStudy | undefined {

@@ -9,10 +9,10 @@ import { ACCENT_STYLES } from '@/lib/styles'
 // including the current two-entry case.
 
 describe('CASE_STUDIES data integrity', () => {
-  it('is a non-empty array (currently two published studies)', () => {
+  it('is a non-empty array (currently three published studies)', () => {
     expect(CASE_STUDIES.length).toBeGreaterThan(0)
     // Pin the current count so an accidental publish/unpublish is noticed.
-    expect(CASE_STUDIES).toHaveLength(2)
+    expect(CASE_STUDIES).toHaveLength(3)
   })
 
   it('has unique, non-empty, URL-safe slugs', () => {
@@ -205,10 +205,10 @@ describe('getAdjacentCaseStudies', () => {
     expect(next).toBe(getCaseStudy('airline-flight-patterns'))
   })
 
-  it('airline-flight-patterns (last) has spotify-listening as prev and no next', () => {
+  it('airline-flight-patterns (middle) has spotify-listening as prev and docdefend-agent as next', () => {
     const { prev, next } = getAdjacentCaseStudies('airline-flight-patterns')
     expect(prev).toBe(getCaseStudy('spotify-listening'))
-    expect(next).toBeNull()
+    expect(next).toBe(getCaseStudy('docdefend-agent'))
   })
 
   it('first study never has a prev; last study never has a next (holds at any array length)', () => {
