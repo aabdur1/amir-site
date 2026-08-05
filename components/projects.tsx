@@ -308,7 +308,7 @@ function FeaturedCard({ project, visible }: { project: Project; visible: boolean
           alt="KPI row and annotated monthly-hours line chart from the Spotify listening dashboard"
           width={1600}
           height={1325}
-          sizes="(min-width: 1024px) 440px, (min-width: 640px) 60vw, 100vw"
+          sizes="(min-width: 1024px) 440px, (min-width: 640px) 90vw, 100vw"
           className="w-full h-auto rounded-xl border border-cream-border/60 dark:border-night-border/60"
         />
       </div>
@@ -319,7 +319,7 @@ function FeaturedCard({ project, visible }: { project: Project; visible: boolean
 export function Projects() {
   const [sectionRef, visible] = useScrollReveal();
 
-  const featured = projects.find((p) => p.tier === "featured")!;
+  const featured = projects.find((p) => p.tier === "featured");
   const emphasized = projects.filter((p) => p.tier === "emphasized");
   const standard = projects.filter((p) => p.tier === "standard");
 
@@ -365,7 +365,7 @@ export function Projects() {
         </div>
 
         {/* Tier 1 — featured plate card */}
-        <FeaturedCard project={featured} visible={visible} />
+        {featured && <FeaturedCard project={featured} visible={visible} />}
 
         {/* Tier 2 — emphasized pair with drawn motifs */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
