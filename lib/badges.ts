@@ -60,6 +60,14 @@ const manualBadges: Badge[] = [
     date: "2026-03",
     url: "https://www.sans.org/cyber-ranges/",
   },
+  {
+    name: "5-Day AI Agents: Intensive Vibe Coding Course",
+    shortName: "AI Agents Intensive",
+    img: "/badges/kaggle-google-ai-agents.png",
+    org: "Kaggle × Google",
+    date: "2026-07",
+    url: "https://www.kaggle.com/certification/badges/amirabdurrahim/108",
+  },
 ];
 
 const CREDLY_USER = "amir-abdur-rahim";
@@ -145,9 +153,9 @@ export async function getAllBadges(): Promise<Badge[]> {
 /** Badge grouping for the Certifications section */
 export type BadgeGroup = "data" | "cloud";
 
-const DATA_PATTERN = /looker|lookml|bigquery|snow|data/i;
+const DATA_PATTERN = /looker|lookml|bigquery|snow|data|\bai agents?\b/i;
 
-/** Classify a badge: data/analytics vs cloud/security. Keyword-based — review new badges and extend DATA_PATTERN as needed (e.g. Tableau/dbt/Databricks would currently land in "cloud"). */
+/** Classify a badge: data/analytics vs cloud/security. Keyword-based — review new badges and extend DATA_PATTERN as needed (e.g. Tableau/dbt/Databricks would currently land in "cloud"). Keywords are deliberately narrow: `\bai agents?\b` is scoped to the AI-agents sense specifically, not a bare "agent" — "agent" alone is ordinary vocabulary in cloud/security cert names that name a software agent (AWS Systems Manager Agent, CloudWatch Agent, CrowdStrike Falcon Agent), and a bare match would misclassify those into "data". */
 export function badgeGroup(badge: Badge): BadgeGroup {
   return DATA_PATTERN.test(badge.name) ? "data" : "cloud";
 }

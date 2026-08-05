@@ -6,13 +6,13 @@ import { ACCENT_STYLES } from '@/lib/styles'
 // exists), sitemap entries, per-slug OG cards, and JSON-LD all derive from it.
 // The array is deliberately small (drafts are quarantined in
 // unpublished-drafts.ts), so these tests are written to hold at any length —
-// including the current two-entry case.
+// including the current three-entry case.
 
 describe('CASE_STUDIES data integrity', () => {
-  it('is a non-empty array (currently two published studies)', () => {
+  it('is a non-empty array (currently three published studies)', () => {
     expect(CASE_STUDIES.length).toBeGreaterThan(0)
     // Pin the current count so an accidental publish/unpublish is noticed.
-    expect(CASE_STUDIES).toHaveLength(2)
+    expect(CASE_STUDIES).toHaveLength(3)
   })
 
   it('has unique, non-empty, URL-safe slugs', () => {
@@ -135,6 +135,51 @@ describe('CASE_STUDIES sections, metrics, links, embed', () => {
       }
     },
   )
+
+  it.each(CASE_STUDIES.map((c) => [c.slug, c] as const))(
+    '%s: any section flagged figure: true requires the study to define a figure, at most one such section',
+    (_slug, c) => {
+      const figureSections = c.sections.filter((s) => s.figure === true)
+      if (figureSections.length > 0) {
+        expect(c.figure).toBeDefined()
+      }
+      expect(figureSections.length).toBeLessThanOrEqual(1)
+    },
+  )
+
+  it.each(CASE_STUDIES.map((c) => [c.slug, c] as const))(
+    '%s: any section flagged plate: true requires the study to define a plate, at most one such section',
+    (_slug, c) => {
+      const plateSections = c.sections.filter((s) => s.plate === true)
+      if (plateSections.length > 0) {
+        expect(c.plate).toBeDefined()
+      }
+      expect(plateSections.length).toBeLessThanOrEqual(1)
+    },
+  )
+
+  it.each(CASE_STUDIES.map((c) => [c.slug, c] as const))(
+    '%s: figure (when present) has a known kind and a non-empty caption',
+    (_slug, c) => {
+      if (!c.figure) return
+      expect(['grounding-pipeline']).toContain(c.figure.kind)
+      expect(c.figure.caption.trim().length).toBeGreaterThan(0)
+    },
+  )
+
+  it.each(CASE_STUDIES.map((c) => [c.slug, c] as const))(
+    '%s: plate (when present) has a local src, alt text, positive integer dimensions, and a caption',
+    (_slug, c) => {
+      if (!c.plate) return
+      expect(c.plate.src).toMatch(/^\/[\w\-/]+\.(png|jpg|webp)$/)
+      expect(c.plate.alt.trim().length).toBeGreaterThan(0)
+      expect(c.plate.caption.trim().length).toBeGreaterThan(0)
+      expect(Number.isInteger(c.plate.width)).toBe(true)
+      expect(Number.isInteger(c.plate.height)).toBe(true)
+      expect(c.plate.width).toBeGreaterThan(0)
+      expect(c.plate.height).toBeGreaterThan(0)
+    },
+  )
 })
 
 describe('getCaseStudy', () => {
@@ -160,10 +205,10 @@ describe('getAdjacentCaseStudies', () => {
     expect(next).toBe(getCaseStudy('airline-flight-patterns'))
   })
 
-  it('airline-flight-patterns (last) has spotify-listening as prev and no next', () => {
+  it('airline-flight-patterns (middle) has spotify-listening as prev and docdefend-agent as next', () => {
     const { prev, next } = getAdjacentCaseStudies('airline-flight-patterns')
     expect(prev).toBe(getCaseStudy('spotify-listening'))
-    expect(next).toBeNull()
+    expect(next).toBe(getCaseStudy('docdefend-agent'))
   })
 
   it('first study never has a prev; last study never has a next (holds at any array length)', () => {

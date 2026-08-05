@@ -11,6 +11,7 @@ const MANUAL_NAMES = [
   "Zscaler Zero Trust Certified Architect",
   "SnowPro Associate: Platform Certification",
   "SANS AWS Skills to Jobs CTF — Top 20 Regional",
+  "5-Day AI Agents: Intensive Vibe Coding Course",
 ];
 
 /** Minimal well-formed Credly badge payload entry */
@@ -77,6 +78,7 @@ describe("badgeGroup()", () => {
     "Derive Insights from BigQuery",
     "SnowPro Associate: Platform Certification",
     "Data Analytics Essentials",
+    "5-Day AI Agents: Intensive Vibe Coding Course",
   ])('classifies "%s" as "data"', (name) => {
     expect(badgeGroup(namedBadge(name))).toBe("data");
   });
@@ -107,6 +109,28 @@ describe("badgeGroup()", () => {
     // "Database Administrator" badge lands in "data" via the "data" keyword.
     expect(badgeGroup(namedBadge("Database Administrator"))).toBe("data");
   });
+
+  it("classifies agent-related certifications as data, not cloud", () => {
+    expect(badgeGroup(namedBadge("5-Day AI Agents: Intensive Vibe Coding Course"))).toBe("data");
+    // Guard the widened keyword: it must not swallow the security badges.
+    expect(badgeGroup(namedBadge("Zscaler Zero Trust Certified Architect"))).toBe("cloud");
+    expect(badgeGroup(namedBadge("AWS Cloud Quest: Cloud Practitioner"))).toBe("cloud");
+  });
+
+  it.each([
+    "AWS Systems Manager Agent",
+    "CloudWatch Agent Fundamentals",
+    "CrowdStrike Falcon Agent Deployment",
+  ])(
+    'classifies software-agent cloud/security cert "%s" as "cloud", not "data"',
+    (name) => {
+      // The AI-agents keyword must be scoped narrowly (\bai agents?\b), not a
+      // bare "agent" — "agent" alone is ordinary vocabulary in cloud/security
+      // cert names (software agents like CloudWatch Agent, Falcon Agent) and
+      // would otherwise misclassify these into "data".
+      expect(badgeGroup(namedBadge(name))).toBe("cloud");
+    }
+  );
 });
 
 describe("getAllBadges() — successful Credly fetch", () => {
@@ -140,11 +164,12 @@ describe("getAllBadges() — successful Credly fetch", () => {
 
     const badges = await getAllBadges();
 
-    // 2 credly + 4 manual
-    expect(badges).toHaveLength(6);
+    // 2 credly + 5 manual
+    expect(badges).toHaveLength(7);
 
-    // Newest first: 2026-07 credly, 2026-05 Anthropic, 2026-03 x2, 2025-06, 2024-01 credly
+    // Newest first: 2026-07 credly, 2026-07 Kaggle AI Agents, 2026-05 Anthropic, 2026-03 x2, 2025-06, 2024-01 credly
     expect(badges.map((b) => b.date)).toEqual([
+      "2026-07",
       "2026-07",
       "2026-05",
       "2026-03",
@@ -334,6 +359,7 @@ describe("getAllBadges() — failure handling (never throws, manual badges survi
     expect(badges).toHaveLength(MANUAL_NAMES.length);
     // Descending by date; ties keep insertion order (stable sort)
     expect(badges.map((b) => b.name)).toEqual([
+      "5-Day AI Agents: Intensive Vibe Coding Course", // 2026-07
       "Building with the Claude API", // 2026-05
       "SnowPro Associate: Platform Certification", // 2026-03
       "SANS AWS Skills to Jobs CTF — Top 20 Regional", // 2026-03

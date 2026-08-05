@@ -9,7 +9,7 @@ import { SparkRule } from '@/components/spark-rule'
 export const metadata: Metadata = {
   title: 'Work — Case Studies',
   description:
-    'Case studies of selected projects — the data, the approach, and what the analysis actually showed. Currently featuring a personal Spotify listening dashboard and a Tableau story on US airline flight patterns.',
+    'Case studies of selected projects — the data, the approach, and what the analysis actually showed. Currently featuring a personal Spotify listening dashboard, a Tableau story on US airline flight patterns, and a grounded AI billing agent.',
   alternates: {
     canonical: 'https://amirabdurrahim.com/work',
   },
