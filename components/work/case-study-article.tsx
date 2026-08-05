@@ -6,15 +6,16 @@ import { SectionDivider } from '@/components/section-divider'
 import { TableauEmbed } from '@/components/work/tableau-embed'
 import { GroundingPipeline } from '@/components/work/grounding-pipeline'
 import { CaseStudyPlate } from '@/components/work/case-study-plate'
-import type { CaseStudy, CaseStudyBar, CaseStudySection } from '@/lib/work/case-studies'
+import type { CaseStudy, CaseStudyBar, CaseStudyFigure, CaseStudySection } from '@/lib/work/case-studies'
 
 // Renders a case study's content from its data entry — the client half of
 // app/work/[slug]/page.tsx, mirroring how learn artifact components own their
 // content under a thin server shell.
 
-// Maps a study's figure.kind to its component. Adding a diagram means adding
-// a kind to CaseStudyFigure and an entry here — no per-study renderer edits.
-const FIGURES: Record<string, () => React.ReactElement> = {
+// Maps a study's figure.kind to its component. Keying by CaseStudyFigure['kind']
+// (not a plain string) means adding a kind to that union without adding a
+// matching entry here fails to compile, instead of silently rendering nothing.
+const FIGURES: Record<CaseStudyFigure['kind'], () => React.ReactElement> = {
   'grounding-pipeline': GroundingPipeline,
 }
 
@@ -79,6 +80,7 @@ function ArticleSection({
 }) {
   const [ref, visible] = useScrollReveal()
   const headingId = `ws-${number}`
+  const Figure = study.figure ? FIGURES[study.figure.kind] : undefined
   return (
     <section
       ref={ref as React.RefObject<HTMLElement>}
@@ -108,12 +110,9 @@ function ArticleSection({
           <TableauEmbed embed={study.embed} />
         </div>
       )}
-      {section.figure && study.figure && FIGURES[study.figure.kind] && (
+      {section.figure && study.figure && Figure && (
         <div className="mt-8">
-          {(() => {
-            const Figure = FIGURES[study.figure.kind]
-            return <Figure />
-          })()}
+          <Figure />
           <p className="mt-4 text-center font-[family-name:var(--font-mono)] text-[12px] text-ink-subtle dark:text-night-muted">
             {study.figure.caption}
           </p>
