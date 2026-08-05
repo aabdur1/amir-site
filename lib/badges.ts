@@ -153,9 +153,9 @@ export async function getAllBadges(): Promise<Badge[]> {
 /** Badge grouping for the Certifications section */
 export type BadgeGroup = "data" | "cloud";
 
-const DATA_PATTERN = /looker|lookml|bigquery|snow|data|agent/i;
+const DATA_PATTERN = /looker|lookml|bigquery|snow|data|\bai agents?\b/i;
 
-/** Classify a badge: data/analytics vs cloud/security. Keyword-based — review new badges and extend DATA_PATTERN as needed (e.g. Tableau/dbt/Databricks would currently land in "cloud"). "agent" is deliberate: AI-agent certifications belong with data/analytics here, not with cloud/security. */
+/** Classify a badge: data/analytics vs cloud/security. Keyword-based — review new badges and extend DATA_PATTERN as needed (e.g. Tableau/dbt/Databricks would currently land in "cloud"). Keywords are deliberately narrow: `\bai agents?\b` is scoped to the AI-agents sense specifically, not a bare "agent" — "agent" alone is ordinary vocabulary in cloud/security cert names that name a software agent (AWS Systems Manager Agent, CloudWatch Agent, CrowdStrike Falcon Agent), and a bare match would misclassify those into "data". */
 export function badgeGroup(badge: Badge): BadgeGroup {
   return DATA_PATTERN.test(badge.name) ? "data" : "cloud";
 }

@@ -116,6 +116,21 @@ describe("badgeGroup()", () => {
     expect(badgeGroup(namedBadge("Zscaler Zero Trust Certified Architect"))).toBe("cloud");
     expect(badgeGroup(namedBadge("AWS Cloud Quest: Cloud Practitioner"))).toBe("cloud");
   });
+
+  it.each([
+    "AWS Systems Manager Agent",
+    "CloudWatch Agent Fundamentals",
+    "CrowdStrike Falcon Agent Deployment",
+  ])(
+    'classifies software-agent cloud/security cert "%s" as "cloud", not "data"',
+    (name) => {
+      // The AI-agents keyword must be scoped narrowly (\bai agents?\b), not a
+      // bare "agent" — "agent" alone is ordinary vocabulary in cloud/security
+      // cert names (software agents like CloudWatch Agent, Falcon Agent) and
+      // would otherwise misclassify these into "data".
+      expect(badgeGroup(namedBadge(name))).toBe("cloud");
+    }
+  );
 });
 
 describe("getAllBadges() — successful Credly fetch", () => {
