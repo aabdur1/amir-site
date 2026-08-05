@@ -59,6 +59,11 @@ enters the page without a line in this table.**
 | `aabdur1/docdefend-mvp` public | `gh repo view` | ✓ PUBLIC |
 | `aabdur1/healthcare-terminology-mcp` public | `gh repo view` | ✓ PUBLIC |
 | Kaggle cert date | cert PNG: "ON JULY 30, 2026" | ✓ |
+| Free tier: 5 requests/min, ~20/day | agent README, marked "measured 2026-07-16" | ✓ |
+| ~60–80 requests for a full live run | agent README line 104 — **the README's own estimate, not an independently measured count.** Page copy must not imply it was measured. | ✓ as an estimate |
+| 75–80% self-estimated coding accuracy | `IDS594/docs/customer-discovery.md` — interview note. A clinician's self-estimate, not an audited figure; page copy says "self-estimated". | ✓ |
+| ~10% denial rate | `IDS594/docs/customer-discovery.md` — interview note, practice-reported. | ✓ |
+| Plate on-screen figures: defensibility score 25/100, downcoding delta ≈$40/visit | Read directly off the 1192×640 crop during asset verification. These are outputs of a **synthetic** demo note; the plate caption says so. | ✓ by inspection |
 
 ### Claims explicitly rejected
 
@@ -129,11 +134,15 @@ visual, so it scales rather than scrolls horizontally.
 
 **Plate asset:** `public/work/docdefend-plate.png`
 
-Crop the Defensibility Analysis column from
-`~/Documents/MSMIS/IDS594/mvp/analysis-results.png` (1192×3763), approximately
-`x:[611,1147], y:[141,1000]` → ~536×859. Must show the score ring, the
-"Overcoded" E/M recommendation, and the `99214 → 99213` downcoding callout — that
-frame is the product's value in one glance.
+Crop from `~/Documents/MSMIS/IDS594/mvp/analysis-results.png` (1192×3763) at
+`{left: 0, top: 130, width: 1192, height: 640}` → **1192×640, ~117KB**. Coordinates
+executed and the output visually inspected on 2026-08-04.
+
+*(Revised 2026-08-05: the spec originally called for a right-column-only crop at
+~536×859. The full-width crop supersedes it — it shows the clinical note going in
+and the scored report coming out as one frame, still contains everything the
+original required (score ring, "Overcoded", `99214 → 99213`, the ≈$40 callout), and
+at 1192px wide it has the resolution headroom a 536px column crop did not.)*
 
 Rendered with the `spotify-plate.png` treatment: mounted print inside fixed
 `.reg-mark` corners (`hidden lg:block`), keeping its light/cream styling in both
@@ -263,8 +272,9 @@ app stays linked from the study itself.
 }
 ```
 
-Badge URL supplied by Amir and verified 200 on 2026-08-04. It is his personal
-certification badge, so it verifies *him* rather than merely linking the course.
+Badge URL supplied by Amir and verified 200 on 2026-08-04. It is Amir's personal
+certification badge, so it verifies the credential holder rather than merely linking
+the course.
 
 **Asset is already in place:** `public/badges/kaggle-google-ai-agents.png`, 537×572,
 transparent background — Amir cropped the badge mark out of the wide certificate, so

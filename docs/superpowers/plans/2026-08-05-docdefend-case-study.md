@@ -189,7 +189,9 @@ a screenshot plate without a component edit per study."
 - Consumes: `useScrollReveal` from `@/lib/hooks` (returns `[ref, visible]`)
 - Produces: `export function GroundingPipeline(): JSX.Element` — takes no props; the caption is rendered by the article, not by this component.
 
-**Design note for the implementer:** the entire visual argument is one distinction — **every deterministic stage is a hard-edged rectangle, and the model is the single rounded shape.** Do not "improve" this by rounding the gates or adding decoration. The viewBox is 320 wide so that at a 320px viewport it renders 1:1 and the 12px labels are exactly 12px.
+**Design note for the implementer:** the entire visual argument is one distinction — **every deterministic stage is a hard-edged rectangle, and the model is the single rounded shape.** Do not "improve" this by rounding the gates or adding decoration.
+
+**The viewBox width is load-bearing, not arbitrary.** The article column is `max-w-5xl px-6` (`case-study-article.tsx:111`), so at a 320px viewport the content box is `320 − 48 = 272px`. The viewBox is therefore **272** wide, which makes the SVG render 1:1 there and keeps the 12px labels at exactly 12px — the site's readable floor. A 320-wide viewBox would render at 0.85 scale and shrink those labels to ~10.2px, violating the Global Constraint. If you change the page padding, recompute this.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -266,8 +268,10 @@ import { useScrollReveal } from '@/lib/hooks'
 // .is-drawn pair, so the sitewide prefers-reduced-motion override in
 // globals.css renders them fully drawn without any extra handling here.
 //
-// The viewBox is 320 wide so the diagram renders 1:1 at a 320px viewport,
-// which keeps the 12px labels at exactly 12px — the site's readable floor.
+// The viewBox is 272 wide because the article column is max-w-5xl px-6, so a
+// 320px viewport leaves a 272px content box. Rendering 1:1 there keeps the
+// 12px labels at exactly 12px — the site's readable floor. A wider viewBox
+// would scale them below it.
 
 const GATE_STROKE = 'stroke-sapphire dark:stroke-sapphire-dark draw-stroke'
 const MODEL_STROKE = 'stroke-mauve dark:stroke-mauve-dark draw-stroke'
@@ -277,9 +281,9 @@ const CONNECTOR = 'stroke-ink-faint dark:stroke-night-border draw-stroke'
 const TITLE = 'fill-ink dark:fill-night-text'
 const SUBTITLE = 'fill-ink-subtle dark:fill-night-muted'
 
-const BOX_X = 34
+const BOX_X = 10
 const BOX_W = 252
-const CENTER = 160
+const CENTER = 136
 
 const DESCRIPTION =
   'Pipeline diagram. A note and its claimed codes enter a deterministic PII ' +
@@ -365,7 +369,7 @@ export function GroundingPipeline() {
       className={`mx-auto max-w-md ${visible ? 'is-drawn' : ''}`}
     >
       <svg
-        viewBox="0 0 320 430"
+        viewBox="0 0 272 430"
         className="w-full h-auto"
         role="img"
         aria-label={`Grounding pipeline. ${DESCRIPTION}`}
@@ -927,10 +931,36 @@ And add this test inside the same `describe("badgeGroup()")` block:
   });
 ```
 
+**Also update the hardcoded sort-order assertion.** `expectManualOnlySortedNewestFirst` (lines 333-342) pins the manual badges in date-descending order and is used by five tests in the failure-handling block. The new badge is dated `2026-07`, newer than every existing manual badge, so it sorts **first**. Change its `toEqual` array from:
+
+```ts
+    expect(badges.map((b) => b.name)).toEqual([
+      "Building with the Claude API", // 2026-05
+      "SnowPro Associate: Platform Certification", // 2026-03
+      "SANS AWS Skills to Jobs CTF — Top 20 Regional", // 2026-03
+      "Zscaler Zero Trust Certified Architect", // 2025-06
+    ]);
+```
+
+to:
+
+```ts
+    expect(badges.map((b) => b.name)).toEqual([
+      "5-Day AI Agents: Intensive Vibe Coding Course", // 2026-07
+      "Building with the Claude API", // 2026-05
+      "SnowPro Associate: Platform Certification", // 2026-03
+      "SANS AWS Skills to Jobs CTF — Top 20 Regional", // 2026-03
+      "Zscaler Zero Trust Certified Architect", // 2025-06
+    ]);
+```
+
 - [ ] **Step 2: Run the tests to verify they fail**
 
 Run: `npx vitest run lib/badges.test.ts`
-Expected: FAIL on two counts — the manual-badge count assertions (`toHaveLength(1 + MANUAL_NAMES.length)` at line 328 and `toHaveLength(MANUAL_NAMES.length)` at line 334) now expect 5 badges but `getAllBadges()` returns 4, and `badgeGroup` returns `"cloud"` for the new name.
+Expected: FAIL, on three distinct counts:
+1. `badgeGroup` returns `"cloud"` for the new name (the classifier is not widened yet).
+2. The manual-badge count assertions — `toHaveLength(1 + MANUAL_NAMES.length)` at line 328 and `toHaveLength(MANUAL_NAMES.length)` inside `expectManualOnlySortedNewestFirst` — now expect 5 but `getAllBadges()` returns 4.
+3. **All five tests using `expectManualOnlySortedNewestFirst`** fail their `toEqual`, because the expected array now has 5 names and the actual has 4. This is expected and is what Step 3 fixes; do not "repair" it by reverting the array.
 
 - [ ] **Step 3: Add the badge**
 
