@@ -110,6 +110,35 @@ describe('CASE_STUDIES sections, metrics, links, embed', () => {
     },
   )
 
+  // Reverse of the flag-requires-payload invariants above. A study can define
+  // an embed/figure/plate payload and forget the section flag that renders it —
+  // the page then silently omits it, with no type error and a green suite. The
+  // renderer only ever draws a payload under a section that flags it, so an
+  // unflagged payload is dead data.
+  it.each(CASE_STUDIES.map((c) => [c.slug, c] as const))(
+    '%s: every declared embed/figure/plate payload is actually rendered by some section',
+    (_slug, c) => {
+      if (c.embed) {
+        expect(
+          c.sections.some((s) => s.embed === true),
+          'defines an embed but no section sets embed: true — it would never render',
+        ).toBe(true)
+      }
+      if (c.figure) {
+        expect(
+          c.sections.some((s) => s.figure === true),
+          'defines a figure but no section sets figure: true — it would never render',
+        ).toBe(true)
+      }
+      if (c.plate) {
+        expect(
+          c.sections.some((s) => s.plate === true),
+          'defines a plate but no section sets plate: true — it would never render',
+        ).toBe(true)
+      }
+    },
+  )
+
   it.each(CASE_STUDIES.map((c) => [c.slug, c] as const))(
     '%s: metrics (when present) have non-empty value and label',
     (_slug, c) => {
