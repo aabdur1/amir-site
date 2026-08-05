@@ -11,12 +11,18 @@ export function CaseStudyPlate({ plate }: { plate: CaseStudyPlateData }) {
     <figure className="mx-auto max-w-3xl">
       {/* .reg-mark already declares position:absolute and border-color; the
           border-t/-l/-b/-r utilities supply the width that makes it visible.
-          Matches interactive-headshot.tsx, the reference implementation. */}
+          The responsive gate lives on this wrapper div, not on the marks
+          themselves — .reg-mark's unlayered `display: block` (globals.css)
+          outranks Tailwind's layered `.hidden`, so `hidden lg:block` on the
+          span is inert. Matches interactive-headshot.tsx and the featured
+          project card in projects.tsx, the reference implementations. */}
       <div className="relative px-3 py-3 sm:px-5 sm:py-5">
-        <span aria-hidden="true" className="reg-mark top-0 left-0 border-t border-l hidden lg:block" />
-        <span aria-hidden="true" className="reg-mark top-0 right-0 border-t border-r hidden lg:block" />
-        <span aria-hidden="true" className="reg-mark bottom-0 left-0 border-b border-l hidden lg:block" />
-        <span aria-hidden="true" className="reg-mark bottom-0 right-0 border-b border-r hidden lg:block" />
+        <div aria-hidden="true" className="absolute -inset-4 hidden lg:block">
+          <span className="reg-mark top-0 left-0 border-t border-l" />
+          <span className="reg-mark top-0 right-0 border-t border-r" />
+          <span className="reg-mark bottom-0 left-0 border-b border-l" />
+          <span className="reg-mark bottom-0 right-0 border-b border-r" />
+        </div>
         <Image
           src={plate.src}
           alt={plate.alt}

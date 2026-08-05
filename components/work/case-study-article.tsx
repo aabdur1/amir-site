@@ -111,12 +111,12 @@ function ArticleSection({
         </div>
       )}
       {section.figure && study.figure && Figure && (
-        <div className="mt-8">
+        <figure className="mt-8">
           <Figure />
-          <p className="mt-4 text-center font-[family-name:var(--font-mono)] text-[12px] text-ink-subtle dark:text-night-muted">
+          <figcaption className="mt-4 text-center font-[family-name:var(--font-mono)] text-[12px] text-ink-subtle dark:text-night-muted">
             {study.figure.caption}
-          </p>
-        </div>
+          </figcaption>
+        </figure>
       )}
       {section.plate && study.plate && (
         <div className="mt-8">

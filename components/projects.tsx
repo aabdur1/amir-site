@@ -30,7 +30,7 @@ const projects = [
   {
     name: "DocDefend+",
     subtitle: "Clinical Documentation QA Platform",
-    provenance: "Graduate coursework · UIC MS MIS",
+    provenance: "Graduate coursework · UIC MS MIS · Full case study",
     description:
       "Full-stack app using Claude AI to validate whether clinical notes support billing codes before claim submission. Defensibility scoring, E/M recommendations, and financial impact analysis.",
     pills: ["React", "Express", "Claude API", "Tailwind"],
