@@ -136,26 +136,24 @@ const frameClass = (accent: keyof typeof STRIPE_STYLES, layout: string) =>
    ${ACCENT_STYLES[accent].hoverBorder}
    hover:-translate-y-1 hover:shadow-card`;
 
-// Clinical note + verification tick + defensibility score bars.
+// Capsule, EKG trace, verification tick — medication, patient signal,
+// defensible claim. The capsule seam echoes the DocDefend pill mark without
+// importing its off-palette branding.
 function DocDefendMotif() {
   return (
     <svg viewBox="0 0 260 84" className="w-full h-auto max-h-24" aria-hidden="true" focusable="false">
-      <rect x="12" y="8" width="92" height="68" rx="4" fill="none" strokeWidth="1.5"
-        className="stroke-sapphire dark:stroke-sapphire-dark draw-stroke" pathLength={100} />
-      <g className="stroke-ink-faint dark:stroke-night-border" strokeWidth="1.5" strokeLinecap="round">
-        <line x1="22" y1="24" x2="94" y2="24" className="draw-stroke" pathLength={100} />
-        <line x1="22" y1="36" x2="86" y2="36" className="draw-stroke" pathLength={100} />
-        <line x1="22" y1="48" x2="94" y2="48" className="draw-stroke" pathLength={100} />
-        <line x1="22" y1="60" x2="70" y2="60" className="draw-stroke" pathLength={100} />
+      <g transform="rotate(-20 42 42)">
+        <rect x="14" y="30" width="56" height="24" rx="12" fill="none" strokeWidth="2"
+          className="stroke-sapphire dark:stroke-sapphire-dark draw-stroke" pathLength={100} />
+        <line x1="42" y1="30" x2="42" y2="54" strokeWidth="1.5"
+          className="stroke-sapphire dark:stroke-sapphire-dark draw-stroke" pathLength={100} />
       </g>
-      <path d="M120 44 L134 58 L160 24" fill="none" strokeWidth="2.5" strokeLinecap="round"
+      <path d="M88 46 L106 46 L112 34 L119 58 L126 20 L133 52 L139 46 L170 46"
+        fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+        className="stroke-mauve dark:stroke-mauve-dark draw-stroke" pathLength={100} />
+      <path d="M196 44 L210 58 L238 26" fill="none" strokeWidth="2.5" strokeLinecap="round"
         strokeLinejoin="round" className="stroke-peach dark:stroke-peach-dark draw-stroke" pathLength={100} />
-      <g className="fill-sapphire dark:fill-sapphire-dark">
-        <rect x="184" y="52" width="10" height="16" rx="1" className="spark-bar" style={{ transformBox: "fill-box" }} />
-        <rect x="200" y="40" width="10" height="28" rx="1" className="spark-bar" style={{ transformBox: "fill-box" }} />
-        <rect x="216" y="28" width="10" height="40" rx="1" className="spark-bar" style={{ transformBox: "fill-box" }} />
-      </g>
-      <line x1="180" y1="68" x2="240" y2="68" strokeWidth="1" className="stroke-ink-faint dark:stroke-night-border" />
+      <line x1="10" y1="72" x2="244" y2="72" strokeWidth="1" className="stroke-ink-faint dark:stroke-night-border" />
     </svg>
   );
 }
