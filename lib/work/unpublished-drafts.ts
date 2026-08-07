@@ -3,87 +3,16 @@ import type { CaseStudy } from './case-studies'
 // ============================================================================
 // UNPUBLISHED DRAFTS — NOT rendered anywhere. Nothing imports this file.
 //
-// Six case-study drafts written in an earlier session, moved here when the
+// Five case-study drafts written in an earlier session, moved here when the
 // /work system shipped with the verified Tableau study only. The prose and
 // numbers below are UNVERIFIED (several entries carry their own TODOs).
 //
 // To publish one: verify every number and claim against the source project,
 // move the entry into CASE_STUDIES in lib/work/case-studies.ts, renumber the
-// `number` fields (Spotify Listening currently holds '01', the airline story
-// '02'), and delete it here.
+// `number` fields (the published studies hold '01'–'04'), and delete it here.
 // ============================================================================
 
 export const UNPUBLISHED_DRAFTS: CaseStudy[] = [
-  {
-    slug: 'parkinsons-voice-screening',
-    number: '01',
-    title: "Parkinson's Voice Screening",
-    shortTitle: "Parkinson's Voice",
-    summary:
-      "A binary classifier that separates Parkinson's patients from healthy controls using acoustic features extracted from voice recordings.",
-    lead:
-      "I built a screening classifier that tells Parkinson's patients apart from healthy controls using only acoustic features from voice recordings, then treated the modeling choices the way a clinical study would.",
-    role: 'Solo project — data work, modeling, and writeup',
-    provenance: 'Graduate coursework · IDS 506, UIC MS MIS · Spring 2026',
-    accent: 'mauve',
-    depth: 'full',
-    tech: ['Python', 'scikit-learn', 'XGBoost', 'Parselmouth', 'librosa'],
-    metrics: [
-      { value: '81', label: 'Voice samples (40 patients, 41 controls)' },
-      { value: '167', label: 'Acoustic features extracted' },
-      { value: '4 × 4', label: 'Model families × feature sets compared' },
-      { value: '10-fold', label: 'Stratified cross-validation' },
-    ],
-    sections: [
-      {
-        heading: 'Context',
-        body: [
-          "Parkinson's disease changes the voice early — reduced pitch range, breathiness, and instability in sustained sounds. That makes voice a candidate for low-cost screening, but only if a model can separate the disease signal from ordinary variation between people.",
-          "For this project I framed it as a clinical study rather than a leaderboard: the goal was a classifier whose decisions I could defend, with the confounds and calibration spelled out, not just a high accuracy number.",
-        ],
-      },
-      {
-        heading: 'Data',
-        body: [
-          'The dataset is 81 voice samples — 40 people with Parkinson\'s and 41 controls — which is small and close to balanced. From each recording I extracted 167 acoustic features using Parselmouth (a Praat wrapper) and librosa: measures like jitter and shimmer, spectral features, and MFCCs.',
-          'The audio and derived data are excluded from the public repository per course restrictions, so the repo holds the code and analysis rather than the recordings.',
-        ],
-      },
-      {
-        heading: 'Approach',
-        body: [
-          'I evaluated four model families — logistic regression, random forest, SVM, and XGBoost — across four feature sets, using stratified 10-fold cross-validation so the class balance held in every fold. That 4-by-4 grid was the point: I wanted to see which combinations of model and feature set actually held up, not to report the single best run.',
-          'Two problems needed handling before any of that meant anything. Age is a confound — voice changes with age regardless of disease — so I controlled for it rather than letting the model learn age as a proxy for diagnosis. And many of the 167 features carry the same information, so I used Mann-Whitney U filtering to cut redundant and non-discriminating features.',
-          "For interpretability I reported odds ratios with 95% confidence intervals from the logistic regression, checked calibration with the Hosmer-Lemeshow test, and set the decision threshold using Youden's J rather than defaulting to 0.5. The analysis is grounded in 8 peer-reviewed sources.",
-        ],
-      },
-      {
-        heading: 'Results',
-        body: [
-          "The comparison surfaced which model-and-feature combinations separate patients from controls reliably under cross-validation, and the odds ratios name the acoustic features that carry the signal — with confidence intervals, so the strength of each is visible rather than implied.",
-          'Reporting calibration and a chosen threshold matters more than a headline accuracy number here: a screening tool is judged on how its errors fall, not on a single score.',
-          // TODO(amir): add the specific headline results you want to feature —
-          // e.g. best model + feature set, its cross-validated AUC/sensitivity/
-          // specificity, and 1-2 top odds ratios with their CIs. Only fill in
-          // numbers you can cite from the report; leave blank otherwise.
-        ],
-      },
-      {
-        heading: 'Limitations and what I would do next',
-        body: [
-          '81 samples is a real constraint. The cross-validation guards against overfitting to a single split, but a dataset this size still limits how confident any estimate can be, and the results need external validation on a separate cohort before they mean anything clinically.',
-          'Next steps I would take: validate on an independent dataset, test whether the signal holds across recording conditions rather than one clean set, and look at whether a smaller, defensible feature set performs as well as the full 167 — a screening tool is more useful when you can explain every input.',
-        ],
-      },
-    ],
-    links: [
-      {
-        label: 'GitHub repository',
-        href: 'https://github.com/aabdur1/parkinsons-voice-screening',
-        external: true,
-      },
-    ],
-  },
   {
     slug: 'wieiad-tiktok-analysis',
     number: '02',

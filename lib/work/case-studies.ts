@@ -4,7 +4,7 @@ import type { AccentColor } from '@/lib/styles'
 // The index page, per-project pages, prev/next nav, sitemap entries, and
 // JSON-LD schema all derive from this array — mirrors lib/learn/artifacts.ts.
 //
-// Six earlier case-study drafts live in lib/work/unpublished-drafts.ts (not
+// Five earlier case-study drafts live in lib/work/unpublished-drafts.ts (not
 // imported anywhere, prose unverified). To publish one: verify every number
 // against the source project, move the entry into CASE_STUDIES, and renumber.
 
@@ -364,6 +364,108 @@ export const CASE_STUDIES: CaseStudy[] = [
       { label: 'Try the live app', href: 'https://www.docdefend.health', external: true },
       { label: 'Agent source on GitHub', href: 'https://github.com/aabdur1/docdefend-mvp', external: true },
       { label: 'The MCP server I built', href: 'https://github.com/aabdur1/healthcare-terminology-mcp', external: true },
+    ],
+  },
+  {
+    slug: 'parkinsons-voice-screening',
+    number: '04',
+    title: "Parkinson's Voice Screening — Refusing an Age-Confounded AUC",
+    shortTitle: "Parkinson's Voice",
+    summary:
+      "Four classifier families by four feature sets on 81 sustained-vowel recordings. The best cross-validated AUC in the notebook is 0.912 — and the analysis exists to explain why that number cannot be claimed: age alone separates the groups at 0.864, and the defensible voice-only estimate is 0.775.",
+    lead:
+      "The strongest number this project produces is a cross-validated AUC of 0.912, and the analysis exists to explain why I will not claim it. The Parkinson's group averages 19 years older than the controls, and age alone separates the groups at AUC 0.864 — better than any voice-only model I trained. What survives the confound is a feature-selected, cross-validated AUC of 0.775 from acoustic features alone. Smaller number, defensible study.",
+    role: 'Solo project — feature extraction, modeling, and writeup',
+    provenance: 'Graduate coursework · IDS 506 Healthcare Information Management & Analytics, UIC MS MIS',
+    accent: 'mauve',
+    depth: 'full',
+    tech: ['Python', 'scikit-learn', 'XGBoost', 'Parselmouth', 'librosa'],
+    metrics: [
+      { value: '81', label: "Participants: 41 healthy controls, 40 with Parkinson's" },
+      { value: '165', label: 'Acoustic features per recording, three extraction pipelines' },
+      { value: '16', label: 'Models compared: 4 classifiers × 4 feature sets, 10-fold CV' },
+      { value: '0.912', label: 'Best CV AUC — refused as the headline: it is mostly age' },
+    ],
+    bars: [
+      {
+        label: '10-fold CV AUC — the confound vs the voice signal',
+        from: { value: 0.864, label: 'Age alone (0.864)' },
+        to: { value: 0.775, label: 'Best voice-only model (0.775)' },
+      },
+      {
+        label: 'Voice-only CV AUC — feature selection vs the full set',
+        from: { value: 0.714, label: 'All 165 features (0.714)' },
+        to: { value: 0.775, label: '85 filtered features (0.775)' },
+      },
+    ],
+    plate: {
+      src: '/work/parkinsons-plate.png',
+      alt: 'Forest plot of logistic regression odds ratios for the 17 speech features, with 95% confidence intervals. The largest odds ratios are intensity variability and second-formant variability, each near 3.0, and every confidence interval crosses 1.0.',
+      width: 1204,
+      height: 1050,
+      caption: 'odds ratios, speech-only logistic regression · every 95% CI crosses 1.0 at n = 81',
+    },
+    sections: [
+      {
+        heading: 'The finding',
+        body: [
+          "Sixteen models — four classifier families by four feature sets — trained to tell Parkinson's patients from healthy controls using sustained-vowel voice recordings. The best cross-validated AUC was 0.912, from XGBoost on every feature including demographics. The finding is that this number is not the result.",
+          'Exploratory analysis surfaced the problem before any model ran: the patient group averages 67 years old, the controls 48. Age alone — no audio at all — classifies at AUC 0.864, beating every voice-only model I trained. A model handed age, or anything correlated with it, gets to look brilliant by detecting birthdays.',
+          'The defensible result is voice-only: acoustic features filtered by univariate significance, cross-validated at AUC 0.775. The rest of the analysis is what it takes to trust even that smaller number — calibration, threshold behavior, and the limits an 81-sample study has to state.',
+        ],
+      },
+      {
+        heading: 'Context',
+        body: [
+          "Parkinson's changes the voice early — vocal-fold instability, breathiness, reduced loudness control — often before motor symptoms are obvious. That makes a short vowel recording a candidate for cheap, non-invasive screening, and it is why voice models keep appearing in the Parkinson's literature.",
+          'This was a case assignment for IDS 506, Healthcare Information Management & Analytics. I framed it as a clinical study rather than a leaderboard: the deliverable was a screening claim I could defend, with its confounds and calibration on the table and the methods grounded in eight peer-reviewed sources — not a single high number.',
+        ],
+      },
+      {
+        heading: 'The data',
+        body: [
+          "81 participants — 41 healthy controls, 40 with Parkinson's — each recorded a sustained /a/ vowel as a mono WAV at 8 kHz: telephone-quality audio with a 4 kHz ceiling on everything spectral. Sex is balanced across the groups. Age, as it turned out, is not.",
+          'From each recording I extracted 165 acoustic features in three pipelines: 17 phonation features via Parselmouth, a Praat wrapper — jitter, shimmer, harmonics-to-noise ratio, pitch and intensity statistics, formants F1–F4, duration, voiced fraction; 80 precalculated spectral coefficients that shipped with the dataset — LPC, LAR, cepstral, and MFCC means and variances; and 68 librosa features — 13 MFCCs and their deltas, spectral centroid, rolloff, bandwidth, per-band contrast, and zero-crossing rate.',
+          'An 80/20 stratified split — 64 training samples, 17 test, fixed seed — was held constant for every model. The audio and source spreadsheet are excluded from the public repository under course data-sharing restrictions; the notebook and its committed outputs are the public record.',
+        ],
+      },
+      {
+        heading: 'The confound',
+        body: [
+          'The group comparison ran before any classifier did. Controls average 47.7 ± 14.3 years; patients 67.0 ± 9.0 — a 19-year gap at p < 0.0001. Sex passes its chi-squared test. And a "classifier" that consists of the age column and nothing else scores AUC 0.864.',
+          "That one number reframes the project. Many acoustic features drift with normal aging — jitter rises, pitch range narrows, formant structure shifts — so a model trained on this cohort can achieve most of its separation without learning anything about Parkinson's. When the all-features-plus-demographics XGBoost reached 0.912 cross-validated, age sat at the top of its feature importances. The notebook says it plainly: models that include demographics are measuring the study design, not the disease. The honest comparison is voice-only.",
+        ],
+      },
+      {
+        heading: 'Sixteen models, and the curse of dimensionality',
+        body: [
+          'The grid was four classifiers — logistic regression, random forest, RBF-kernel SVM, XGBoost — by four incremental feature sets: 17 speech features, 97 adding the baseline spectral block, 165 adding the librosa block, 167 adding demographics. Hyperparameters stayed at established defaults, deliberately: with 64 training samples and up to 165 features, nested tuning is as likely to overfit the validation metric as to improve the model.',
+          'The fixed 17-sample test split turned out to be nearly useless on its own — one flipped prediction moves accuracy by six points — so every claim rests on 10-fold stratified cross-validation instead. CV delivered the classic small-sample verdict: adding features hurt. The 17 speech features alone cross-validated at 0.767; all 165 voice features managed 0.714.',
+          "Filtering recovered the signal. Univariate Mann-Whitney tests found 57 of the 165 features discriminating at p < 0.05; keeping the 85 that pass a liberal p < 0.20 screen raised the best voice-only CV AUC to 0.775. The selected features are almost all variance measures, elevated in Parkinson's — frame-to-frame instability, not average voice quality, is where the signal lives, consistent with the motor-control character of the disease.",
+        ],
+      },
+      {
+        heading: 'Reading it like a clinical study',
+        plate: true,
+        body: [
+          'A screening claim needs more than a ranking metric, so the logistic regression got the clinical treatment. Odds ratios per standard deviation, with 95% confidence intervals: the largest effects are intensity variability and second-formant variability, each roughly tripling the odds — and every single interval crosses 1.0. At 81 samples, no individual feature clears significance, and saying so plainly is what the forest plot below is for.',
+          'Calibration held up better. A Hosmer-Lemeshow test on the predicted probabilities came back at p = 0.75 — the probabilities track observed rates, which matters when a probability is what triggers a referral. Threshold optimization became the cautionary tale instead: Youden\'s J, computed on the 17-sample test set, "optimized" to a 0.97 cutoff with 25% sensitivity — a degenerate operating point no screening tool would ship. At this scale the threshold has to come from clinical priorities — sensitivity first, because a false positive costs an exam while a false negative delays treatment — not from optimizing a curve.',
+        ],
+      },
+      {
+        heading: 'Limitations, and what I would do next',
+        body: [
+          'The limits are structural. Eighty-one samples caps statistical power — ten-fold cross-validation leaves about eight samples per held-out fold. The age gap cannot be convincingly adjusted away at this size; the clean fix is an age-matched cohort, not a covariate. Collapsing each recording to means and variances discards the temporal structure — pitch drift, tremor oscillation, voice breaks — that clinicians actually listen for. And a single sustained vowel at telephone quality says nothing about connected speech.',
+          'Next, in order: an age-matched or age-stratified design, since nothing else rescues the confound; connected-speech tasks, where prosody and articulation carry signal a vowel cannot; sequence models over the raw feature trajectories instead of summary statistics; and external validation on a separate cohort before the word "screening" gets used without qualification.',
+        ],
+      },
+    ],
+    links: [
+      {
+        label: 'Analysis notebook on GitHub',
+        href: 'https://github.com/aabdur1/parkinsons-voice-screening',
+        external: true,
+      },
     ],
   },
 ]

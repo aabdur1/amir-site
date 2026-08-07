@@ -6,13 +6,13 @@ import { ACCENT_STYLES } from '@/lib/styles'
 // exists), sitemap entries, per-slug OG cards, and JSON-LD all derive from it.
 // The array is deliberately small (drafts are quarantined in
 // unpublished-drafts.ts), so these tests are written to hold at any length —
-// including the current three-entry case.
+// including the current four-entry case.
 
 describe('CASE_STUDIES data integrity', () => {
-  it('is a non-empty array (currently three published studies)', () => {
+  it('is a non-empty array (currently four published studies)', () => {
     expect(CASE_STUDIES.length).toBeGreaterThan(0)
     // Pin the current count so an accidental publish/unpublish is noticed.
-    expect(CASE_STUDIES).toHaveLength(3)
+    expect(CASE_STUDIES).toHaveLength(4)
   })
 
   it('has unique, non-empty, URL-safe slugs', () => {
@@ -238,6 +238,12 @@ describe('getAdjacentCaseStudies', () => {
     const { prev, next } = getAdjacentCaseStudies('airline-flight-patterns')
     expect(prev).toBe(getCaseStudy('spotify-listening'))
     expect(next).toBe(getCaseStudy('docdefend-agent'))
+  })
+
+  it('parkinsons-voice-screening (last) has docdefend-agent as prev and no next', () => {
+    const { prev, next } = getAdjacentCaseStudies('parkinsons-voice-screening')
+    expect(prev).toBe(getCaseStudy('docdefend-agent'))
+    expect(next).toBeNull()
   })
 
   it('first study never has a prev; last study never has a next (holds at any array length)', () => {
