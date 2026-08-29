@@ -219,4 +219,32 @@ describe('drag selection', () => {
     fireEvent.pointerUp(grid, { pointerId: 1, ...center(last) })
     expect(screen.getByText(pl.word).className).toContain('line-through')
   })
+
+  it('a drag attempt clears any anchor left over from an earlier tap', () => {
+    render(<WordSearch />)
+    const grid = screen.getByRole('grid')
+    vi.spyOn(grid, 'getBoundingClientRect').mockReturnValue({
+      x: 0, y: 0, top: 0, left: 0, right: 400, bottom: 400, width: 400, height: 400,
+      toJSON: () => ({}),
+    } as DOMRect)
+    grid.setPointerCapture = vi.fn()
+    grid.releasePointerCapture = vi.fn()
+    const cellPx = 400 / puzzle.size
+    const center = (i: number) => ({
+      clientX: ((i % puzzle.size) + 0.5) * cellPx,
+      clientY: (Math.floor(i / puzzle.size) + 0.5) * cellPx,
+    })
+    // any cell outside the drag's own first/last works as the stale anchor
+    const anchorCell = Array.from({ length: puzzle.size * puzzle.size }, (_, i) => i)
+      .find((i) => i !== first && i !== last)!
+    fireEvent.click(cell(anchorCell)) // tap A: anchor set at anchorCell
+    fireEvent.pointerDown(grid, { pointerId: 1, ...center(first) })
+    fireEvent.pointerMove(grid, { pointerId: 1, ...center(last) })
+    fireEvent.pointerUp(grid, { pointerId: 1, ...center(last) }) // drag B→C: attempt finds the word
+    expect(screen.getByText(pl.word).className).toContain('line-through')
+    fireEvent.click(cell(first)) // tap D: an ordinary next tap, not a completion of A→D
+    const r = Math.floor(first / puzzle.size) + 1
+    const c = (first % puzzle.size) + 1
+    expect(screen.getByRole('status')).toHaveTextContent(`Anchor set at row ${r}, column ${c}`)
+  })
 })

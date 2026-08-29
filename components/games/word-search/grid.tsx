@@ -80,8 +80,13 @@ export function Grid({ puzzle, cellAccents, disabled, onAttempt, announce }: Gri
     setPreview(null)
     if (start === null) return
     setFocusIndex(start)
-    if (cells && cells.length > 1) onAttempt(cells)
-    else tapCell(start) // press-release on one cell IS the tap path
+    if (cells && cells.length > 1) {
+      // Mirrors tapCell's own attempt branch: a completed drag attempt must
+      // clear any anchor left over from an earlier tap, or the next ordinary
+      // tap gets misread as completing a line from that stale anchor.
+      onAttempt(cells)
+      setAnchor(null)
+    } else tapCell(start) // press-release on one cell IS the tap path
   }
 
   const onPointerCancel = () => {
@@ -142,21 +147,26 @@ export function Grid({ puzzle, cellAccents, disabled, onAttempt, announce }: Gri
                 aria-selected={isAnchor || undefined}
                 tabIndex={i === focusIndex ? 0 : -1}
                 // Pointer-up owns activation for a real drag/tap; this onClick
-                // is a jsdom-only fallback. Verified in a real browser (repro
-                // outside this repo, since jsdom can't exercise this): once
-                // onPointerDown calls gridRef.setPointerCapture, the browser
-                // redirects the matching mouseup AND the click that follows it
-                // to the CAPTURING element (the grid div), not the cell button
-                // under the cursor — so click never reaches a button's onClick
-                // at all for a real tap or drag, and there is no double-fire to
-                // guard against there. jsdom's fireEvent.click, by contrast,
-                // dispatches a click with no prior pointerdown/up and no
-                // capture, so it lands on the button directly — that's the
-                // only case this guard exists for; it stays a no-op (fires
-                // tapCell exactly once) since dragStart/preview are still at
-                // their untouched null values. Keeping the guard rather than
-                // an unconditional call costs nothing and documents the
-                // invariant even though real browsers never reach it.
+                // is the fallback for a click with no prior pointer sequence
+                // (jsdom's fireEvent.click, which never dispatches
+                // pointerdown/up — that's Task 5/6's whole test suite). In a
+                // real browser it should also be moot: verified in Chromium
+                // (repro outside this repo, since jsdom can't exercise this)
+                // that once onPointerDown calls gridRef.setPointerCapture, the
+                // browser redirects the matching mouseup AND the click that
+                // follows it to the CAPTURING element (the grid div) instead
+                // of the cell button under the cursor, so click never reaches
+                // a button's onClick for a real tap or drag there. But that
+                // was only checked on one engine — public interop history
+                // shows browsers have disagreed on the post-capture click
+                // target (Safari's behavior here is unconfirmed), and this
+                // site targets Safari/mobile. The guard
+                // (dragStart.current === null && preview === null) is what
+                // actually keeps this safe everywhere: it's a no-op whenever
+                // a pointer sequence is mid-flight or just completed, and
+                // fires tapCell exactly once when nothing preceded the click
+                // at all. Keep it regardless of what any one engine does with
+                // capture-retargeted clicks.
                 onClick={() => {
                   if (dragStart.current === null && preview === null) {
                     setFocusIndex(i)
