@@ -11,6 +11,7 @@ import {
 } from "@/lib/games/sudoku/storage"
 import { SUDOKU_PUZZLES } from "@/lib/games/sudoku-puzzles"
 import { SparkRule } from "@/components/spark-rule"
+import { DIFFICULTY_STYLES } from "@/lib/styles"
 import { Board } from "./board"
 import { NumberPad } from "./number-pad"
 
@@ -47,12 +48,6 @@ function initState(): InitState {
     usedIds,
     settings: saved?.settings ?? { showMistakes: true },
   }
-}
-
-const DIFFICULTY_STYLES: Record<Difficulty, string> = {
-  easy: "border-sapphire/40 dark:border-sapphire-dark/40 bg-sapphire/10 dark:bg-sapphire-dark/12 hover:border-sapphire dark:hover:border-sapphire-dark",
-  medium: "border-peach/40 dark:border-peach-dark/40 bg-peach/10 dark:bg-peach-dark/12 hover:border-peach dark:hover:border-peach-dark",
-  hard: "border-mauve/40 dark:border-mauve-dark/40 bg-mauve/10 dark:bg-mauve-dark/12 hover:border-mauve dark:hover:border-mauve-dark",
 }
 
 export function Sudoku() {

@@ -2,7 +2,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { GAMES, getGame } from '@/lib/games/games'
+import { GAMES, getGame, type GameSlug } from '@/lib/games/games'
 import { GameErrorBoundary } from '@/components/games/game-error-boundary'
 import { PageTransition } from '@/components/page-transition'
 import { Sudoku } from '@/components/games/dynamic-games'
@@ -26,7 +26,7 @@ export async function generateMetadata({
   }
 }
 
-const GAME_COMPONENTS: Record<string, React.ComponentType> = {
+const GAME_COMPONENTS: Record<GameSlug, React.ComponentType> = {
   sudoku: Sudoku,
 }
 
@@ -39,7 +39,7 @@ export default async function GamePage({
   const game = getGame(slug)
   if (!game) notFound()
 
-  const GameComponent = GAME_COMPONENTS[slug]
+  const GameComponent = GAME_COMPONENTS[game.slug]
 
   return (
     <PageTransition>
