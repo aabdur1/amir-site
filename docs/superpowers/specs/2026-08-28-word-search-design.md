@@ -103,8 +103,9 @@ Same shell as Sudoku, adapted:
   (sapphire → mauve → peach → lavender → rosewater, repeating) and persist;
   wrong → preview clears, nothing else.
 - **Word list** in the Sudoku pad's slot: below the grid on mobile, the right
-  column at lg. Compact mono flex-wrap items; found words struck through and
-  tinted with their cells' accent. The confirm/new-game/solved panels swap in
+  column at lg. Compact mono flex-wrap items; found words struck through in
+  muted ink with a small accent dot matching their cells' tint (accent text
+  alone fails AA on the lighter accents). The confirm/new-game/solved panels swap in
   place of the word list exactly as Sudoku's panels swap in place of the pad.
   No reveal/hint button in v1.
 - **Completion:** all words found → solved panel (SparkRule flourish,
