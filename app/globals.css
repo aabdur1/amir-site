@@ -37,11 +37,22 @@
   inherits: true;
   initial-value: #dc8a78;
 }
+@property --color-red {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #d20f39;
+}
+@property --color-red-dark {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #f38ba8;
+}
 
 :root {
   transition: --color-mauve 300ms ease, --color-peach 300ms ease,
               --color-sapphire 300ms ease, --color-lavender 300ms ease,
-              --color-teal 300ms ease, --color-rosewater 300ms ease;
+              --color-teal 300ms ease, --color-rosewater 300ms ease,
+              --color-red 300ms ease;
 }
 
 @theme {
@@ -91,6 +102,9 @@
   /* Accent: Rosewater — warm highlight (footer ornaments, social hovers) */
   --color-rosewater: #dc8a78;
   --color-rosewater-dark: #f5e0dc;
+
+  --color-red: #d20f39;      /* Latte Red — mistake highlighting (/games) */
+  --color-red-dark: #f38ba8; /* Mocha Red */
 
   /* Colors - Dark: Catppuccin Mocha */
   --color-night: #1e1e2e;         /* Base */

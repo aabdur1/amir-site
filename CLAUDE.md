@@ -1,6 +1,6 @@
 # amir-site
 
-Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero with CTA/resume links + 6 editorial resume sections) + photography gallery + interactive data mining explainers + /work case studies.
+Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero with CTA/resume links + 6 editorial resume sections) + photography gallery + interactive data mining explainers + /work case studies + unlisted /games (ad-free games).
 
 ## Tech Stack
 
@@ -20,7 +20,7 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - **Fonts via next/font/google.** DM Serif Display (headings), DM Sans (body), Share Tech Mono (mono/tags), Lora (credential badges). Loaded as CSS variables (`--font-display`, `--font-body`, `--font-mono`, `--font-badge`) in `app/layout.tsx`.
 - **Dark mode via class toggle.** Uses `.dark` class on `<html>`. Custom variant defined in globals.css: `@custom-variant dark (&:where(.dark, .dark *));`. Blocking inline `<script>` in `layout.tsx` prevents flash of wrong theme on load. Toggle uses View Transitions API (`startViewTransition`) with circular clip-path reveal when supported, falling back to `.theme-transitioning` class for 300ms crossfade.
 - **No icon libraries.** Icons are inline SVGs.
-- **Client components marked explicitly.** Components using `"use client"`: nav, dark-mode-toggle, hero, animated-text, living-field, spine, count-up, interactive-headshot, certifications, experience, projects, skills, education, footer, scroll-progress, page-transition, learn-teaser. Gallery components (masonry-grid, photo-card, sort-controls) are also client components. Learn components (learn-card, section-rail, gradient-descent, log-loss-cross-entropy, pca, regularization, clustering, shap, neural-networks, sql, python, r, table-chips) are client components. Work components: case-study-article, tableau-embed, work-card, and grounding-pipeline are client components (the first and last use `useScrollReveal`); case-study-plate and work-nav are server components. learn-nav, section-header, section-divider, and spark-rule are server components.
+- **Client components marked explicitly.** Components using `"use client"`: nav, dark-mode-toggle, hero, animated-text, living-field, spine, count-up, interactive-headshot, certifications, experience, projects, skills, education, footer, scroll-progress, page-transition, learn-teaser. Gallery components (masonry-grid, photo-card, sort-controls) are also client components. Learn components (learn-card, section-rail, gradient-descent, log-loss-cross-entropy, pca, regularization, clustering, shap, neural-networks, sql, python, r, table-chips) are client components. Work components: case-study-article, tableau-embed, work-card, and grounding-pipeline are client components (the first and last use `useScrollReveal`); case-study-plate and work-nav are server components. Game components (game-card, sudoku, board, number-pad, dynamic-games, game-error-boundary) are client components. learn-nav, section-header, section-divider, and spark-rule are server components.
 - **No shorthand/longhand mixing in inline styles.** Always fold `animationDelay` into the `animation` shorthand to avoid React warnings.
 - **Unlayered `globals.css` rules beat every Tailwind utility.** Tailwind 4 emits utilities inside `@layer utilities`; anything declared in `globals.css` outside a layer is unlayered, and unlayered CSS wins over *all* layered CSS regardless of specificity. So a class that sets a property in `globals.css` cannot be overridden by a utility for that same property on the same element — e.g. `.reg-mark` declares `display: block`, so `class="reg-mark hidden lg:block"` renders at every breakpoint and the responsive gate is silently inert (this shipped as a real mobile bug). Fix: put the utility on a plain wrapper element instead, as `interactive-headshot.tsx`, `projects.tsx`, and `case-study-plate.tsx` all do for `.reg-mark`. jsdom does not model cascade layers, so no unit test catches this — check the computed style in a browser.
 
@@ -46,6 +46,7 @@ Personal website for Amir Abdur-Rahim at amirabdurrahim.com. Landing page (hero 
 - **Branded OG images.** `app/opengraph-image.tsx`, `app/gallery/opengraph-image.tsx`, and `app/learn/opengraph-image.tsx` generate 1200x630 PNGs at build time using `ImageResponse` from `next/og`. Catppuccin Mocha branding with DM Serif Display font loaded from Google Fonts gstatic (with try/catch fallback if font fetch fails). No hardcoded `images` in metadata — Next.js auto-injects from these routes. `app/learn/[slug]/opengraph-image.tsx` renders a unique per-slug card (number, title, subtopics, the index-card illustration with Mocha colors hardcoded), served on demand (the route is ƒ dynamic). Satori gotchas learned there: JSX interpolation that yields multiple text-node children (e.g. `{number}/`) fails with "Expected <div> to have explicit display: flex" — fold into a single template string; the ◆ glyph triggers a runtime font-fallback fetch that can fail, so ornaments in all OG routes are drawn (rotated square div) instead.
 - **Metadata-driven learn section.** `lib/learn/artifacts.ts` is the single source of truth for all artifact metadata (slug, title, description, subtopics, section count, and `sections` — the `{ id, label }` list driving the SectionRail). The index page, prev/next nav, section rail, per-slug OG image, sitemap entries, and JSON-LD `LearningResource`/`BreadcrumbList` schemas all derive from this array. Adding a new artifact: create the component (with stable ids on its section h2s), add an entry to the array.
 - **Metadata-driven /work case studies.** `lib/work/case-studies.ts` mirrors the learn architecture: one array drives the /work index (WorkCard grid), /work/[slug] pages (rendered data-only by `components/work/case-study-article.tsx` — title block, metric stat tiles, optional paired bars, numbered prose sections, outbound links), prev/next (`WorkNav`, rendered only when a neighbor exists), sitemap entries, per-slug OG card, and JSON-LD `CreativeWork`/`BreadcrumbList`. Four published studies: Spotify Listening (01, personal project), Airline Flight Patterns (02, coursework), DocDefend+ (03, coursework), and Parkinson's Voice Screening (04, coursework — every number verified against the notebook's committed cell outputs; see docs/superpowers/specs/2026-08-07-parkinsons-case-study-design.md). A section with `embed: true` renders the study's `embed` (Tableau) under its paragraphs — the placeholder motif/copy is data-driven via `embed.kind` (`'story'` | `'dashboard'`) and `embed.caption`, so a new Tableau case study needs no component edit. `figure` and `plate` follow the same section-level-flag-plus-top-level-payload shape: a section with `figure: true` renders the study's `figure` (a hand-drawn SVG diagram, e.g. `GroundingPipeline`) and a section with `plate: true` renders its `plate` (a screenshot mounted print via `CaseStudyPlate`); `figure.kind` selects the diagram component from the `FIGURES` registry in `case-study-article.tsx`, keyed by `CaseStudyFigure['kind']` so a kind added to the union without a matching registry entry fails to compile. Five unverified draft studies are quarantined in `lib/work/unpublished-drafts.ts` (imported by nothing; verify numbers, move into CASE_STUDIES, renumber to publish). Discovery: "Work" nav pill (first pill, peach), homepage Projects cards (internal `Link` variant — `url` starting with `/` renders a next/link without target=_blank), an "all case studies →" link under the 02/ section header, and the footer Work link. (The original no-third-pill decision was reversed 2026-08-04 once /work had flagship content; 320px re-verified.)
+- **Metadata-driven /games section.** `lib/games/games.ts` mirrors the learn/work architecture: one `Game` array (slug/title/number/description/accent) is the single source of truth for the /games index (`GameCard` grid) and `/games/[slug]` pages. Deliberately unlisted — `robots: { index: false }` on both routes, NO sitemap entries, no nav pill, and no disallow rule in `app/robots.ts` either (reachable only by direct link, not blocked, just uncrawled by omission). Sudoku is game 01: pure engine + storage live in `lib/games/sudoku/` (`engine.ts`, `storage.ts`, both unit-tested), the component (`components/games/sudoku/sudoku.tsx` + `board.tsx` + `number-pad.tsx`) loads `ssr: false` via `components/games/dynamic-games.tsx` (restores localStorage progress in a `useState` initializer, python.tsx precedent), wrapped in `GameErrorBoundary` — a deliberate thin duplicate of the learn `ArtifactErrorBoundary` (divergent fallback copy; games never imports from learn). The 180-puzzle bank (60 each of easy/medium/hard, givens 38-42/30-34/26-29) is committed in `lib/games/sudoku-puzzles.ts`, GENERATED by `scripts/generate-sudoku-puzzles.mjs` (deterministic LCG, SEED=7, same recipe as `generate-sql-seed.mjs`; every puzzle's solution uniqueness is asserted at generation time) — never hand-edit, re-run only to change the bank. Progress autosaves to localStorage `sudoku-progress-v1`. Mistake highlighting uses the `--color-red`/`--color-red-dark` tokens added for it. `routeProfile()` in `living-field.tsx` has an explicit faint `/games` entry so the field stays out of the way mid-puzzle.
 - **Tableau embed (click-gated iframe).** `components/work/tableau-embed.tsx`: the case study's Tableau Public viz loads as a plain iframe ONLY after "Load the interactive story/dashboard" (button label data-driven via `embed.kind`) is clicked — zero tableau.com bytes anywhere before that, and zero third-party JS ever (the Embedding API was deliberately skipped: unpinned `*.latest.min.js` + it would widen script-src; the iframe needs only frame-src). Author-set viz size is data-driven (`embed.width/height` — 1016×991 for the airline story, 1000×3177 for the Spotify dashboard; the airline size verified against the live `#tab-dashboard-region` 1016×964 + 27px bottom strip); on narrow screens the frame pans inside its own `overflow-x-auto` wrapper so the page never scrolls horizontally. On-design placeholder (three-view SVG motif) + `role="status"` copy before/after load.
 - **Learn artifact error boundary.** `ArtifactErrorBoundary` class component wraps each artifact in `app/learn/[slug]/page.tsx`. Shows editorial-styled fallback with "Try again" button if a canvas/interaction throws.
 - **Learn artifacts with ssr: false.** 8 of 10 learn artifacts load with `ssr: false` — five (Log Loss, PCA, Clustering, SHAP, Neural Networks) use `Math.random()` in `useState` initializers or ref initializers; SQL and Python because their WASM engines are client-only; R because its webR engine is client-only. They're loaded via `components/learn/dynamic-artifacts.tsx` — a `'use client'` wrapper that re-exports them with `next/dynamic` `{ ssr: false }` to avoid hydration mismatches. Gradient Descent and Regularization use deterministic initial data and load with SSR.
@@ -160,6 +161,11 @@ app/
     [slug]/
       page.tsx            # Dynamic route: section rail, back link, tab bar (+scroll fade), artifact component, error boundary, prev/next nav, JSON-LD ×2
       opengraph-image.tsx # Per-slug OG card: number + title + subtopics + index-card illustration (Mocha hardcoded)
+  games/
+    page.tsx              # Games index: card grid (GameCard), robots noindex — unlisted section (no sitemap entry, no nav pill)
+    opengraph-image.tsx   # Games OG image (Catppuccin Mocha, 1200x630)
+    [slug]/
+      page.tsx            # Game route: back link, GameErrorBoundary wraps the code-split game component; robots noindex
 components/
   nav.tsx                 # Sticky nav: AA monogram (mobile) / full name (desktop), Work pill (peach), Learn pill (mauve), Gallery pill (sapphire), morphing indicator, magnetic hover, thin rule
   footer.tsx              # Editorial footer: name, tagline, links, diamond ornaments
@@ -209,6 +215,14 @@ components/
     python.tsx            # 09/ Python (6 sections: filtering, groupby, reshape/pivot, merging, windows, challenges — 24 checked pandas exercises on Pyodide, click-to-load from CDN)
     r.tsx                 # 10/ R (5 sections: filtering, group & summarise, joins, windows, challenges — 19 checked dplyr exercises on webR, click-to-load, self-hosted)
     table-chips.tsx       # Shared schema-popover chips for the SQL/Python exercise cards' table labels (hover/click/keyboard, reads lib/learn/schema.ts)
+  games/
+    game-card.tsx         # Games index card: illustration + number/title, Playable/In-progress pills (client — useScrollReveal + localStorage read)
+    game-error-boundary.tsx # Deliberate thin duplicate of learn/artifact-error-boundary.tsx — divergent fallback copy; games never imports from learn
+    dynamic-games.tsx     # Client wrapper for ssr: false dynamic import (Sudoku)
+    sudoku/
+      sudoku.tsx          # 01/ Sudoku: board + panel state, autosave, quiet timer, new-game/solved panels
+      board.tsx           # 9x9 grid: selection, mistake highlighting, keyboard interaction
+      number-pad.tsx      # Digit buttons, notes toggle, undo, erase, new game
 lib/
   hooks.ts                # Shared hooks: useHydrated(), useScrollReveal()
   styles.ts               # Shared accent style map (ACCENT_STYLES)
@@ -227,6 +241,12 @@ lib/
   work/
     case-studies.ts       # Single source of truth for /work (four published: Spotify Listening 01, Airline Flight Patterns 02, DocDefend+ 03, Parkinson's Voice 04)
     unpublished-drafts.ts # Five quarantined draft studies — imported by nothing, prose unverified
+  games/
+    games.ts              # Single source of truth: Game array (slug/title/number/description/accent) driving /games index + [slug] pages
+    sudoku-puzzles.ts     # GENERATED 180-puzzle bank (60/difficulty) — regenerate via scripts/generate-sudoku-puzzles.mjs, never hand-edit
+    sudoku/
+      engine.ts           # Pure sudoku engine: board state, moves, undo, mistakes, solved check (unit-tested)
+      storage.ts          # localStorage read/write for sudoku-progress-v1 (unit-tested)
 scripts/
   add-photo.mjs           # One-command photo addition (supports multiple files): upload + thumbnail + blurhash + photos.json
   add-photo-gui.mjs       # Native macOS Finder picker → feeds selections to add-photo.mjs
@@ -235,6 +255,7 @@ scripts/
   generate-sql-seed.mjs   # Seed generator + teaching-shape assertions (writes lib/learn/sql-seed.ts, lib/learn/python-data.ts, AND lib/learn/schema.ts from one PRNG stream)
   fetch-webr.mjs          # populates public/webr/ (runtime + package mirror) at build time; webr-assets.lock.json is its committed sha256 lock
   verify-r-exercises.mjs  # webR-in-Node gate: all 19 canonical solutions must pass the checker
+  generate-sudoku-puzzles.mjs # Sudoku bank generator + uniqueness assertions (deterministic LCG SEED=7, same recipe as generate-sql-seed.mjs) — writes lib/games/sudoku-puzzles.ts
 public/
   photos.json             # Photo metadata (CloudFront URLs + thumb URLs, EXIF data)
   badges/                 # Non-Credly badge images (e.g. Zscaler, Snowflake)
@@ -250,6 +271,8 @@ public/
 next.config.ts            # Image remote patterns (CloudFront, Credly), experimental.viewTransition
 netlify.toml              # Netlify build config + CSP, HSTS, cache headers
 .nvmrc                    # Node version (20) for Netlify
+.claude/
+  launch.json             # In-app browser dev-server config (name "dev", npm run dev, port 3000) — used by the Claude Code browser preview tool
 ```
 
 ## Photos
@@ -302,6 +325,8 @@ npm run verify-python  # Pyodide-in-Node exercise check (needs network on cold c
 ```
 
 **Known lint errors (pre-existing, not regressions):** 2 errors — `interactive-headshot.tsx` (react-hooks/immutability — `animate` accessed before declaration) and `masonry-grid.tsx` (react-hooks/set-state-in-effect — setState in the shuffle/sort effect body). Both safe to ignore.
+
+**`vitest.setup.ts` localStorage gotcha:** Node ≥22 ships a built-in `localStorage` global that has no methods unless `--localstorage-file` points to a valid path; in vitest's jsdom environment that built-in shadows jsdom's working localStorage, so affected tests see a method-less object (`localStorage.setItem is not a function`) instead of a real store. `vitest.setup.ts` polyfills the methods when this happens (guarded, so it's inert on Node versions/environments where localStorage already works) — cost a review round to diagnose before the guard existed.
 
 ## Certifications
 
