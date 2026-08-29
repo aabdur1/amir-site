@@ -131,12 +131,13 @@ export function Board({
                   <span className="text-xl sm:text-2xl leading-none">{cell.value}</span>
                 )}
                 {cell.value === 0 && cell.notes !== 0 && (
-                  /* Pencil notes — sub-12px only below 375px viewports
-                     (documented spec deviation: optional user annotations) */
+                  /* Pencil notes — 9px below 375px viewports, 11px to 639px,
+                     12px from sm: (documented spec deviation: optional user
+                     annotations) */
                   <span
                     aria-hidden="true"
                     className="absolute inset-0.5 grid grid-cols-3 place-items-center
-                      font-[family-name:var(--font-mono)] text-[9px] sm:text-[11px] leading-none
+                      font-[family-name:var(--font-mono)] text-[9px] min-[375px]:text-[11px] sm:text-[12px] leading-none
                       text-ink-subtle dark:text-night-muted"
                   >
                     {DIGITS.map((d) => (

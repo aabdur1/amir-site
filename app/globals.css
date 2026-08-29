@@ -51,7 +51,8 @@
 :root {
   transition: --color-mauve 300ms ease, --color-peach 300ms ease,
               --color-sapphire 300ms ease, --color-lavender 300ms ease,
-              --color-teal 300ms ease, --color-rosewater 300ms ease;
+              --color-teal 300ms ease, --color-rosewater 300ms ease,
+              --color-red 300ms ease;
 }
 
 @theme {

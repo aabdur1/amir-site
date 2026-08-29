@@ -219,4 +219,17 @@ describe('persistence, timer, panels', () => {
     fireEvent.click(screen.getByRole('button', { name: 'New game' }))
     expect(screen.queryByText('This abandons your current puzzle.')).toBeNull()
   })
+
+  it('keyboard undo after solving does not revert the winning move', () => {
+    // all but the first empty cell already solved
+    const values = puzzle.solution.slice(0, firstEmpty) + '0' + puzzle.solution.slice(firstEmpty + 1)
+    seedProgress({ values })
+    render(<Sudoku />)
+    fireEvent.click(cellButton(row, col))
+    fireEvent.click(screen.getByRole('button', { name: `Enter ${correctDigit}` }))
+    expect(screen.getByRole('heading', { name: 'Solved' })).toBeInTheDocument()
+    fireEvent.keyDown(screen.getByRole('grid'), { key: 'z' })
+    expect(screen.getByRole('heading', { name: 'Solved' })).toBeInTheDocument()
+    expect(cellButton(row, col)).toHaveAccessibleName(`Row ${row}, column ${col}, ${correctDigit}`)
+  })
 })

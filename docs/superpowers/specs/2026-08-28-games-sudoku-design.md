@@ -139,8 +139,8 @@ full-but-wrong, a gentle status line ("Something's not quite right yet") with no
 location or count revealed.
 
 **Notes:** pencil mode toggle; notes render as a 3×3 mini-grid of digits in the
-cell (~cell/3.2 px; 12px+ at 375px-wide viewports and above, smaller only below
-that — accepted deviation from the 12px text floor, documented here: notes are
+cell (9px below 375px-wide viewports, 11px to 639px, 12px from 640px —
+accepted deviation from the 12px text floor, documented here: notes are
 optional user annotations, not site content). Entering a real value in a cell
 clears that cell's notes AND removes that digit from notes in its row/col/box
 (one undo entry for the whole cascade).

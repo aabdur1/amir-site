@@ -136,6 +136,7 @@ export function Sudoku() {
   }
 
   const handleUndo = () => {
+    if (solved) return
     setBoard((b) => undo(b))
     setStatus("Undid last move")
   }
