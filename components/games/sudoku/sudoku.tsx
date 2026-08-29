@@ -65,6 +65,8 @@ export function Sudoku() {
   const [notesMode, setNotesMode] = useState(false)
   // Covers resuming an already-solved saved board on mount.
   const [panel, setPanel] = useState<Panel>(() => (isSolved(init.board) ? "solved" : "none"))
+  // Difficulty pill tapped mid-puzzle — held until confirmed or dismissed
+  const [confirmSwitch, setConfirmSwitch] = useState<Difficulty | null>(null)
   const [status, setStatus] = useState("")
 
   const solved = isSolved(board)
@@ -156,7 +158,22 @@ export function Sudoku() {
     setSelected(null)
     setNotesMode(false)
     setPanel("none")
+    setConfirmSwitch(null)
     setStatus(`New ${difficulty} puzzle`)
+  }
+
+  // Difficulty pills: instant switch when nothing is at stake (fresh or
+  // solved board), confirm first when real progress would be abandoned.
+  // Tapping the current difficulty mid-game is a no-op so a stray tap
+  // can't re-deal the puzzle she's working on.
+  const pickDifficulty = (d: Difficulty) => {
+    if (d === board.puzzle.difficulty && !solved) return
+    if (hasProgress && !solved) {
+      setPanel("none")
+      setConfirmSwitch(d)
+      return
+    }
+    startNewGame(d)
   }
 
   return (
@@ -175,9 +192,33 @@ export function Sudoku() {
           </span>
         </p>
         <p className="font-[family-name:var(--font-mono)] text-[12px] text-ink-subtle dark:text-night-muted">
-          fig. 01 · {board.puzzle.difficulty} · {givensCount} given
+          fig. 01 · {givensCount} given
         </p>
       </header>
+
+      {/* Difficulty pills — pick a level from the very first screen or any
+          time after; pickDifficulty confirms before abandoning progress.
+          aria-labels are "Play easy" etc. so they never collide with the
+          new-game panel's plain "easy"/"medium"/"hard" buttons. */}
+      <div role="group" aria-label="Difficulty" className="mb-4 flex gap-2 lg:justify-center">
+        {(["easy", "medium", "hard"] as const).map((d) => (
+          <button
+            key={d}
+            type="button"
+            aria-label={`Play ${d}`}
+            aria-pressed={d === board.puzzle.difficulty}
+            onClick={() => pickDifficulty(d)}
+            className={`h-11 px-4 rounded-full border text-[13px]
+              font-[family-name:var(--font-mono)] tracking-wide transition-colors ${
+              d === board.puzzle.difficulty
+                ? `${DIFFICULTY_STYLES[d]} text-ink dark:text-night-text/80`
+                : "border-cream-border dark:border-night-border text-ink-subtle dark:text-night-muted hover:border-mauve/40 dark:hover:border-mauve-dark/40 hover:text-ink dark:hover:text-night-text"
+            }`}
+          >
+            {d}
+          </button>
+        ))}
+      </div>
 
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-center gap-6 lg:gap-10">
         <div className="w-full max-w-[420px] sm:max-w-[480px] mx-auto lg:mx-0">
@@ -266,6 +307,35 @@ export function Sudoku() {
                   transition-colors"
               >
                 Cancel
+              </button>
+            </div>
+          ) : confirmSwitch ? (
+            <div className="rounded-xl border border-cream-border dark:border-night-border
+              bg-white dark:bg-night-card p-4 flex flex-col gap-3">
+              <p className="font-[family-name:var(--font-mono)] text-[13px] tracking-wide uppercase
+                text-ink-subtle dark:text-night-muted">
+                Start a new {confirmSwitch} puzzle?
+              </p>
+              <p className="text-[13px] text-red dark:text-red-dark">
+                This abandons your current puzzle.
+              </p>
+              <button
+                type="button"
+                onClick={() => startNewGame(confirmSwitch)}
+                className={`h-12 rounded-lg border text-[13px]
+                  font-[family-name:var(--font-mono)] tracking-wide
+                  text-ink dark:text-night-text/80 transition-colors ${DIFFICULTY_STYLES[confirmSwitch]}`}
+              >
+                Start {confirmSwitch} puzzle
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmSwitch(null)}
+                className="h-11 rounded-lg text-[13px] font-[family-name:var(--font-mono)]
+                  text-ink-subtle dark:text-night-muted hover:text-ink dark:hover:text-night-text
+                  transition-colors"
+              >
+                Keep playing
               </button>
             </div>
           ) : (

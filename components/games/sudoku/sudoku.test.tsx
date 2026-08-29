@@ -33,6 +33,18 @@ function cellButton(r: number, c: number) {
   return screen.getByRole('gridcell', { name: new RegExp(`^Row ${r}, column ${c}(,|$)`) })
 }
 
+function seedProgress(overrides: Record<string, unknown> = {}) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    puzzleId: puzzle.id,
+    values: puzzle.givens,
+    notes: Array(81).fill(0),
+    elapsedSeconds: 0,
+    usedIds: [puzzle.id],
+    settings: { showMistakes: true },
+    ...overrides,
+  }))
+}
+
 it('renders 81 gridcells with given/empty labels', () => {
   render(<Sudoku />)
   expect(screen.getAllByRole('gridcell')).toHaveLength(81)
@@ -113,18 +125,6 @@ describe('notes, erase, undo, mistakes toggle', () => {
 })
 
 describe('persistence, timer, panels', () => {
-  function seedProgress(overrides: Record<string, unknown> = {}) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      puzzleId: puzzle.id,
-      values: puzzle.givens,
-      notes: Array(81).fill(0),
-      elapsedSeconds: 0,
-      usedIds: [puzzle.id],
-      settings: { showMistakes: true },
-      ...overrides,
-    }))
-  }
-
   it('resumes a saved board silently', () => {
     const values = puzzle.givens.slice(0, firstEmpty) + String(correctDigit) + puzzle.givens.slice(firstEmpty + 1)
     seedProgress({ values })
@@ -231,5 +231,74 @@ describe('persistence, timer, panels', () => {
     fireEvent.keyDown(screen.getByRole('grid'), { key: 'z' })
     expect(screen.getByRole('heading', { name: 'Solved' })).toBeInTheDocument()
     expect(cellButton(row, col)).toHaveAccessibleName(`Row ${row}, column ${col}, ${correctDigit}`)
+  })
+})
+
+describe('difficulty pills', () => {
+  it('render with the current difficulty pressed', () => {
+    seedProgress() // e01, easy
+    render(<Sudoku />)
+    expect(screen.getByRole('button', { name: 'Play easy' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: 'Play medium' })).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByRole('button', { name: 'Play hard' })).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('switch instantly on an untouched board', () => {
+    seedProgress() // values === givens: no progress at stake
+    render(<Sudoku />)
+    fireEvent.click(screen.getByRole('button', { name: 'Play medium' }))
+    expect(screen.queryByText('This abandons your current puzzle.')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Play medium' })).toHaveAttribute('aria-pressed', 'true')
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)!)
+    expect(saved.puzzleId).toMatch(/^m/)
+  })
+
+  it('confirm before abandoning a puzzle in progress, and Keep playing dismisses', () => {
+    const values = puzzle.givens.slice(0, firstEmpty) + String(correctDigit) + puzzle.givens.slice(firstEmpty + 1)
+    seedProgress({ values })
+    render(<Sudoku />)
+    fireEvent.click(screen.getByRole('button', { name: 'Play hard' }))
+    expect(screen.getByText('Start a new hard puzzle?')).toBeInTheDocument()
+    expect(screen.getByText('This abandons your current puzzle.')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Keep playing' }))
+    expect(screen.queryByText('Start a new hard puzzle?')).toBeNull()
+    // board untouched, still the easy puzzle
+    expect(cellButton(row, col)).toHaveAccessibleName(`Row ${row}, column ${col}, ${correctDigit}`)
+    expect(screen.getByRole('button', { name: 'Play easy' })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('confirming the switch starts the new puzzle and resets elapsed', () => {
+    const values = puzzle.givens.slice(0, firstEmpty) + String(correctDigit) + puzzle.givens.slice(firstEmpty + 1)
+    seedProgress({ values, elapsedSeconds: 300 })
+    render(<Sudoku />)
+    fireEvent.click(screen.getByRole('button', { name: 'Play hard' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Start hard puzzle' }))
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)!)
+    expect(saved.puzzleId).toMatch(/^h/)
+    expect(saved.elapsedSeconds).toBe(0)
+    expect(screen.getByRole('button', { name: 'Play hard' })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('tapping the current difficulty mid-game is a no-op', () => {
+    const values = puzzle.givens.slice(0, firstEmpty) + String(correctDigit) + puzzle.givens.slice(firstEmpty + 1)
+    seedProgress({ values })
+    render(<Sudoku />)
+    fireEvent.click(screen.getByRole('button', { name: 'Play easy' }))
+    expect(screen.queryByText('Start a new easy puzzle?')).toBeNull()
+    expect(cellButton(row, col)).toHaveAccessibleName(`Row ${row}, column ${col}, ${correctDigit}`)
+  })
+
+  it('start a fresh puzzle straight from the Solved panel', () => {
+    const values = puzzle.solution.slice(0, firstEmpty) + '0' + puzzle.solution.slice(firstEmpty + 1)
+    seedProgress({ values })
+    render(<Sudoku />)
+    fireEvent.click(cellButton(row, col))
+    fireEvent.click(screen.getByRole('button', { name: `Enter ${correctDigit}` }))
+    expect(screen.getByRole('heading', { name: 'Solved' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Play easy' }))
+    expect(screen.queryByRole('heading', { name: 'Solved' })).toBeNull()
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)!)
+    expect(saved.puzzleId).toMatch(/^e/)
+    expect(saved.puzzleId).not.toBe(puzzle.id) // e01 is used — a fresh easy puzzle deals
   })
 })

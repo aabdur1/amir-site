@@ -235,3 +235,20 @@ and the 3D word search idea — prior art exists as printed books and letter-cub
 mobile apps, but a hand-rolled web-native rotatable 3D word search would be
 genuinely distinctive. A PWA manifest + offline support for the /games subtree is
 the most valuable cross-game enhancement once a second game lands.
+
+## Addendum 2026-08-28 — always-visible difficulty pills
+
+Added after Amir play-tested the deploy preview: an `easy · medium · hard` pill
+row (44px, mono, `DIFFICULTY_STYLES` accents, `role="group"` +
+`aria-pressed`) between the header and the board, so difficulty is adjustable
+from the very first screen. Semantics: tapping a different difficulty on an
+untouched or solved board deals a new puzzle instantly; mid-puzzle it swaps the
+pad for a confirm panel ("Start a new {d} puzzle?" / "Keep playing") so a
+mis-tap can't discard progress; tapping the current difficulty mid-game is a
+no-op. Pill accessible names are "Play easy" etc. to avoid colliding with the
+new-game panel's plain-text difficulty buttons. The header annotation dropped
+its difficulty word (the pressed pill now carries it). Cost: +60px on the
+phone stack — the one-viewport fit boundary moves from 568px-tall to ~630px;
+shorter viewports fall back to page scroll for the tertiary Show-mistakes
+toggle only (board + pad still fit above the fold at 390×844, the primary
+device). Covered by six RTL tests in sudoku.test.tsx.
