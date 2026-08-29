@@ -5,6 +5,7 @@ import React from "react"
 interface NumberPadProps {
   notesMode: boolean
   canUndo: boolean
+  disabledDigits: Set<number>
   onDigit: (digit: number) => void
   onErase: () => void
   onUndo: () => void
@@ -17,33 +18,41 @@ interface NumberPadProps {
 // is ≥44px in the thumb axis (h-12 = 48px, ≥51px wide at 320px).
 const KEY =
   "h-12 rounded-lg border border-cream-border dark:border-night-border bg-white dark:bg-night-card " +
-  "text-ink dark:text-night-text hover:border-mauve/50 dark:hover:border-mauve-dark/50 " +
-  "active:bg-mauve/10 dark:active:bg-mauve-dark/15 transition-colors"
+  "text-ink dark:text-night-text transition-colors"
+
+const KEY_LIVE =
+  "hover:border-mauve/50 dark:hover:border-mauve-dark/50 " +
+  "active:bg-mauve/10 dark:active:bg-mauve-dark/15"
 
 const CONTROL =
   "h-12 rounded-lg border text-[13px] font-[family-name:var(--font-mono)] tracking-wide transition-colors"
 
 export function NumberPad({
-  notesMode, canUndo, onDigit, onErase, onUndo, onToggleNotes, onNewGame,
+  notesMode, canUndo, disabledDigits, onDigit, onErase, onUndo, onToggleNotes, onNewGame,
 }: NumberPadProps) {
+  // aria-disabled (not disabled) so a grayed key stays focusable and
+  // announces its state instead of vanishing from the tab order; the click
+  // guard makes it a no-op either way.
+  const digitKey = (d: number) => {
+    const done = disabledDigits.has(d)
+    return (
+      <button key={d} type="button" aria-label={`Enter ${d}`}
+        aria-disabled={done || undefined}
+        onClick={() => { if (!done) onDigit(d) }}
+        className={`${KEY} text-xl ${done ? "opacity-40" : KEY_LIVE}`}>
+        {d}
+      </button>
+    )
+  }
+
   return (
     <div className="w-full flex flex-col gap-2">
       <div className="grid grid-cols-5 gap-2">
-        {[1, 2, 3, 4, 5].map((d) => (
-          <button key={d} type="button" aria-label={`Enter ${d}`} onClick={() => onDigit(d)}
-            className={`${KEY} text-xl`}>
-            {d}
-          </button>
-        ))}
+        {[1, 2, 3, 4, 5].map(digitKey)}
       </div>
       <div className="grid grid-cols-5 gap-2">
-        {[6, 7, 8, 9].map((d) => (
-          <button key={d} type="button" aria-label={`Enter ${d}`} onClick={() => onDigit(d)}
-            className={`${KEY} text-xl`}>
-            {d}
-          </button>
-        ))}
-        <button type="button" aria-label="Erase" onClick={onErase} className={KEY}>
+        {[6, 7, 8, 9].map(digitKey)}
+        <button type="button" aria-label="Erase" onClick={onErase} className={`${KEY} ${KEY_LIVE}`}>
           <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
             className="h-5 w-5 mx-auto">

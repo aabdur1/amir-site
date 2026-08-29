@@ -18,10 +18,16 @@ const last = target[target.length - 1]
 
 beforeEach(() => {
   vi.spyOn(Math, 'random').mockReturnValue(0)
+  // Any live solve mounts ConfettiBurst; jsdom has no matchMedia (stubbed —
+  // hooks.test.ts precedent) and no 2d context (mocked null: the burst draws
+  // nothing, but the canvas mounts, which is what the celebrate tests assert)
+  vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: false }))
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null)
 })
 
 afterEach(() => {
   localStorage.clear()
+  vi.unstubAllGlobals()
   vi.restoreAllMocks()
 })
 
@@ -216,6 +222,42 @@ describe('persistence, timer, pills, panels', () => {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)!)
     expect(saved.puzzleId).toMatch(/^we/)
     expect(saved.puzzleId).not.toBe(puzzle.id) // we01 used → a fresh easy deals
+  })
+})
+
+describe('confetti on solve', () => {
+  function seed(found: { word: string; cells: number[] }[]) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      puzzleId: puzzle.id, found, elapsedSeconds: 0, usedIds: [puzzle.id],
+    }))
+  }
+  const allFound = () => puzzle.placements.map((p) => ({ word: p.word, cells: cellsOf(p) }))
+
+  it('bursts on finding the last word live', () => {
+    seed(allFound().filter((f) => f.word !== pl.word))
+    render(<WordSearch />)
+    expect(document.querySelector('canvas')).toBeNull()
+    fireEvent.click(cell(first))
+    fireEvent.click(cell(last))
+    expect(screen.getByRole('heading', { name: `Found all ${puzzle.words.length}` })).toBeInTheDocument()
+    expect(document.querySelector('canvas')).not.toBeNull()
+  })
+
+  it('does not burst when resuming an already-solved puzzle', () => {
+    seed(allFound())
+    render(<WordSearch />)
+    expect(screen.getByRole('heading', { name: `Found all ${puzzle.words.length}` })).toBeInTheDocument()
+    expect(document.querySelector('canvas')).toBeNull()
+  })
+
+  it('unmounts when a new puzzle starts', () => {
+    seed(allFound().filter((f) => f.word !== pl.word))
+    render(<WordSearch />)
+    fireEvent.click(cell(first))
+    fireEvent.click(cell(last))
+    fireEvent.click(screen.getByRole('button', { name: 'New puzzle' }))
+    fireEvent.click(screen.getByRole('button', { name: 'easy' }))
+    expect(document.querySelector('canvas')).toBeNull()
   })
 })
 

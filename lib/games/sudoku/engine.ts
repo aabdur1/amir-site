@@ -135,6 +135,20 @@ export function mistakes(state: BoardState): number[] {
   return out
 }
 
+// Digits with all 9 placements present and correct — the pad grays these
+// out. Wrong placements don't count, so a digit stays live until every copy
+// of it is right (even with Show mistakes off).
+export function completedDigits(state: BoardState): Set<number> {
+  const correct = new Array(10).fill(0)
+  for (let i = 0; i < 81; i++) {
+    const v = state.cells[i].value
+    if (v !== 0 && v === state.puzzle.solution.charCodeAt(i) - 48) correct[v]++
+  }
+  const out = new Set<number>()
+  for (let d = 1; d <= 9; d++) if (correct[d] === 9) out.add(d)
+  return out
+}
+
 export function isComplete(state: BoardState): boolean {
   return state.cells.every((c) => c.value !== 0)
 }

@@ -3,13 +3,14 @@
 import React, { useEffect, useMemo, useState } from "react"
 import {
   newGame, restoreGame, setValue, toggleNote, eraseCell, undo, mistakes,
-  isComplete, isSolved, serialize, pickPuzzle, formatElapsed,
+  isComplete, isSolved, serialize, completedDigits, pickPuzzle, formatElapsed,
   type BoardState, type Difficulty,
 } from "@/lib/games/sudoku/engine"
 import {
   loadProgress, saveProgress, type SudokuSettings,
 } from "@/lib/games/sudoku/storage"
 import { SUDOKU_PUZZLES } from "@/lib/games/sudoku-puzzles"
+import { ConfettiBurst } from "@/components/games/confetti"
 import { SparkRule } from "@/components/spark-rule"
 import { DIFFICULTY_STYLES } from "@/lib/styles"
 import { Board } from "./board"
@@ -62,6 +63,9 @@ export function Sudoku() {
   const [panel, setPanel] = useState<Panel>(() => (isSolved(init.board) ? "solved" : "none"))
   // Difficulty pill tapped mid-puzzle — held until confirmed or dismissed
   const [confirmSwitch, setConfirmSwitch] = useState<Difficulty | null>(null)
+  // True only after a LIVE solve (set in the render-adjust below, which a
+  // resumed-solved board never reaches) — gates the one-shot ConfettiBurst
+  const [celebrate, setCelebrate] = useState(false)
   const [status, setStatus] = useState("")
 
   const solved = isSolved(board)
@@ -69,6 +73,7 @@ export function Sudoku() {
     () => new Set(settings.showMistakes ? mistakes(board) : []),
     [board, settings.showMistakes]
   )
+  const disabledDigits = useMemo(() => completedDigits(board), [board])
   const givensCount = useMemo(
     () => 81 - (board.puzzle.givens.match(/0/g)?.length ?? 0),
     [board.puzzle]
@@ -90,6 +95,7 @@ export function Sudoku() {
   // solved is still true, so this re-fires and returns to the Solved panel.
   if (solved && panel === "none") {
     setPanel("solved")
+    setCelebrate(true) // idempotent on the Cancel re-fire: no remount, no re-burst
     setStatus("Puzzle solved")
   }
 
@@ -154,6 +160,7 @@ export function Sudoku() {
     setNotesMode(false)
     setPanel("none")
     setConfirmSwitch(null)
+    setCelebrate(false)
     setStatus(`New ${difficulty} puzzle`)
   }
 
@@ -338,6 +345,7 @@ export function Sudoku() {
               <NumberPad
                 notesMode={notesMode}
                 canUndo={board.history.length > 0}
+                disabledDigits={disabledDigits}
                 onDigit={handleDigit}
                 onErase={handleErase}
                 onUndo={handleUndo}
@@ -365,6 +373,7 @@ export function Sudoku() {
           )}
         </div>
       </div>
+      {celebrate && <ConfettiBurst />}
       <div role="status" className="sr-only">{status}</div>
     </div>
   )

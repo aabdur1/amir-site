@@ -5,7 +5,8 @@
  */
 import {
   HISTORY_CAP, newGame, restoreGame, setValue, toggleNote, eraseCell, undo,
-  mistakes, isComplete, isSolved, serialize, peers, pickPuzzle, formatElapsed,
+  mistakes, isComplete, isSolved, serialize, peers, completedDigits,
+  pickPuzzle, formatElapsed,
   type SudokuPuzzle,
 } from '@/lib/games/sudoku/engine'
 
@@ -134,6 +135,26 @@ describe('mistakes / isComplete / isSolved', () => {
     const wrong = setValue(s, 0, 9)
     expect(isComplete(wrong)).toBe(true)
     expect(isSolved(wrong)).toBe(false)
+  })
+})
+
+describe('completedDigits', () => {
+  it('reports digits whose 9 placements are all present and correct', () => {
+    // TEST_GIVENS blanks cells 0 (solution 1) and 1 (solution 2): digits 3-9
+    // are fully given, digits 1 and 2 each have one cell outstanding
+    expect(completedDigits(newGame(PUZZLE))).toEqual(new Set([3, 4, 5, 6, 7, 8, 9]))
+  })
+
+  it('completes a digit on its final correct placement', () => {
+    const s = setValue(newGame(PUZZLE), 0, 1)
+    expect(completedDigits(s).has(1)).toBe(true)
+    expect(completedDigits(s).has(2)).toBe(false)
+  })
+
+  it('does not count a wrong placement toward completion', () => {
+    // a wrong 2 at cell 0 gives digit 2 nine placements, only 8 correct
+    const s = setValue(newGame(PUZZLE), 0, 2)
+    expect(completedDigits(s).has(2)).toBe(false)
   })
 })
 
