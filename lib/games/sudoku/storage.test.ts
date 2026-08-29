@@ -48,6 +48,16 @@ it('returns null on shape violations', () => {
   }
 })
 
+it('rejects wrong-typed values/notes even when puzzleId is null', () => {
+  for (const bad of [
+    { puzzleId: null, values: 123, notes: [], elapsedSeconds: 0, usedIds: [], settings: { showMistakes: true } },  // values not string
+    { puzzleId: null, values: '', notes: 'x', elapsedSeconds: 0, usedIds: [], settings: { showMistakes: true } },   // notes not array
+  ]) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(bad))
+    expect(loadProgress()).toBeNull()
+  }
+})
+
 it('allows empty values/notes when puzzleId is null', () => {
   const fresh = defaultProgress()
   saveProgress(fresh)

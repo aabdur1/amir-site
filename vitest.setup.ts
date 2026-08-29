@@ -2,9 +2,10 @@
 // TypeScript augmentation for every test file.
 import '@testing-library/jest-dom/vitest'
 
-// Polyfill localStorage methods if they don't exist (jsdom may create
-// an empty localStorage object without methods when --localstorage-file
-// points to an invalid path).
+// Polyfill localStorage methods if they don't exist. jsdom creates an empty
+// localStorage object without methods when --localstorage-file path is invalid
+// (which occurs in this environment despite jsdom being installed). The guard
+// check ensures this only runs when needed; it's safe to leave in place.
 if (typeof localStorage !== 'undefined' && typeof localStorage.setItem !== 'function') {
   const store: Record<string, string> = {}
   const storageImpl = {

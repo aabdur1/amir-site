@@ -32,15 +32,16 @@ function isValid(p: unknown): p is SavedProgress {
   if (typeof p !== 'object' || p === null) return false
   const o = p as Record<string, unknown>
   if (o.puzzleId !== null && typeof o.puzzleId !== 'string') return false
+  if (typeof o.values !== 'string') return false
+  if (!Array.isArray(o.notes) || !o.notes.every((n) => typeof n === 'number')) return false
   if (typeof o.elapsedSeconds !== 'number' || !Number.isFinite(o.elapsedSeconds)) return false
   if (!Array.isArray(o.usedIds) || !o.usedIds.every((id) => typeof id === 'string')) return false
   const settings = o.settings as Record<string, unknown> | null
   if (typeof settings !== 'object' || settings === null) return false
   if (typeof settings.showMistakes !== 'boolean') return false
   if (o.puzzleId !== null) {
-    if (typeof o.values !== 'string' || o.values.length !== 81) return false
-    if (!Array.isArray(o.notes) || o.notes.length !== 81) return false
-    if (!o.notes.every((n) => typeof n === 'number')) return false
+    if (o.values.length !== 81) return false
+    if (o.notes.length !== 81) return false
   }
   return true
 }
