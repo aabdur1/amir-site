@@ -51,17 +51,23 @@ function allLines(grid, size) {
   const lines = []
   for (let r = 0; r < size; r++) lines.push(Array.from({ length: size }, (_, c) => at(r, c)).join(''))
   for (let c = 0; c < size; c++) lines.push(Array.from({ length: size }, (_, r) => at(r, c)).join(''))
-  for (let d = 0; d < 2 * size - 1; d++) {
-    let se = ''
-    let ne = ''
+  // "\" family: col - row = k, k in [-(size-1), size-1]
+  for (let k = -(size - 1); k <= size - 1; k++) {
+    let line = ''
     for (let r = 0; r < size; r++) {
-      const cSE = d - r
-      if (cSE >= 0 && cSE < size) se += at(r, size - 1 - cSE)
-      const cNE = d - (size - 1 - r)
-      if (cNE >= 0 && cNE < size) ne += at(r, cNE)
+      const c = r + k
+      if (c >= 0 && c < size) line += at(r, c)
     }
-    if (se.length > 1) lines.push(se)
-    if (ne.length > 1) lines.push(ne)
+    if (line.length > 1) lines.push(line)
+  }
+  // "/" family: col + row = k, k in [0, 2*size-2]
+  for (let k = 0; k <= 2 * size - 2; k++) {
+    let line = ''
+    for (let r = 0; r < size; r++) {
+      const c = k - r
+      if (c >= 0 && c < size) line += at(r, c)
+    }
+    if (line.length > 1) lines.push(line)
   }
   return lines
 }
