@@ -94,4 +94,71 @@ export function isCorrect(ws: WordState): boolean {
   return isFilled(ws) && ws.slots.every((t, i) => ws.tiles[t as number] === ws.word[i])
 }
 
+// Re-orders only the tray (slots reference tiles by index, so placed tiles
+// are untouched). No-op unless the visible letter sequence actually changes.
+export function shuffleTray(ws: WordState, rand: () => number = Math.random): WordState {
+  const distinct = new Set(ws.tray.map((t) => ws.tiles[t]))
+  if (distinct.size < 2) return ws
+  for (let i = 0; i < 50; i++) {
+    const next = fisherYates(ws.tray, rand)
+    if (next.some((t, k) => ws.tiles[t] !== ws.tiles[ws.tray[k]])) {
+      return { ...ws, tray: next }
+    }
+  }
+  return ws
+}
+
+// Hint: lock the correct letter into the first slot that needs it.
+// Already-correct filled slots on the way are locked in passing — the
+// player was right; don't spend the reveal on them. Deterministic (no rand).
+export function revealLetter(ws: WordState): WordState {
+  const slots = ws.slots.slice()
+  const locked = ws.locked.slice()
+  const tray = ws.tray.slice()
+
+  let target = -1
+  for (let i = 0; i < slots.length; i++) {
+    if (locked[i]) continue
+    const t = slots[i]
+    if (t !== null && ws.tiles[t] === ws.word[i]) {
+      locked[i] = true
+      continue
+    }
+    target = i
+    break
+  }
+
+  if (target === -1) {
+    // every slot already correct — reveal spends nothing, but keep any
+    // in-passing locks it just proved
+    return locked.some((l, i) => l !== ws.locked[i]) ? { ...ws, locked } : ws
+  }
+
+  const letter = ws.word[target]
+  const displaced = slots[target] // wrong tile currently in the target slot, if any
+  if (displaced !== null) tray.push(displaced)
+
+  let source = -1
+  const trayIdx = tray.findIndex((t) => ws.tiles[t] === letter)
+  if (trayIdx !== -1) {
+    source = tray[trayIdx]
+    tray.splice(trayIdx, 1)
+  } else {
+    for (let j = 0; j < slots.length; j++) {
+      if (j === target || locked[j]) continue
+      const t = slots[j]
+      if (t !== null && ws.tiles[t] === letter) {
+        source = t
+        slots[j] = null
+        break
+      }
+    }
+  }
+  if (source === -1) return ws // unreachable: a needed letter always has a free copy
+
+  slots[target] = source
+  locked[target] = true
+  return { ...ws, slots, locked, tray }
+}
+
 export { pickPuzzle, formatElapsed } from '../shared'

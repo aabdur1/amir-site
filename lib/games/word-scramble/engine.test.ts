@@ -6,6 +6,7 @@
 import {
   scrambleOrder, startWord, placeTile, returnSlot, returnAll,
   isFilled, isCorrect, pickPuzzle, formatElapsed,
+  shuffleTray, revealLetter,
 } from '@/lib/games/word-scramble/engine'
 
 describe('scrambleOrder', () => {
@@ -121,5 +122,81 @@ describe('re-exports', () => {
   it('pickPuzzle and formatElapsed come from shared', () => {
     expect(typeof pickPuzzle).toBe('function')
     expect(formatElapsed(65)).toBe('1 min')
+  })
+})
+
+describe('shuffleTray', () => {
+  it('changes the tray letter sequence and leaves placed tiles alone', () => {
+    let ws = startWord('SPROUT')
+    ws = placeTile(ws, ws.tray[0])
+    const placed = ws.slots[0]
+    const before = ws.tray.map((t) => ws.tiles[t]).join('')
+    const next = shuffleTray(ws, Math.random)
+    expect(next.slots[0]).toBe(placed)
+    expect([...next.tray].sort((a, b) => a - b)).toEqual([...ws.tray].sort((a, b) => a - b))
+    expect(next.tray.map((t) => next.tiles[t]).join('')).not.toBe(before)
+  })
+
+  it('is a no-op when fewer than two distinct unplaced letters remain', () => {
+    let ws = startWord('SEEDS')
+    // place S, D, S — leaving only the two Es in the tray
+    for (const ch of ['S', 'D', 'S']) {
+      ws = placeTile(ws, ws.tray.find((t) => ws.tiles[t] === ch)!)
+    }
+    expect(ws.tray.map((t) => ws.tiles[t]).sort().join('')).toBe('EE')
+    expect(shuffleTray(ws, Math.random)).toBe(ws)
+  })
+})
+
+describe('revealLetter', () => {
+  it('locks the correct letter into the first empty slot, from the tray', () => {
+    const ws = startWord('HONEY')
+    const next = revealLetter(ws)
+    expect(next.locked[0]).toBe(true)
+    expect(next.tiles[next.slots[0]!]).toBe('H')
+    expect(next.tray).toHaveLength(4)
+  })
+
+  it('displaces a wrong tile from the target slot back to the tray', () => {
+    let ws = startWord('HONEY')
+    const wrong = ws.tray.find((t) => ws.tiles[t] !== 'H')!
+    ws = placeTile(ws, wrong) // wrong letter sits in slot 0
+    const next = revealLetter(ws)
+    expect(next.tiles[next.slots[0]!]).toBe('H')
+    expect(next.locked[0]).toBe(true)
+    expect(next.tray).toContain(wrong)
+  })
+
+  it('locks an already-correct filled slot in passing instead of spending the reveal on it', () => {
+    let ws = startWord('HONEY')
+    ws = placeTile(ws, ws.tray.find((t) => ws.tiles[t] === 'H')!) // slot 0 correct, unlocked
+    const next = revealLetter(ws)
+    expect(next.locked[0]).toBe(true)            // locked in passing
+    expect(next.locked[1]).toBe(true)            // the actual reveal
+    expect(next.tiles[next.slots[1]!]).toBe('O')
+  })
+
+  it('evicts the needed letter from a later unlocked slot when the tray has none', () => {
+    let ws = startWord('SOIL')
+    // fill everything wrong such that no tray tiles remain
+    const order = ['O', 'S', 'L', 'I'] // slot0=O (wrong; needs S)
+    for (const ch of order) {
+      ws = placeTile(ws, ws.tray.find((t) => ws.tiles[t] === ch)!)
+    }
+    expect(ws.tray).toHaveLength(0)
+    const next = revealLetter(ws)
+    expect(next.tiles[next.slots[0]!]).toBe('S')
+    expect(next.locked[0]).toBe(true)
+    // the S came out of slot 1; the displaced O went back to the tray
+    expect(next.slots[1]).toBeNull()
+    expect(next.tray.map((t) => next.tiles[t]).sort().join('')).toBe('O')
+  })
+
+  it('repeated reveals solve the whole word', () => {
+    let ws = startWord('SPROUT')
+    for (let i = 0; i < 6; i++) ws = revealLetter(ws)
+    expect(isCorrect(ws)).toBe(true)
+    expect(ws.locked.every(Boolean)).toBe(true)
+    expect(revealLetter(ws)).toBe(ws) // fully locked => no-op
   })
 })
