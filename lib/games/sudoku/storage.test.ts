@@ -65,8 +65,9 @@ it('allows empty values/notes when puzzleId is null', () => {
 })
 
 it('saveProgress swallows storage errors (private mode / quota)', () => {
-  vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+  vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
     throw new Error('QuotaExceededError')
   })
   expect(() => saveProgress(VALID)).not.toThrow()
+  expect(localStorage.setItem).toHaveBeenCalled()
 })
