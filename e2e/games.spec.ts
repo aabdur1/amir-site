@@ -4,6 +4,8 @@
 // wrong digit requires knowing the solution, which the RTL suite reads
 // from the bank deterministically and a browser test cannot.
 import { test as base, expect } from '@playwright/test'
+import { WORD_SEARCH_PUZZLES } from '../lib/games/word-search-puzzles'
+import { STORAGE_KEY as WS_KEY } from '../lib/games/word-search/storage'
 
 const IGNORED_CONSOLE: RegExp[] = []
 
@@ -84,4 +86,81 @@ test('sudoku: new game panel opens with three difficulties', async ({ page }) =>
   for (const d of ['easy', 'medium', 'hard']) {
     await expect(page.getByRole('button', { name: d, exact: true })).toBeVisible()
   }
+})
+
+// Word search — deterministic via addInitScript seeding: the page then
+// resumes we01 instead of dealing a random puzzle.
+//
+// Found-word locator: word-list.tsx renders `{word}<span class="sr-only">, found</span>`
+// as siblings inside one <li> (a11y announcement, by design). RTL's getByText
+// only reads an element's direct text-node children, so the unit suite can
+// match on the bare word — Playwright's getByText concatenates full
+// descendant text ("CUTLERY, found") instead, so an exact match on the word
+// alone never hits. Scoping to the <li> with a substring hasText sidesteps
+// that without touching the (correct) app markup.
+const WS_PUZZLE = WORD_SEARCH_PUZZLES[0]
+const WS_PLACEMENT = WS_PUZZLE.placements[0]
+const wsCellsOf = (p: typeof WS_PLACEMENT) =>
+  Array.from({ length: p.word.length }, (_, k) => ({
+    row: p.row + k * p.dRow,
+    col: p.col + k * p.dCol,
+  }))
+
+// addInitScript re-runs on every navigation, including page.reload() (probed
+// directly against a throwaway localStorage key: a plain re-seeding script
+// stomps the app's own autosave back to the empty-`found` seed on reload,
+// every time). A sessionStorage guard makes the seed apply once per page
+// session — first goto seeds we01, a later reload sees the app's own
+// autosaved localStorage untouched — without weakening determinism on first
+// load.
+async function seedWordSearch(page: import('@playwright/test').Page) {
+  await page.addInitScript(
+    ([key, value]) => {
+      if (!sessionStorage.getItem('__ws_e2e_seeded')) {
+        localStorage.setItem(key, value)
+        sessionStorage.setItem('__ws_e2e_seeded', '1')
+      }
+    },
+    [WS_KEY, JSON.stringify({
+      puzzleId: WS_PUZZLE.id, found: [], elapsedSeconds: 0, usedIds: [WS_PUZZLE.id],
+    })] as const
+  )
+}
+
+test('word search: drag from first to last letter finds a word', async ({ page }) => {
+  await seedWordSearch(page)
+  await page.goto('/games/word-search')
+  const cells = page.locator('[role="gridcell"]')
+  await expect(cells).toHaveCount(WS_PUZZLE.size * WS_PUZZLE.size, { timeout: 30_000 })
+
+  const ends = wsCellsOf(WS_PLACEMENT)
+  const firstCell = page.locator(
+    `[role="gridcell"][aria-label^="Row ${ends[0].row + 1}, column ${ends[0].col + 1},"]`)
+  const lastCell = page.locator(
+    `[role="gridcell"][aria-label^="Row ${ends[ends.length - 1].row + 1}, column ${ends[ends.length - 1].col + 1},"]`)
+  const a = await firstCell.boundingBox()
+  const b = await lastCell.boundingBox()
+  await page.mouse.move(a!.x + a!.width / 2, a!.y + a!.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(b!.x + b!.width / 2, b!.y + b!.height / 2, { steps: 8 })
+  await page.mouse.up()
+
+  await expect(page.locator('ul[aria-label="Words to find"] li', { hasText: WS_PLACEMENT.word })).toHaveClass(/line-through/)
+})
+
+test('word search: found words survive reload', async ({ page }) => {
+  await seedWordSearch(page)
+  await page.goto('/games/word-search')
+  await expect(page.locator('[role="gridcell"]')).toHaveCount(WS_PUZZLE.size * WS_PUZZLE.size, { timeout: 30_000 })
+  const ends = wsCellsOf(WS_PLACEMENT)
+  await page.locator(`[role="gridcell"][aria-label^="Row ${ends[0].row + 1}, column ${ends[0].col + 1},"]`).click()
+  await page.locator(`[role="gridcell"][aria-label^="Row ${ends[ends.length - 1].row + 1}, column ${ends[ends.length - 1].col + 1},"]`).click()
+  await expect(page.locator('ul[aria-label="Words to find"] li', { hasText: WS_PLACEMENT.word })).toHaveClass(/line-through/)
+  await page.reload()
+  await expect(page.locator('ul[aria-label="Words to find"] li', { hasText: WS_PLACEMENT.word })).toHaveClass(/line-through/, { timeout: 30_000 })
+})
+
+test('games index shows the word search card', async ({ page }) => {
+  await page.goto('/games')
+  await expect(page.getByRole('heading', { name: 'Word Search' })).toBeVisible({ timeout: 30_000 })
 })

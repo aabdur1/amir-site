@@ -2,7 +2,7 @@
 // Deliberately unlisted: robots noindex, no sitemap entry, no nav pill.
 // Anyone with the link plays; search engines that stumble on it don't index.
 import type { Metadata } from 'next'
-import { GAMES } from '@/lib/games/games'
+import { GAMES, type GameSlug } from '@/lib/games/games'
 import { GameCard } from '@/components/games/game-card'
 import { PageTransition } from '@/components/page-transition'
 
@@ -35,8 +35,29 @@ function SudokuIllustration() {
   )
 }
 
-const ILLUSTRATIONS: Record<string, React.ReactNode> = {
+// Letter-grid motif with one found word: faint grid dots, a lavender
+// diagonal draw-stroke run, accent dots at the ends.
+function WordSearchIllustration() {
+  return (
+    <svg width="80" height="64" viewBox="0 0 80 64" aria-hidden="true" focusable="false">
+      {Array.from({ length: 5 }, (_, r) =>
+        Array.from({ length: 6 }, (_, c) => (
+          <circle key={`${r}-${c}`} cx={15 + c * 10} cy={12 + r * 10} r="1.5"
+            className="fill-ink-faint dark:fill-night-border" />
+        ))
+      )}
+      <line x1="15" y1="12" x2="55" y2="52" stroke="currentColor" strokeWidth="2.5"
+        strokeLinecap="round" className="text-lavender dark:text-lavender-dark draw-stroke"
+        pathLength={100} />
+      <circle cx="15" cy="12" r="3.5" className="fill-peach dark:fill-peach-dark" />
+      <circle cx="55" cy="52" r="3.5" className="fill-mauve dark:fill-mauve-dark" opacity="0.7" />
+    </svg>
+  )
+}
+
+const ILLUSTRATIONS: Record<GameSlug, React.ReactNode> = {
   sudoku: <SudokuIllustration />,
+  'word-search': <WordSearchIllustration />,
 }
 
 export default function GamesPage() {

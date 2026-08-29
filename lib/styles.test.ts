@@ -67,6 +67,6 @@ describe("ACCENT_STYLES", () => {
 
   it("is the module's only runtime export (AccentColor is type-only)", async () => {
     const mod = await import("@/lib/styles");
-    expect(Object.keys(mod).sort()).toEqual(["ACCENT_STYLES"]);
+    expect(Object.keys(mod).sort()).toEqual(["ACCENT_STYLES", "DIFFICULTY_STYLES"]);
   });
 });

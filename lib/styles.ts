@@ -37,3 +37,9 @@ export const ACCENT_STYLES = {
 } as const;
 
 export type AccentColor = keyof typeof ACCENT_STYLES;
+
+export const DIFFICULTY_STYLES: Record<'easy' | 'medium' | 'hard', string> = {
+  easy: "border-sapphire/40 dark:border-sapphire-dark/40 bg-sapphire/10 dark:bg-sapphire-dark/12 hover:border-sapphire dark:hover:border-sapphire-dark",
+  medium: "border-peach/40 dark:border-peach-dark/40 bg-peach/10 dark:bg-peach-dark/12 hover:border-peach dark:hover:border-peach-dark",
+  hard: "border-mauve/40 dark:border-mauve-dark/40 bg-mauve/10 dark:bg-mauve-dark/12 hover:border-mauve dark:hover:border-mauve-dark",
+}
