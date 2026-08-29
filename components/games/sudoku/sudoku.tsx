@@ -16,7 +16,7 @@ export function Sudoku() {
   const [status, setStatus] = useState("")
 
   const solved = isSolved(board)
-  const showMistakes = true // Task 7 makes this a persisted setting
+  const [showMistakes, setShowMistakes] = useState(true) // Task 7 persists this
   const mistakeSet = useMemo(
     () => new Set(showMistakes ? mistakes(board) : []),
     [board, showMistakes]
@@ -35,6 +35,9 @@ export function Sudoku() {
   const handleErase = () => {
     if (selected === null || solved) return
     setBoard((b) => eraseCell(b, selected))
+    const r = Math.floor(selected / 9) + 1
+    const c = (selected % 9) + 1
+    setStatus(`Erased row ${r}, column ${c}`)
   }
 
   const handleUndo = () => {
@@ -74,6 +77,23 @@ export function Sudoku() {
             onToggleNotes={handleToggleNotes}
             onNewGame={() => {}}
           />
+          <button
+            type="button"
+            aria-pressed={showMistakes}
+            onClick={() => setShowMistakes((v) => !v)}
+            className="mt-3 inline-flex items-center gap-2 text-[13px]
+              font-[family-name:var(--font-mono)] tracking-wide
+              text-ink-subtle dark:text-night-muted
+              hover:text-ink dark:hover:text-night-text transition-colors py-3"
+          >
+            <span
+              aria-hidden="true"
+              className={`inline-block h-2 w-2 rounded-full transition-colors ${
+                showMistakes ? "bg-red dark:bg-red-dark" : "bg-cream-border dark:bg-night-border"
+              }`}
+            />
+            Show mistakes
+          </button>
         </div>
       </div>
       <div role="status" className="sr-only">{status}</div>

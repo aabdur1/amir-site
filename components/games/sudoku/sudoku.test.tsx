@@ -57,3 +57,44 @@ it('digit taps with no cell selected do nothing', () => {
   fireEvent.click(screen.getByRole('button', { name: 'Enter 5' }))
   expect(screen.getAllByRole('gridcell')).toHaveLength(81) // no crash, board intact
 })
+
+describe('notes, erase, undo, mistakes toggle', () => {
+  it('notes mode places pencil marks instead of values', () => {
+    render(<Sudoku />)
+    fireEvent.click(screen.getByRole('button', { name: 'Notes' }))
+    expect(screen.getByRole('button', { name: 'Notes' })).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.click(cellButton(row, col))
+    fireEvent.click(screen.getByRole('button', { name: `Enter ${correctDigit}` }))
+    expect(cellButton(row, col)).toHaveAccessibleName(
+      `Row ${row}, column ${col}, empty, notes ${correctDigit}`
+    )
+  })
+
+  it('erase clears a placed value', () => {
+    render(<Sudoku />)
+    fireEvent.click(cellButton(row, col))
+    fireEvent.click(screen.getByRole('button', { name: `Enter ${correctDigit}` }))
+    fireEvent.click(screen.getByRole('button', { name: 'Erase' }))
+    expect(cellButton(row, col)).toHaveAccessibleName(`Row ${row}, column ${col}, empty`)
+  })
+
+  it('undo is disabled until a move exists, then reverts the move', () => {
+    render(<Sudoku />)
+    const undoBtn = screen.getByRole('button', { name: 'Undo' })
+    expect(undoBtn).toBeDisabled()
+    fireEvent.click(cellButton(row, col))
+    fireEvent.click(screen.getByRole('button', { name: `Enter ${correctDigit}` }))
+    expect(undoBtn).toBeEnabled()
+    fireEvent.click(undoBtn)
+    expect(cellButton(row, col)).toHaveAccessibleName(`Row ${row}, column ${col}, empty`)
+  })
+
+  it('turning Show mistakes off removes the incorrect flag', () => {
+    render(<Sudoku />)
+    fireEvent.click(cellButton(row, col))
+    fireEvent.click(screen.getByRole('button', { name: `Enter ${wrongDigit}` }))
+    expect(cellButton(row, col).getAttribute('aria-label')).toContain('incorrect')
+    fireEvent.click(screen.getByRole('button', { name: 'Show mistakes' }))
+    expect(cellButton(row, col).getAttribute('aria-label')).not.toContain('incorrect')
+  })
+})
