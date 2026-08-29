@@ -4,17 +4,22 @@ import React from "react"
 import Link from "next/link"
 import { useScrollReveal, useHydrated } from "@/lib/hooks"
 import { ACCENT_STYLES } from "@/lib/styles"
-import type { Game } from "@/lib/games/games"
-import { STORAGE_KEY } from "@/lib/games/sudoku/storage"
+import type { Game, GameSlug } from "@/lib/games/games"
+import { STORAGE_KEY as SUDOKU_KEY } from "@/lib/games/sudoku/storage"
+import { STORAGE_KEY as WORD_SEARCH_KEY } from "@/lib/games/word-search/storage"
+
+const PROGRESS_KEYS: Record<GameSlug, string> = {
+  sudoku: SUDOKU_KEY,
+  "word-search": WORD_SEARCH_KEY,
+}
 
 // Reads only the puzzleId key — importing the bank or engine here would pull
 // them into the index chunk. A solved-but-not-continued game still shows
 // "In progress" (accepted: storage keeps the finished board until the next
 // new game).
-function hasProgress(slug: string): boolean {
-  if (slug !== "sudoku") return false
+function hasProgress(slug: GameSlug): boolean {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(PROGRESS_KEYS[slug])
     if (!raw) return false
     const parsed: unknown = JSON.parse(raw)
     return typeof (parsed as { puzzleId?: unknown } | null)?.puzzleId === "string"
