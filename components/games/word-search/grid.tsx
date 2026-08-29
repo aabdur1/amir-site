@@ -22,6 +22,11 @@ export function Grid({ puzzle, cellAccents, disabled, onAttempt, announce }: Gri
   const cellRefs = useRef<(HTMLButtonElement | null)[]>([])
   const gridRef = useRef<HTMLDivElement>(null)
   const dragStart = useRef<number | null>(null)
+  // Set once a pointer gesture has actually run tapCell/onAttempt in
+  // onPointerUp, cleared at the start of the next pointerdown. This is the
+  // real cross-engine suppression for the click that a browser dispatches
+  // after a pointer sequence — see the onClick comment below.
+  const pointerHandled = useRef(false)
   const [anchor, setAnchor] = useState<number | null>(null)
   const [focusIndex, setFocusIndex] = useState(0)
   const [preview, setPreview] = useState<number[] | null>(null)
@@ -58,6 +63,7 @@ export function Grid({ puzzle, cellAccents, disabled, onAttempt, announce }: Gri
   }
 
   const onPointerDown = (e: React.PointerEvent) => {
+    pointerHandled.current = false
     if (disabled) return
     const cell = cellFromPoint(e.clientX, e.clientY)
     if (cell === null) return
@@ -87,6 +93,11 @@ export function Grid({ puzzle, cellAccents, disabled, onAttempt, announce }: Gri
       onAttempt(cells)
       setAnchor(null)
     } else tapCell(start) // press-release on one cell IS the tap path
+    // Gesture handled — a click that follows this pointerup must not
+    // re-run tapCell. Only reached when start !== null: if this pointerup
+    // never resolved to a cell (early return above), no activation ran here
+    // and the click's own guard below is what fires it.
+    pointerHandled.current = true
   }
 
   const onPointerCancel = () => {
@@ -160,14 +171,27 @@ export function Grid({ puzzle, cellAccents, disabled, onAttempt, announce }: Gri
                 // was only checked on one engine — public interop history
                 // shows browsers have disagreed on the post-capture click
                 // target (Safari's behavior here is unconfirmed), and this
-                // site targets Safari/mobile. The guard
-                // (dragStart.current === null && preview === null) is what
-                // actually keeps this safe everywhere: it's a no-op whenever
-                // a pointer sequence is mid-flight or just completed, and
-                // fires tapCell exactly once when nothing preceded the click
-                // at all. Keep it regardless of what any one engine does with
-                // capture-retargeted clicks.
+                // site targets Safari/mobile.
+                //
+                // The state guard below (dragStart.current === null &&
+                // preview === null) does NOT provide that safety net: React
+                // flushes discrete-event state updates before the next
+                // event dispatches, so by the time a post-gesture click
+                // reaches here, onPointerUp has already nulled both — the
+                // guard reads as "clear" even when it was this exact click's
+                // own gesture that just ran tapCell/onAttempt. On an engine
+                // that doesn't retarget the click away from the cell, this
+                // guard alone would let every tap double-fire (anchor set by
+                // pointerup, then immediately cleared by click).
+                // pointerHandled is the ref that actually suppresses that:
+                // it's true only when this cell's own pointerup already
+                // handled the gesture, and false again once a fresh
+                // pointerdown starts (or when no pointer sequence preceded
+                // the click at all — jsdom's fireEvent.click, and the
+                // Chromium-verified real-tap case above). Check it first,
+                // then keep the state guard as a second line of defense.
                 onClick={() => {
+                  if (pointerHandled.current) return
                   if (dragStart.current === null && preview === null) {
                     setFocusIndex(i)
                     tapCell(i)

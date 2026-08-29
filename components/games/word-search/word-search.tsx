@@ -198,6 +198,7 @@ export function WordSearch() {
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-center gap-6 lg:gap-10">
         <div className="w-full max-w-[420px] sm:max-w-[480px] mx-auto lg:mx-0">
           <Grid
+            key={puzzle.id}
             puzzle={puzzle}
             cellAccents={cellAccents}
             disabled={solved}

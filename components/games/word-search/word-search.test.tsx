@@ -166,6 +166,27 @@ describe('persistence, timer, pills, panels', () => {
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).puzzleId).toMatch(/^wm/)
   })
 
+  // Regression for the Grid-internal-state-survives-puzzle-switch bug: with
+  // no `key={puzzle.id}` on <Grid>, a same-mount Grid keeps its old anchor
+  // across an instant difficulty switch (easy 8×8 -> medium 10×10). The
+  // stale anchor makes the first tap on the fresh board attempt a line
+  // instead of anchoring it. Confirmed this test fails without the key —
+  // see final-fix-report.md for the captured failure output.
+  it('switching difficulty remounts the grid, clearing the stale anchor', () => {
+    seedProgress()
+    render(<WordSearch />)
+    fireEvent.click(cell(first))
+    const r = Math.floor(first / puzzle.size) + 1
+    const c = (first % puzzle.size) + 1
+    expect(screen.getByRole('status')).toHaveTextContent(`Anchor set at row ${r}, column ${c}`)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Play medium' })) // fresh board, no progress -> instant switch
+
+    const firstCellOfNewBoard = screen.getAllByRole('gridcell')[0]
+    fireEvent.click(firstCellOfNewBoard)
+    expect(screen.getByRole('status')).toHaveTextContent('Anchor set at row 1, column 1')
+  })
+
   it('mid-puzzle switch confirms; Keep playing dismisses', () => {
     seedProgress({ found: [{ word: pl.word, cells: target }] })
     render(<WordSearch />)
@@ -242,7 +263,14 @@ describe('drag selection', () => {
     fireEvent.pointerMove(grid, { pointerId: 1, ...center(last) })
     fireEvent.pointerUp(grid, { pointerId: 1, ...center(last) }) // drag B→C: attempt finds the word
     expect(screen.getByText(pl.word).className).toContain('line-through')
-    fireEvent.click(cell(first)) // tap D: an ordinary next tap, not a completion of A→D
+    // tap D: an ordinary next tap, not a completion of A→D. Given its own
+    // pointerdown/up like a real subsequent tap always has — a bare click
+    // here (no preceding pointer event) wouldn't happen in a real browser
+    // following a real drag, and doesn't exercise what pointerHandled
+    // actually guards: a fresh pointerdown resetting it before this tap's
+    // own activation fires.
+    fireEvent.pointerDown(grid, { pointerId: 2, ...center(first) })
+    fireEvent.pointerUp(grid, { pointerId: 2, ...center(first) })
     const r = Math.floor(first / puzzle.size) + 1
     const c = (first % puzzle.size) + 1
     expect(screen.getByRole('status')).toHaveTextContent(`Anchor set at row ${r}, column ${c}`)
