@@ -160,6 +160,7 @@ export function pickPuzzle(
   rand: () => number = Math.random
 ): { puzzle: SudokuPuzzle; usedIds: string[] } {
   const pool = puzzles.filter((p) => p.difficulty === difficulty)
+  if (pool.length === 0) throw new Error(`No puzzles available for difficulty: ${difficulty}`)
   const used = new Set(usedIds)
   let fresh = pool.filter((p) => !used.has(p.id))
   let nextUsed = usedIds

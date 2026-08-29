@@ -170,6 +170,10 @@ describe('pickPuzzle', () => {
     expect(puzzle.id).toBe('e1')
     expect(usedIds).toEqual(['m1', 'e1'])
   })
+
+  it('throws an error when a difficulty has no puzzles in the bank', () => {
+    expect(() => pickPuzzle(bank, 'hard', [], () => 0)).toThrow('No puzzles available for difficulty: hard')
+  })
 })
 
 describe('formatElapsed', () => {
