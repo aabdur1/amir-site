@@ -2,7 +2,10 @@ import {
   STORAGE_KEY, defaultProgress, loadProgress, saveProgress,
 } from '@/lib/games/word-scramble/storage'
 
-afterEach(() => localStorage.clear())
+afterEach(() => {
+  localStorage.clear()
+  vi.restoreAllMocks()
+})
 
 it('round-trips a save', () => {
   saveProgress({ puzzleId: 'se01', solvedCount: 3, elapsedSeconds: 120, usedIds: ['se01'] })
@@ -36,4 +39,13 @@ it('defaultProgress is an empty fresh state', () => {
   expect(defaultProgress()).toEqual({
     puzzleId: null, solvedCount: 0, elapsedSeconds: 0, usedIds: [],
   })
+})
+
+it('saveProgress swallows storage errors', () => {
+  vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
+    throw new Error('QuotaExceededError')
+  })
+  const progress = { puzzleId: 'se01', solvedCount: 3, elapsedSeconds: 120, usedIds: ['se01'] }
+  expect(() => saveProgress(progress)).not.toThrow()
+  expect(localStorage.setItem).toHaveBeenCalled()
 })

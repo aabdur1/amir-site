@@ -8,8 +8,8 @@ import type { AccentColor } from '@/lib/styles'
 // no nav pill, robots noindex on every page.
 
 // Adding a game: extend this union FIRST — Record<GameSlug, …> registries
-// (GAME_COMPONENTS, the index ILLUSTRATIONS map) then fail to compile until
-// every registry carries the new slug (the /work FIGURES precedent).
+// (GAME_COMPONENTS, the index ILLUSTRATIONS map, PROGRESS_KEYS in game-card.tsx)
+// then fail to compile until every registry carries the new slug (/work FIGURES precedent).
 export type GameSlug = 'sudoku' | 'word-search' | 'word-scramble'
 
 export interface Game {
