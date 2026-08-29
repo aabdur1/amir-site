@@ -15,3 +15,11 @@ export const WordSearch = dynamic(
   () => import('./word-search/word-search').then((m) => ({ default: m.WordSearch })),
   { ssr: false }
 )
+
+// Word scramble is ssr: false for the same reason: saved progress restores
+// from localStorage (and the tray scrambles with Math.random) in a useState
+// initializer.
+export const WordScramble = dynamic(
+  () => import('./word-scramble/word-scramble').then((m) => ({ default: m.WordScramble })),
+  { ssr: false }
+)

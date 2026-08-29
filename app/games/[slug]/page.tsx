@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { GAMES, getGame, type GameSlug } from '@/lib/games/games'
 import { GameErrorBoundary } from '@/components/games/game-error-boundary'
 import { PageTransition } from '@/components/page-transition'
-import { Sudoku, WordSearch } from '@/components/games/dynamic-games'
+import { Sudoku, WordSearch, WordScramble } from '@/components/games/dynamic-games'
 
 export function generateStaticParams() {
   return GAMES.map((g) => ({ slug: g.slug }))
@@ -29,6 +29,7 @@ export async function generateMetadata({
 const GAME_COMPONENTS: Record<GameSlug, React.ComponentType> = {
   sudoku: Sudoku,
   'word-search': WordSearch,
+  'word-scramble': WordScramble,
 }
 
 export default async function GamePage({

@@ -10,7 +10,7 @@ import type { AccentColor } from '@/lib/styles'
 // Adding a game: extend this union FIRST — Record<GameSlug, …> registries
 // (GAME_COMPONENTS, the index ILLUSTRATIONS map) then fail to compile until
 // every registry carries the new slug (the /work FIGURES precedent).
-export type GameSlug = 'sudoku' | 'word-search'
+export type GameSlug = 'sudoku' | 'word-search' | 'word-scramble'
 
 export interface Game {
   slug: GameSlug
@@ -34,6 +34,13 @@ export const GAMES: Game[] = [
     number: '02',
     description: 'Themed puzzles — swipe or tap to find the words. Three difficulties, and your game saves itself.',
     accent: 'lavender',
+  },
+  {
+    slug: 'word-scramble',
+    title: 'Word Scramble',
+    number: '03',
+    description: 'Unscramble themed words tile by tile — hints when you want them, and your game saves itself.',
+    accent: 'rosewater',
   },
 ]
 
