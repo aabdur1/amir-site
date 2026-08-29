@@ -197,3 +197,26 @@ describe('persistence, timer, pills, panels', () => {
     expect(saved.puzzleId).not.toBe(puzzle.id) // we01 used → a fresh easy deals
   })
 })
+
+describe('drag selection', () => {
+  it('pointer drag from first to last letter finds the word', () => {
+    render(<WordSearch />)
+    const grid = screen.getByRole('grid')
+    // jsdom reports zero rects — pin a 400×400 grid so coordinate math works
+    vi.spyOn(grid, 'getBoundingClientRect').mockReturnValue({
+      x: 0, y: 0, top: 0, left: 0, right: 400, bottom: 400, width: 400, height: 400,
+      toJSON: () => ({}),
+    } as DOMRect)
+    grid.setPointerCapture = vi.fn()
+    grid.releasePointerCapture = vi.fn()
+    const cellPx = 400 / puzzle.size
+    const center = (i: number) => ({
+      clientX: ((i % puzzle.size) + 0.5) * cellPx,
+      clientY: (Math.floor(i / puzzle.size) + 0.5) * cellPx,
+    })
+    fireEvent.pointerDown(grid, { pointerId: 1, ...center(first) })
+    fireEvent.pointerMove(grid, { pointerId: 1, ...center(last) })
+    fireEvent.pointerUp(grid, { pointerId: 1, ...center(last) })
+    expect(screen.getByText(pl.word).className).toContain('line-through')
+  })
+})
