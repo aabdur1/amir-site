@@ -24,17 +24,9 @@ interface InitState {
 }
 
 // Resume a saved puzzle when the save is valid and its puzzle exists in the
-// bank; otherwise auto-start an easy puzzle (first visit = zero friction).
-// usedIds/settings survive even when the saved puzzle doesn't.
+// bank; otherwise auto-start a random easy puzzle (first visit = zero
+// friction). usedIds/settings survive even when the saved puzzle doesn't.
 // Safe outside useEffect: this component is ssr:false (python.tsx precedent).
-//
-// The initial auto-start pick is deterministic (rand=0 -> first unused easy
-// puzzle in bank order) rather than Math.random-random: this only ever fires
-// on a session with no resumable puzzle, so there is no prior state for
-// randomness to add variety to, and a deterministic pick keeps a fresh
-// session's board predictable. True per-pick randomness lives in the
-// explicit "New game" action below (startNewGame), which is where a player
-// actually experiences variety.
 function initState(): InitState {
   const saved = loadProgress()
   if (saved?.puzzleId) {
@@ -48,7 +40,7 @@ function initState(): InitState {
       }
     }
   }
-  const { puzzle, usedIds } = pickPuzzle(SUDOKU_PUZZLES, "easy", saved?.usedIds ?? [], () => 0)
+  const { puzzle, usedIds } = pickPuzzle(SUDOKU_PUZZLES, "easy", saved?.usedIds ?? [])
   return {
     board: newGame(puzzle),
     elapsedSeconds: 0,
@@ -71,7 +63,8 @@ export function Sudoku() {
   const [settings, setSettings] = useState(init.settings)
   const [selected, setSelected] = useState<number | null>(null)
   const [notesMode, setNotesMode] = useState(false)
-  const [panel, setPanel] = useState<Panel>("none")
+  // Covers resuming an already-solved saved board on mount.
+  const [panel, setPanel] = useState<Panel>(() => (isSolved(init.board) ? "solved" : "none"))
   const [status, setStatus] = useState("")
 
   const solved = isSolved(board)
@@ -83,6 +76,25 @@ export function Sudoku() {
     () => 81 - (board.puzzle.givens.match(/0/g)?.length ?? 0),
     [board.puzzle]
   )
+  // Real progress detection — history resets on resume, so history.length
+  // can't tell a fresh board from a resumed one. A non-given cell holding a
+  // value or a note is unambiguous progress either way.
+  const hasProgress = useMemo(
+    () => board.cells.some((c) => !c.given && (c.value !== 0 || c.notes !== 0)),
+    [board.cells]
+  )
+
+  // Adjust panel state during render when the board transitions to solved —
+  // React's "adjust state while rendering" pattern, not an effect (avoids
+  // react-hooks/set-state-in-effect and the extra render an effect would
+  // cost). The panel === "none" guard makes this idempotent: it fires once
+  // per solve and bails as soon as panel updates. It also self-heals the
+  // "Cancel while solved" dead end — Cancel sets panel back to "none" while
+  // solved is still true, so this re-fires and returns to the Solved panel.
+  if (solved && panel === "none") {
+    setPanel("solved")
+    setStatus("Puzzle solved")
+  }
 
   // Autosave — write-through on every state change (tiny payload)
   useEffect(() => {
@@ -104,13 +116,6 @@ export function Sudoku() {
     }, 1000)
     return () => window.clearInterval(id)
   }, [solved, board.puzzle.id])
-
-  useEffect(() => {
-    if (solved) {
-      setPanel("solved")
-      setStatus("Puzzle solved")
-    }
-  }, [solved])
 
   const handleDigit = (d: number) => {
     if (selected === null || solved) return
@@ -233,7 +238,7 @@ export function Sudoku() {
                 text-ink-subtle dark:text-night-muted">
                 New game — pick a difficulty
               </p>
-              {board.history.length > 0 && !solved && (
+              {hasProgress && !solved && (
                 <p className="text-[13px] text-red dark:text-red-dark">
                   This abandons your current puzzle.
                 </p>

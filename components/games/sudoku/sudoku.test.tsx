@@ -15,6 +15,15 @@ const col = (firstEmpty % 9) + 1
 const correctDigit = Number(puzzle.solution[firstEmpty])
 const wrongDigit = (correctDigit % 9) + 1 // any digit ≠ correct
 
+// The container's fallback puzzle pick (no resumable save) is genuinely
+// random per the spec (Math.random default in pickPuzzle). Pin it here so
+// the unseeded tests below — which assume the fallback puzzle is exactly
+// SUDOKU_PUZZLES[0] ('e01') — are deterministic; afterEach's
+// restoreAllMocks() resets this before every test.
+beforeEach(() => {
+  vi.spyOn(Math, 'random').mockReturnValue(0)
+})
+
 afterEach(() => {
   localStorage.clear()
   vi.restoreAllMocks()
@@ -181,5 +190,33 @@ describe('persistence, timer, panels', () => {
     fireEvent.click(screen.getByRole('button', { name: `Enter ${wrongDigit}` }))
     expect(screen.getByText("Something's not quite right yet.")).toBeInTheDocument()
     expect(cellButton(row, col).getAttribute('aria-label')).not.toContain('incorrect')
+  })
+
+  it('cancelling the new-game panel after solving returns to the Solved panel', () => {
+    const values = puzzle.solution.slice(0, firstEmpty) + '0' + puzzle.solution.slice(firstEmpty + 1)
+    seedProgress({ values, elapsedSeconds: 100 })
+    render(<Sudoku />)
+    fireEvent.click(cellButton(row, col))
+    fireEvent.click(screen.getByRole('button', { name: `Enter ${correctDigit}` }))
+    expect(screen.getByRole('heading', { name: 'Solved' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'New puzzle' }))
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+    expect(screen.getByRole('heading', { name: 'Solved' })).toBeInTheDocument()
+  })
+
+  it('new game panel warns when the resumed board has progress', () => {
+    const values = puzzle.givens.slice(0, firstEmpty) + String(correctDigit) + puzzle.givens.slice(firstEmpty + 1)
+    seedProgress({ values })
+    render(<Sudoku />)
+    fireEvent.click(screen.getByRole('button', { name: 'New game' }))
+    expect(screen.getByText('This abandons your current puzzle.')).toBeInTheDocument()
+  })
+
+  it('new game panel shows no warning for a fresh, untouched board', () => {
+    seedProgress() // values === puzzle.givens: no non-given cell has a value or note
+    render(<Sudoku />)
+    fireEvent.click(screen.getByRole('button', { name: 'New game' }))
+    expect(screen.queryByText('This abandons your current puzzle.')).toBeNull()
   })
 })
