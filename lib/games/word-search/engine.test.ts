@@ -47,6 +47,8 @@ describe('snapLine', () => {
   it('clamps at the grid edge instead of wrapping', () => {
     // diagonal SE from (3,3): only (3,3)→(4,4) fits a len-2 snap
     expect(snapLine(5, 18, 24)).toEqual([18, 24])
+    // diagonal SE from (2,0) to (4,3): len=3 but k=3 falls off (5,1)
+    expect(snapLine(5, 10, 23)).toEqual([10, 16, 22])
   })
 })
 
