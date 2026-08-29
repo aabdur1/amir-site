@@ -2,7 +2,7 @@
 // Deliberately unlisted: robots noindex, no sitemap entry, no nav pill.
 // Anyone with the link plays; search engines that stumble on it don't index.
 import type { Metadata } from 'next'
-import { GAMES } from '@/lib/games/games'
+import { GAMES, type GameSlug } from '@/lib/games/games'
 import { GameCard } from '@/components/games/game-card'
 import { PageTransition } from '@/components/page-transition'
 
@@ -55,7 +55,7 @@ function WordSearchIllustration() {
   )
 }
 
-const ILLUSTRATIONS: Record<string, React.ReactNode> = {
+const ILLUSTRATIONS: Record<GameSlug, React.ReactNode> = {
   sudoku: <SudokuIllustration />,
   'word-search': <WordSearchIllustration />,
 }
