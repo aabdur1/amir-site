@@ -7,6 +7,7 @@ import {
 } from "@/lib/games/word-search/engine"
 import { loadProgress, saveProgress } from "@/lib/games/word-search/storage"
 import { WORD_SEARCH_PUZZLES } from "@/lib/games/word-search-puzzles"
+import { ConfettiBurst } from "@/components/games/confetti"
 import { SparkRule } from "@/components/spark-rule"
 import { DIFFICULTY_STYLES } from "@/lib/styles"
 import { FOUND_STYLES } from "./found-styles"
@@ -60,6 +61,9 @@ export function WordSearch() {
   const [panel, setPanel] = useState<Panel>(() => (isComplete(init.puzzle, init.found) ? "solved" : "none"))
   // Difficulty pill tapped mid-puzzle — held until confirmed or dismissed
   const [confirmSwitch, setConfirmSwitch] = useState<Difficulty | null>(null)
+  // True only after a LIVE solve (set in the render-adjust below, which a
+  // resumed-solved puzzle never reaches) — gates the one-shot ConfettiBurst
+  const [celebrate, setCelebrate] = useState(false)
   const [status, setStatus] = useState("")
 
   const solved = isComplete(puzzle, found)
@@ -84,6 +88,7 @@ export function WordSearch() {
   // per solve and bails as soon as panel updates.
   if (solved && panel === "none") {
     setPanel("solved")
+    setCelebrate(true) // idempotent on the Cancel re-fire: no remount, no re-burst
     setStatus("All words found")
   }
 
@@ -135,6 +140,7 @@ export function WordSearch() {
     setElapsed(0)
     setPanel("none")
     setConfirmSwitch(null)
+    setCelebrate(false)
     setStatus(`New ${difficulty} puzzle`)
   }
 
@@ -319,6 +325,7 @@ export function WordSearch() {
           )}
         </div>
       </div>
+      {celebrate && <ConfettiBurst />}
       <div role="status" className="sr-only">{status}</div>
     </div>
   )

@@ -22,10 +22,16 @@ const wrongDigit = (correctDigit % 9) + 1 // any digit ≠ correct
 // restoreAllMocks() resets this before every test.
 beforeEach(() => {
   vi.spyOn(Math, 'random').mockReturnValue(0)
+  // Any live solve mounts ConfettiBurst; jsdom has no matchMedia (stubbed —
+  // hooks.test.ts precedent) and no 2d context (mocked null: the burst draws
+  // nothing, but the canvas mounts, which is what the celebrate tests assert)
+  vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: false }))
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null)
 })
 
 afterEach(() => {
   localStorage.clear()
+  vi.unstubAllGlobals()
   vi.restoreAllMocks()
 })
 
@@ -124,6 +130,59 @@ describe('notes, erase, undo, mistakes toggle', () => {
   })
 })
 
+describe('completed-digit pad gray-out', () => {
+  // Seed a board where every copy of correctDigit is correctly placed:
+  // solution values wherever the solution holds that digit, givens elsewhere.
+  const completedValues = puzzle.givens
+    .split('')
+    .map((g, i) => (puzzle.solution[i] === String(correctDigit) ? puzzle.solution[i] : g))
+    .join('')
+  // A digit that still has blanks after the seed (exists: only correctDigit
+  // was completed beyond the givens, and easy puzzles blank several digits)
+  const liveDigit = [1, 2, 3, 4, 5, 6, 7, 8, 9].find(
+    (d) =>
+      d !== correctDigit &&
+      puzzle.givens.split('').filter((g) => g === String(d)).length < 9
+  )!
+  // An empty cell whose solution is not correctDigit, to aim the no-op tap at
+  const otherEmpty = puzzle.givens
+    .split('')
+    .findIndex((g, i) => g === '0' && puzzle.solution[i] !== String(correctDigit))
+  const otherRow = Math.floor(otherEmpty / 9) + 1
+  const otherCol = (otherEmpty % 9) + 1
+
+  it('marks a fully-placed digit aria-disabled, leaves live digits enabled', () => {
+    seedProgress({ values: completedValues })
+    render(<Sudoku />)
+    expect(screen.getByRole('button', { name: `Enter ${correctDigit}` }))
+      .toHaveAttribute('aria-disabled', 'true')
+    expect(screen.getByRole('button', { name: `Enter ${liveDigit}` }))
+      .not.toHaveAttribute('aria-disabled', 'true')
+  })
+
+  it('taps on a grayed-out digit do nothing', () => {
+    seedProgress({ values: completedValues })
+    render(<Sudoku />)
+    fireEvent.click(cellButton(otherRow, otherCol))
+    fireEvent.click(screen.getByRole('button', { name: `Enter ${correctDigit}` }))
+    expect(cellButton(otherRow, otherCol)).toHaveAccessibleName(
+      `Row ${otherRow}, column ${otherCol}, empty`
+    )
+  })
+
+  it('grays a digit out live, on its final correct placement', () => {
+    // one copy of correctDigit left to place — the seeded board minus cell firstEmpty
+    const values = completedValues.slice(0, firstEmpty) + '0' + completedValues.slice(firstEmpty + 1)
+    seedProgress({ values })
+    render(<Sudoku />)
+    const pad = screen.getByRole('button', { name: `Enter ${correctDigit}` })
+    expect(pad).not.toHaveAttribute('aria-disabled', 'true')
+    fireEvent.click(cellButton(row, col))
+    fireEvent.click(pad)
+    expect(pad).toHaveAttribute('aria-disabled', 'true')
+  })
+})
+
 describe('persistence, timer, panels', () => {
   it('resumes a saved board silently', () => {
     const values = puzzle.givens.slice(0, firstEmpty) + String(correctDigit) + puzzle.givens.slice(firstEmpty + 1)
@@ -187,7 +246,9 @@ describe('persistence, timer, panels', () => {
     seedProgress({ values, settings: { showMistakes: false } })
     render(<Sudoku />)
     fireEvent.click(cellButton(row, col))
-    fireEvent.click(screen.getByRole('button', { name: `Enter ${wrongDigit}` }))
+    // via keyboard: with every other digit complete, wrongDigit's pad key is
+    // grayed out by design — the keyboard path stays open
+    fireEvent.keyDown(screen.getByRole('grid'), { key: String(wrongDigit) })
     expect(screen.getByText("Something's not quite right yet.")).toBeInTheDocument()
     expect(cellButton(row, col).getAttribute('aria-label')).not.toContain('incorrect')
   })
@@ -231,6 +292,38 @@ describe('persistence, timer, panels', () => {
     fireEvent.keyDown(screen.getByRole('grid'), { key: 'z' })
     expect(screen.getByRole('heading', { name: 'Solved' })).toBeInTheDocument()
     expect(cellButton(row, col)).toHaveAccessibleName(`Row ${row}, column ${col}, ${correctDigit}`)
+  })
+})
+
+describe('confetti on solve', () => {
+  // all but the first empty cell already solved
+  const values = puzzle.solution.slice(0, firstEmpty) + '0' + puzzle.solution.slice(firstEmpty + 1)
+
+  it('bursts on a live solve', () => {
+    seedProgress({ values })
+    render(<Sudoku />)
+    expect(document.querySelector('canvas')).toBeNull()
+    fireEvent.click(cellButton(row, col))
+    fireEvent.click(screen.getByRole('button', { name: `Enter ${correctDigit}` }))
+    expect(screen.getByRole('heading', { name: 'Solved' })).toBeInTheDocument()
+    expect(document.querySelector('canvas')).not.toBeNull()
+  })
+
+  it('does not burst when resuming an already-solved board', () => {
+    seedProgress({ values: puzzle.solution })
+    render(<Sudoku />)
+    expect(screen.getByRole('heading', { name: 'Solved' })).toBeInTheDocument()
+    expect(document.querySelector('canvas')).toBeNull()
+  })
+
+  it('unmounts when a new puzzle starts', () => {
+    seedProgress({ values })
+    render(<Sudoku />)
+    fireEvent.click(cellButton(row, col))
+    fireEvent.click(screen.getByRole('button', { name: `Enter ${correctDigit}` }))
+    fireEvent.click(screen.getByRole('button', { name: 'New puzzle' }))
+    fireEvent.click(screen.getByRole('button', { name: 'easy' }))
+    expect(document.querySelector('canvas')).toBeNull()
   })
 })
 
