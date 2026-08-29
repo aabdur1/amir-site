@@ -55,6 +55,9 @@ const DARK_COLORS = ["#74c7ec", "#cba6f7", "#fab387", "#b4befe", "#f5e0dc"];
 function routeProfile(pathname: string): { density: number; opacity: number } {
   if (pathname === "/") return { density: 1, opacity: 1 };
   if (pathname === "/learn") return { density: 0.7, opacity: 0.8 };
+  // /games is explicit (not just the fallback): the field must stay faint
+  // and never distract mid-puzzle
+  if (pathname.startsWith("/games")) return { density: 0.45, opacity: 0.55 };
   return { density: 0.45, opacity: 0.55 }; // gallery, artifact pages, 404
 }
 
