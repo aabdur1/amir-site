@@ -2700,7 +2700,7 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 Work through this checklist; fix and re-verify anything that fails (systematic-debugging skill if a fix isn't obvious):
 
 1. **320px width:** at exactly 320px viewport, on `/games` and `/games/sudoku`, run `document.documentElement.scrollWidth === 320` in the console. Must be true (CLAUDE.md contract).
-2. **iPhone SE viewport (320×568 and 375×667):** board + pad visible without scrolling mid-play (small header scroll-away is OK; the play surface itself must fit). If it doesn't fit, tighten the board's `max-w` (e.g. add `max-h`-aware sizing `max-w-[min(420px,calc(100dvh-19rem))]` on the board wrapper) and re-check — this is the expected tuning point.
+2. **Phone viewports — 390×844 FIRST (iPhone 13 Pro, the primary user's actual device), then 320×568 and 375×667 (SE floor):** board + pad visible without scrolling mid-play (small header scroll-away is OK; the play surface itself must fit). 390×844 must be comfortable, not merely fitting. If it doesn't fit, tighten the board's `max-w` (e.g. add `max-h`-aware sizing `max-w-[min(420px,calc(100dvh-19rem))]` on the board wrapper) and re-check — this is the expected tuning point.
 3. **Tablet/desktop (1024px+):** board and pad side-by-side, both fully visible.
 4. **Dark mode:** toggle on both pages — board tints, mistake red, notes, panels all legible. Check the red-on-red-tint mistake cells specifically in dark mode.
 5. **Keyboard:** tab to the board, arrows move, digits place, N toggles notes, Z undoes, Backspace erases. Focus ring visible.
