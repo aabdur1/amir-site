@@ -109,4 +109,69 @@ export function hasMoves(layout: MahjongLayout, state: MahjongState): boolean {
   return findHint(layout, state) !== null
 }
 
+// Peel free pairs off `alive`, assigning kindPairs in order. The recorded
+// order, replayed forward, is a winning sequence by construction. Wedges
+// (fewer than 2 free tiles before empty) return null — callers retry.
+// Mirrored in scripts/generate-mahjong-deals.mjs (word-search allLines
+// precedent: gen-time and test-time agree by construction + bank test).
+export function peelAssign(
+  layout: MahjongLayout,
+  alive: number[],
+  kindPairs: number[],
+  rand: () => number
+): { kinds: Map<number, number>; order: number[] } | null {
+  const remaining = new Set(alive)
+  const kinds = new Map<number, number>()
+  const order: number[] = []
+  const fakeState = (): MahjongState => ({
+    deal: { id: '', difficulty: 'easy', kinds: [], solution: [] },
+    kinds: [],
+    removed: layout.positions.map((_, i) => i).filter((i) => !remaining.has(i)),
+  })
+  for (const kind of kindPairs) {
+    const free = [...freeSet(layout, fakeState())].filter((i) => remaining.has(i))
+    if (free.length < 2) return null
+    const a = free.splice(Math.floor(rand() * free.length), 1)[0]
+    const b = free[Math.floor(rand() * free.length)]
+    kinds.set(a, kind)
+    kinds.set(b, kind)
+    remaining.delete(a)
+    remaining.delete(b)
+    order.push(a, b)
+  }
+  return { kinds, order }
+}
+
+// Escape hatch for dead ends: re-peel the remaining tiles with their own
+// kind multiset (always pairwise-even, since removal is pairwise), so the
+// post-shuffle board is winnable-from-here by construction. Removed pairs
+// stay removed; undo history survives (undoing past a shuffle restores
+// positions with their CURRENT kinds — matching pairs stay matching).
+export function shuffleRemaining(
+  layout: MahjongLayout, state: MahjongState, rand: () => number = Math.random
+): MahjongState {
+  const gone = removedSet(state)
+  const alive = layout.positions.map((_, i) => i).filter((i) => !gone.has(i))
+  if (alive.length < 4) return state
+  const counts = new Map<number, number>()
+  for (const i of alive) counts.set(state.kinds[i], (counts.get(state.kinds[i]) ?? 0) + 1)
+  const kindPairs: number[] = []
+  for (const [kind, n] of counts) for (let k = 0; k < n / 2; k++) kindPairs.push(kind)
+  for (let attempt = 0; attempt < 100; attempt++) {
+    // fresh pair order each attempt
+    const shuffledPairs = kindPairs.slice()
+    for (let i = shuffledPairs.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1))
+      ;[shuffledPairs[i], shuffledPairs[j]] = [shuffledPairs[j], shuffledPairs[i]]
+    }
+    const result = peelAssign(layout, alive, shuffledPairs, rand)
+    if (result) {
+      const kinds = state.kinds.slice()
+      for (const [i, kind] of result.kinds) kinds[i] = kind
+      return { ...state, kinds }
+    }
+  }
+  return state
+}
+
 export { pickPuzzle, formatElapsed } from '../shared'

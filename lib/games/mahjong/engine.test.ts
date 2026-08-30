@@ -7,6 +7,7 @@
 import {
   KINDS, startGame, removedSet, freeSet,
   removePair, undo, hasMoves, isCleared, findHint,
+  peelAssign, shuffleRemaining,
   pickPuzzle, formatElapsed,
   type MahjongLayout, type MahjongDeal,
 } from '@/lib/games/mahjong/engine'
@@ -159,5 +160,58 @@ describe('undo / isCleared / hasMoves / findHint', () => {
     expect(hasMoves(pair, s)).toBe(false)
     expect(isCleared(s)).toBe(false)
     expect(findHint(pair, s)).toBeNull()
+  })
+})
+
+describe('peelAssign', () => {
+  it('produces an assignment whose order replays to cleared via removePair', () => {
+    const layout: MahjongLayout = { positions: [
+      { x: 0, y: 0, z: 0 }, { x: 2, y: 0, z: 0 }, { x: 4, y: 0, z: 0 }, { x: 6, y: 0, z: 0 },
+      { x: 2, y: 0, z: 1 }, { x: 4, y: 0, z: 1 },
+    ] }
+    const alive = [0, 1, 2, 3, 4, 5]
+    const result = peelAssign(layout, alive, [7, 7, 9], Math.random)
+    expect(result).not.toBeNull()
+    const kinds = layout.positions.map((_, i) => result!.kinds.get(i)!)
+    let s = startGame(dealFor(layout, kinds))
+    for (let k = 0; k < result!.order.length; k += 2) {
+      const next = removePair(layout, s, result!.order[k], result!.order[k + 1])
+      expect(next).not.toBe(s) // every recorded pair must be legal at its turn
+      s = next
+    }
+    expect(isCleared(s)).toBe(true)
+  })
+
+  it('wedges (returns null) when geometry forces it: two stacked tiles', () => {
+    const stack: MahjongLayout = { positions: [
+      { x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 1 },
+    ] }
+    expect(peelAssign(stack, [0, 1], [0], Math.random)).toBeNull()
+  })
+})
+
+describe('shuffleRemaining', () => {
+  it('reassigns only remaining tiles, preserves the kind multiset, and yields a winnable board', () => {
+    const layout: MahjongLayout = { positions: [
+      { x: 0, y: 0, z: 0 }, { x: 2, y: 0, z: 0 }, { x: 4, y: 0, z: 0 },
+      { x: 0, y: 2, z: 0 }, { x: 2, y: 2, z: 0 }, { x: 4, y: 2, z: 0 },
+    ] }
+    let s = startGame(dealFor(layout, [0, 1, 0, 1, 2, 2]))
+    s = removePair(layout, s, 4, 5) // remove the kind-2 pair
+    const before = [0, 1, 3].map((i) => s.kinds[i]).sort()
+    const shuffled = shuffleRemaining(layout, s, Math.random)
+    expect(shuffled.removed).toEqual(s.removed)               // history survives
+    expect(shuffled.kinds[4]).toBe(2)                          // removed keep old kinds
+    const after = [0, 1, 3].map((i) => shuffled.kinds[i])
+    expect([...after, shuffled.kinds[2]].sort()).toEqual([...before, s.kinds[2]].sort())
+    expect(hasMoves(layout, shuffled)).toBe(true)              // winnable-from-here starts with a move
+  })
+
+  it('is a no-op with fewer than 4 tiles remaining', () => {
+    const pair: MahjongLayout = { positions: [
+      { x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 0 },
+    ] }
+    const s = startGame(dealFor(pair, [0, 0]))
+    expect(shuffleRemaining(pair, s, Math.random)).toBe(s)
   })
 })
