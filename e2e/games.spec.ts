@@ -8,6 +8,11 @@ import { WORD_SEARCH_PUZZLES } from '../lib/games/word-search-puzzles'
 import { STORAGE_KEY as WS_KEY } from '../lib/games/word-search/storage'
 import { WORD_SCRAMBLE_PUZZLES } from '../lib/games/word-scramble-puzzles'
 import { STORAGE_KEY as SCRAMBLE_KEY } from '../lib/games/word-scramble/storage'
+import { MAHJONG_DEALS } from '../lib/games/mahjong-deals'
+import { MAHJONG_LAYOUTS } from '../lib/games/mahjong-layouts'
+import { KINDS as MAHJONG_KINDS } from '../lib/games/mahjong/engine'
+import { FACE_NAMES } from '../components/games/mahjong/tile-faces'
+import { STORAGE_KEY as MJ_KEY } from '../lib/games/mahjong/storage'
 
 const IGNORED_CONSOLE: RegExp[] = []
 
@@ -219,4 +224,59 @@ test('word scramble: solved words survive reload', async ({ page }) => {
 test('games index shows the word scramble card', async ({ page }) => {
   await page.goto('/games')
   await expect(page.getByRole('heading', { name: 'Word Scramble' })).toBeVisible({ timeout: 30_000 })
+})
+
+// Mahjong — deterministic via the same sessionStorage-guarded seeding.
+// The full-board test is deliberately exhaustive: Amir has never played
+// mahjong, so this is the proof the game is playable end to end.
+const MJ_DEAL = MAHJONG_DEALS[0]
+const MJ_LAYOUT = MAHJONG_LAYOUTS.easy
+const mjLabel = (i: number) => {
+  const p = MJ_LAYOUT.positions[i]
+  return `${FACE_NAMES[MAHJONG_KINDS[MJ_DEAL.kinds[i]]]}, row ${p.y / 2 + 1}, column ${p.x / 2 + 1}, layer ${p.z + 1}`
+}
+
+async function seedMahjong(page: import('@playwright/test').Page) {
+  await page.addInitScript(
+    ([key, value]) => {
+      if (!sessionStorage.getItem('__mj_e2e_seeded')) {
+        localStorage.setItem(key, value)
+        sessionStorage.setItem('__mj_e2e_seeded', '1')
+      }
+    },
+    [MJ_KEY, JSON.stringify({
+      puzzleId: MJ_DEAL.id, removed: [], kinds: null, elapsedSeconds: 0, usedIds: [MJ_DEAL.id],
+    })] as const
+  )
+}
+
+test('mahjong: matching a free pair removes it and survives reload', async ({ page }) => {
+  await seedMahjong(page)
+  await page.goto('/games/mahjong')
+  const board = page.locator('[role="group"][aria-label="Mahjong board"]')
+  await expect(board.getByRole('button')).toHaveCount(MJ_DEAL.kinds.length, { timeout: 30_000 })
+  await board.getByRole('button', { name: mjLabel(MJ_DEAL.solution[0]), exact: true }).click()
+  await board.getByRole('button', { name: mjLabel(MJ_DEAL.solution[1]), exact: true }).click()
+  await expect(board.getByRole('button')).toHaveCount(MJ_DEAL.kinds.length - 2)
+  await page.reload()
+  await expect(
+    page.locator('[role="group"][aria-label="Mahjong board"]').getByRole('button')
+  ).toHaveCount(MJ_DEAL.kinds.length - 2, { timeout: 30_000 })
+})
+
+test('mahjong: the committed solution clears the whole board to the solved panel', async ({ page }) => {
+  await seedMahjong(page)
+  await page.goto('/games/mahjong')
+  const board = page.locator('[role="group"][aria-label="Mahjong board"]')
+  await expect(board.getByRole('button')).toHaveCount(MJ_DEAL.kinds.length, { timeout: 30_000 })
+  for (let k = 0; k < MJ_DEAL.solution.length; k += 2) {
+    await board.getByRole('button', { name: mjLabel(MJ_DEAL.solution[k]), exact: true }).click()
+    await board.getByRole('button', { name: mjLabel(MJ_DEAL.solution[k + 1]), exact: true }).click()
+  }
+  await expect(page.getByRole('heading', { name: 'Board cleared' })).toBeVisible()
+})
+
+test('games index shows the mahjong card', async ({ page }) => {
+  await page.goto('/games')
+  await expect(page.getByRole('heading', { name: 'Mahjong' })).toBeVisible({ timeout: 30_000 })
 })
