@@ -55,9 +55,33 @@ function WordSearchIllustration() {
   )
 }
 
+// Letter-tile motif with a swap: three drawn tiles, an arc trading the
+// first two, accent dots at the arc's ends.
+function WordScrambleIllustration() {
+  return (
+    <svg width="80" height="64" viewBox="0 0 80 64" aria-hidden="true" focusable="false">
+      {[14, 34, 54].map((x, i) => (
+        <rect key={x} x={x} y="30" width="14" height="14" rx="2" fill="none" stroke="currentColor"
+          strokeWidth="2" className="text-rosewater dark:text-rosewater-dark draw-stroke"
+          pathLength={100} style={{ animationDelay: `${i * 120}ms` }} />
+      ))}
+      <path d="M21 26 C 26 12, 56 12, 61 26" fill="none" stroke="currentColor" strokeWidth="2"
+        strokeLinecap="round" className="text-mauve dark:text-mauve-dark draw-stroke"
+        pathLength={100} style={{ animationDelay: '360ms' }} />
+      <path d="M57 22 L 61 26 L 55 27" fill="none" stroke="currentColor" strokeWidth="2"
+        strokeLinecap="round" strokeLinejoin="round"
+        className="text-mauve dark:text-mauve-dark draw-stroke" pathLength={100}
+        style={{ animationDelay: '480ms' }} />
+      <circle cx="21" cy="26" r="3" className="fill-peach dark:fill-peach-dark" />
+      <circle cx="41" cy="52" r="3" className="fill-lavender dark:fill-lavender-dark" opacity="0.7" />
+    </svg>
+  )
+}
+
 const ILLUSTRATIONS: Record<GameSlug, React.ReactNode> = {
   sudoku: <SudokuIllustration />,
   'word-search': <WordSearchIllustration />,
+  'word-scramble': <WordScrambleIllustration />,
 }
 
 export default function GamesPage() {

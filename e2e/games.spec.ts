@@ -6,6 +6,8 @@
 import { test as base, expect } from '@playwright/test'
 import { WORD_SEARCH_PUZZLES } from '../lib/games/word-search-puzzles'
 import { STORAGE_KEY as WS_KEY } from '../lib/games/word-search/storage'
+import { WORD_SCRAMBLE_PUZZLES } from '../lib/games/word-scramble-puzzles'
+import { STORAGE_KEY as SCRAMBLE_KEY } from '../lib/games/word-scramble/storage'
 
 const IGNORED_CONSOLE: RegExp[] = []
 
@@ -163,4 +165,58 @@ test('word search: found words survive reload', async ({ page }) => {
 test('games index shows the word search card', async ({ page }) => {
   await page.goto('/games')
   await expect(page.getByRole('heading', { name: 'Word Search' })).toBeVisible({ timeout: 30_000 })
+})
+
+// Word scramble — deterministic via the same sessionStorage-guarded
+// addInitScript seeding as word search above.
+const SC_PUZZLE = WORD_SCRAMBLE_PUZZLES[0]
+const SC_WORD = SC_PUZZLE.words[0]
+
+async function seedWordScramble(page: import('@playwright/test').Page) {
+  await page.addInitScript(
+    ([key, value]) => {
+      if (!sessionStorage.getItem('__sc_e2e_seeded')) {
+        localStorage.setItem(key, value)
+        sessionStorage.setItem('__sc_e2e_seeded', '1')
+      }
+    },
+    [SCRAMBLE_KEY, JSON.stringify({
+      puzzleId: SC_PUZZLE.id, solvedCount: 0, elapsedSeconds: 0, usedIds: [SC_PUZZLE.id],
+    })] as const
+  )
+}
+
+test('word scramble: tapping tiles in order solves the first word', async ({ page }) => {
+  await seedWordScramble(page)
+  await page.goto('/games/word-scramble')
+  const tray = page.locator('[role="group"][aria-label="Letter tiles"]')
+  await expect(tray.getByRole('button')).toHaveCount(SC_WORD.length, { timeout: 30_000 })
+
+  for (const ch of SC_WORD) {
+    await tray.getByRole('button', { name: `Letter ${ch}`, exact: true }).first().click()
+  }
+  // after the 600ms beat the word lands in the solved list
+  await expect(
+    page.locator('ul[aria-label="Solved words"] li', { hasText: SC_WORD })
+  ).toBeVisible()
+})
+
+test('word scramble: solved words survive reload', async ({ page }) => {
+  await seedWordScramble(page)
+  await page.goto('/games/word-scramble')
+  const tray = page.locator('[role="group"][aria-label="Letter tiles"]')
+  await expect(tray.getByRole('button')).toHaveCount(SC_WORD.length, { timeout: 30_000 })
+  for (const ch of SC_WORD) {
+    await tray.getByRole('button', { name: `Letter ${ch}`, exact: true }).first().click()
+  }
+  await expect(page.locator('ul[aria-label="Solved words"] li', { hasText: SC_WORD })).toBeVisible()
+  await page.reload()
+  await expect(
+    page.locator('ul[aria-label="Solved words"] li', { hasText: SC_WORD })
+  ).toBeVisible({ timeout: 30_000 })
+})
+
+test('games index shows the word scramble card', async ({ page }) => {
+  await page.goto('/games')
+  await expect(page.getByRole('heading', { name: 'Word Scramble' })).toBeVisible({ timeout: 30_000 })
 })
