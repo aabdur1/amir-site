@@ -91,7 +91,9 @@ export function Mahjong() {
   if (cleared && panel === "none") {
     setPanel("solved")
     setCelebrate(true) // idempotent on the Cancel re-fire: no remount, no re-burst
-    setStatus("Board cleared")
+    // Distinct from the solved panel's "Board cleared" h2 (game 03 getByText lesson) —
+    // status strings must never duplicate visible copy.
+    setStatus("All pairs matched")
   }
 
   // Autosave — write-through on every state change (tiny payload). kinds is
@@ -159,13 +161,14 @@ export function Mahjong() {
   }
 
   const handleUndo = () => {
-    if (state.removed.length === 0) return
+    if (cleared || state.removed.length === 0) return
     setState(undo(state))
     setSelected(null)
     setHintPair(null)
   }
 
   const handleHint = () => {
+    if (cleared) return
     const pair = findHint(layout, state)
     if (!pair) {
       setStatus("No free pairs — try Undo or Shuffle")
@@ -177,10 +180,16 @@ export function Mahjong() {
   }
 
   const handleShuffle = () => {
-    setState(shuffleRemaining(layout, state))
-    setSelected(null)
-    setHintPair(null)
-    setStatus("Tiles shuffled")
+    if (cleared) return
+    const next = shuffleRemaining(layout, state)
+    if (next !== state) {
+      setState(next)
+      setSelected(null)
+      setHintPair(null)
+      setStatus("Tiles shuffled")
+    } else {
+      setStatus("No reshuffle possible — try Undo")
+    }
   }
 
   const startNewGame = (difficulty: Difficulty) => {
@@ -263,12 +272,17 @@ export function Mahjong() {
             <button
               type="button"
               onClick={handleUndo}
-              disabled={state.removed.length === 0}
+              disabled={state.removed.length === 0 || cleared}
               className={`${CONTROL} disabled:opacity-40 disabled:pointer-events-none`}
             >
               Undo
             </button>
-            <button type="button" onClick={handleHint} className={CONTROL}>
+            <button
+              type="button"
+              onClick={handleHint}
+              disabled={cleared}
+              className={`${CONTROL} disabled:opacity-40 disabled:pointer-events-none`}
+            >
               Hint
             </button>
             <button type="button" onClick={() => setPanel("new-game")} className={CONTROL}>

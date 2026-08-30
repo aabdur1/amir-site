@@ -122,6 +122,29 @@ it('resume-of-cleared shows the panel without confetti', () => {
   expect(document.querySelector('canvas')).toBeNull()
 })
 
+it('the live clear status is distinct from the visible heading', () => {
+  seed({ removed: deal.solution.slice(0, -2) })
+  render(<Mahjong />)
+  const [a, b] = deal.solution.slice(-2)
+  fireEvent.click(screen.getByRole('button', { name: label(a) }))
+  fireEvent.click(screen.getByRole('button', { name: label(b) }))
+  expect(screen.getByRole('status')).toHaveTextContent('All pairs matched')
+  expect(screen.getByRole('heading', { name: 'Board cleared' })).toBeInTheDocument()
+})
+
+it('undo is disabled after a live clear and does not revert the winning match', () => {
+  seed({ removed: deal.solution.slice(0, -2) })
+  render(<Mahjong />)
+  const [a, b] = deal.solution.slice(-2)
+  fireEvent.click(screen.getByRole('button', { name: label(a) }))
+  fireEvent.click(screen.getByRole('button', { name: label(b) }))
+  const undoBtn = screen.getByRole('button', { name: 'Undo' })
+  expect(undoBtn).toBeDisabled()
+  fireEvent.click(undoBtn)
+  expect(screen.getByRole('heading', { name: 'Board cleared' })).toBeInTheDocument()
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).removed).toEqual(deal.solution)
+})
+
 it('difficulty pills confirm before abandoning progress', () => {
   seed({ removed: deal.solution.slice(0, 2) })
   render(<Mahjong />)
