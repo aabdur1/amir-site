@@ -23,3 +23,10 @@ export const WordScramble = dynamic(
   () => import('./word-scramble/word-scramble').then((m) => ({ default: m.WordScramble })),
   { ssr: false }
 )
+
+// Mahjong is ssr: false for the same reason: saved progress restores from
+// localStorage in a useState initializer.
+export const Mahjong = dynamic(
+  () => import('./mahjong/mahjong').then((m) => ({ default: m.Mahjong })),
+  { ssr: false }
+)

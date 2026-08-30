@@ -78,10 +78,29 @@ function WordScrambleIllustration() {
   )
 }
 
+// Three offset drawn tile rects with a dot face on the top one — the
+// stacking IS the mahjong tell.
+function MahjongIllustration() {
+  return (
+    <svg width="80" height="64" viewBox="0 0 80 64" aria-hidden="true" focusable="false">
+      <rect x="30" y="26" width="22" height="26" rx="3" fill="none" stroke="currentColor" strokeWidth="2"
+        className="text-mauve dark:text-mauve-dark draw-stroke" pathLength={100} />
+      <rect x="24" y="20" width="22" height="26" rx="3" fill="none" stroke="currentColor" strokeWidth="2"
+        className="text-mauve dark:text-mauve-dark draw-stroke" pathLength={100} style={{ animationDelay: '150ms' }} />
+      <rect x="18" y="14" width="22" height="26" rx="3" fill="none" stroke="currentColor" strokeWidth="2"
+        className="text-mauve dark:text-mauve-dark draw-stroke" pathLength={100} style={{ animationDelay: '300ms' }} />
+      <circle cx="25" cy="22" r="2.5" className="fill-sapphire dark:fill-sapphire-dark" />
+      <circle cx="33" cy="32" r="2.5" className="fill-peach dark:fill-peach-dark" />
+      <circle cx="60" cy="50" r="3" className="fill-lavender dark:fill-lavender-dark" opacity="0.7" />
+    </svg>
+  )
+}
+
 const ILLUSTRATIONS: Record<GameSlug, React.ReactNode> = {
   sudoku: <SudokuIllustration />,
   'word-search': <WordSearchIllustration />,
   'word-scramble': <WordScrambleIllustration />,
+  mahjong: <MahjongIllustration />,
 }
 
 export default function GamesPage() {

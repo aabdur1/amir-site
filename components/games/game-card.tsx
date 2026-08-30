@@ -8,11 +8,13 @@ import type { Game, GameSlug } from "@/lib/games/games"
 import { STORAGE_KEY as SUDOKU_KEY } from "@/lib/games/sudoku/storage"
 import { STORAGE_KEY as WORD_SEARCH_KEY } from "@/lib/games/word-search/storage"
 import { STORAGE_KEY as WORD_SCRAMBLE_KEY } from "@/lib/games/word-scramble/storage"
+import { STORAGE_KEY as MAHJONG_KEY } from "@/lib/games/mahjong/storage"
 
 const PROGRESS_KEYS: Record<GameSlug, string> = {
   sudoku: SUDOKU_KEY,
   "word-search": WORD_SEARCH_KEY,
   "word-scramble": WORD_SCRAMBLE_KEY,
+  mahjong: MAHJONG_KEY,
 }
 
 // Reads only the puzzleId key — importing the bank or engine here would pull
