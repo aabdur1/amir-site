@@ -170,7 +170,11 @@ describe('peelAssign', () => {
       { x: 2, y: 0, z: 1 }, { x: 4, y: 0, z: 1 },
     ] }
     const alive = [0, 1, 2, 3, 4, 5]
-    const result = peelAssign(layout, alive, [7, 7, 9], Math.random)
+    // The contract: null on wedge, callers retry — mirror real callers here.
+    let result: ReturnType<typeof peelAssign> = null
+    for (let i = 0; i < 50 && !result; i++) {
+      result = peelAssign(layout, alive, [7, 7, 9], Math.random)
+    }
     expect(result).not.toBeNull()
     const kinds = layout.positions.map((_, i) => result!.kinds.get(i)!)
     let s = startGame(dealFor(layout, kinds))
