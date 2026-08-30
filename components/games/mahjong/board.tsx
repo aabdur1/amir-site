@@ -6,8 +6,8 @@
 // state (selection, matching, win/lose) lives in the container — this
 // component only maps state to buttons and reports one onTileTap index.
 
-import React, { useRef, useState } from "react"
-import { freeSet, KINDS, type MahjongLayout, type MahjongState } from "@/lib/games/mahjong/engine"
+import React, { useEffect, useRef, useState } from "react"
+import { freeSet, KINDS, removedSet, type MahjongLayout, type MahjongState } from "@/lib/games/mahjong/engine"
 import { FACE_NAMES, TileFace } from "./tile-faces"
 
 export interface MahjongBoardProps {
@@ -64,10 +64,15 @@ function tileLabel(kindIndex: number, x: number, y: number, z: number, blocked: 
 }
 
 export function MahjongBoard({ layout, state, selected, hintPair, onTileTap }: MahjongBoardProps) {
+  const wrapperRef = useRef<HTMLDivElement>(null)
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([])
+  // The tile index that most recently received real DOM focus (via Tab,
+  // click, or our own moveFocus) — kept via each tile's onFocus below, used
+  // only to detect "the button that had focus just unmounted" (see effect).
+  const lastFocusedIndexRef = useRef<number | null>(null)
   const [focusIndex, setFocusIndex] = useState<number | null>(null)
 
-  const removed = new Set(state.removed)
+  const removed = removedSet(state)
   const free = freeSet(layout, state)
   const { w, h } = boardDims(layout)
   const order = rovingOrder(layout, free)
@@ -79,6 +84,24 @@ export function MahjongBoard({ layout, state, selected, hintPair, onTileTap }: M
     setFocusIndex(next)
     buttonRefs.current[next]?.focus()
   }
+
+  // A keyboard match (Enter on the focused tile) removes that tile, and the
+  // browser drops DOM focus out of the board entirely (falls back to
+  // <body>) — the wrapper's onKeyDown then stops receiving Arrow/Enter/
+  // Escape until the player re-clicks or Tabs back in. Restore focus to the
+  // new roving-focus target, but ONLY when it really fell out of the board:
+  // if the previously-focused button is still mounted, or focus already
+  // sits on some other element (a mouse/touch user, or a panel the
+  // container itself legitimately focused), leave it alone.
+  useEffect(() => {
+    const lastIndex = lastFocusedIndexRef.current
+    if (lastIndex === null) return // the board has never actually held focus
+    if (buttonRefs.current[lastIndex] !== null) return // still mounted — not our concern
+    const active = document.activeElement
+    if (active && wrapperRef.current?.contains(active)) return // focus is already inside the board
+    if (effectiveFocus === null) return // nothing left to focus
+    buttonRefs.current[effectiveFocus]?.focus()
+  }, [effectiveFocus])
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
@@ -99,6 +122,7 @@ export function MahjongBoard({ layout, state, selected, hintPair, onTileTap }: M
 
   return (
     <div
+      ref={wrapperRef}
       role="group"
       aria-label="Mahjong board"
       onKeyDown={onKeyDown}
@@ -121,6 +145,9 @@ export function MahjongBoard({ layout, state, selected, hintPair, onTileTap }: M
             aria-disabled={blocked ? true : undefined}
             tabIndex={i === effectiveFocus ? 0 : -1}
             onClick={() => onTileTap(i)}
+            onFocus={() => {
+              lastFocusedIndexRef.current = i
+            }}
             style={{
               left: `${(x / w) * 100}%`,
               top: `${(y / h) * 100}%`,

@@ -58,3 +58,44 @@ it('keyboard: arrows cycle free tiles, Enter activates, Escape clears', () => {
   fireEvent.keyDown(board, { key: 'Escape' })
   expect(props.onTileTap).toHaveBeenCalledWith(-1)
 })
+
+it('restores DOM focus to the new roving-focus target when the focused tile unmounts (a keyboard-driven match)', () => {
+  const onTileTap = vi.fn()
+  const { rerender } = render(
+    <MahjongBoard layout={ROW} state={state()} selected={null} hintPair={null} onTileTap={onTileTap} />
+  )
+  const free1 = screen.getByRole('button', { name: /column 1/ })
+  free1.focus()
+  expect(free1).toHaveFocus()
+
+  // Simulate the container removing the matched pair (the two free ends —
+  // index 0 and index 2) in response to that Enter. Index 1 (the old
+  // middle, blocked tile) is now the sole remaining, now-free tile.
+  const removedState = { ...state(), removed: [0, 2] }
+  rerender(
+    <MahjongBoard layout={ROW} state={removedState} selected={null} hintPair={null} onTileTap={onTileTap} />
+  )
+
+  expect(screen.getAllByRole('button')).toHaveLength(1)
+  expect(screen.getByRole('button')).toHaveFocus()
+})
+
+it('does not steal focus from an element outside the board when it was never inside the board', () => {
+  const onTileTap = vi.fn()
+  const outside = document.createElement('button')
+  outside.textContent = 'Outside'
+  document.body.appendChild(outside)
+  outside.focus()
+  expect(outside).toHaveFocus()
+
+  const { rerender } = render(
+    <MahjongBoard layout={ROW} state={state()} selected={null} hintPair={null} onTileTap={onTileTap} />
+  )
+  const removedState = { ...state(), removed: [0, 2] }
+  rerender(
+    <MahjongBoard layout={ROW} state={removedState} selected={null} hintPair={null} onTileTap={onTileTap} />
+  )
+
+  expect(outside).toHaveFocus()
+  document.body.removeChild(outside)
+})
