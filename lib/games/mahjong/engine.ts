@@ -74,4 +74,39 @@ export function freeSet(layout: MahjongLayout, state: MahjongState): Set<number>
   return out
 }
 
+export function removePair(
+  layout: MahjongLayout, state: MahjongState, a: number, b: number
+): MahjongState {
+  if (a === b) return state
+  if (state.kinds[a] !== state.kinds[b]) return state
+  const free = freeSet(layout, state)
+  if (!free.has(a) || !free.has(b)) return state
+  return { ...state, removed: [...state.removed, a, b] }
+}
+
+export function undo(state: MahjongState): MahjongState {
+  if (state.removed.length === 0) return state
+  return { ...state, removed: state.removed.slice(0, -2) }
+}
+
+export function isCleared(state: MahjongState): boolean {
+  return state.removed.length === state.deal.kinds.length
+}
+
+// First free matching pair in index order — deterministic, so the Hint
+// button and its tests agree.
+export function findHint(layout: MahjongLayout, state: MahjongState): [number, number] | null {
+  const free = [...freeSet(layout, state)].sort((a, b) => a - b)
+  for (let i = 0; i < free.length; i++) {
+    for (let j = i + 1; j < free.length; j++) {
+      if (state.kinds[free[i]] === state.kinds[free[j]]) return [free[i], free[j]]
+    }
+  }
+  return null
+}
+
+export function hasMoves(layout: MahjongLayout, state: MahjongState): boolean {
+  return findHint(layout, state) !== null
+}
+
 export { pickPuzzle, formatElapsed } from '../shared'

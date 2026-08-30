@@ -6,6 +6,7 @@
  */
 import {
   KINDS, startGame, removedSet, freeSet,
+  removePair, undo, hasMoves, isCleared, findHint,
   pickPuzzle, formatElapsed,
   type MahjongLayout, type MahjongDeal,
 } from '@/lib/games/mahjong/engine'
@@ -95,5 +96,68 @@ describe('re-exports', () => {
   it('pickPuzzle and formatElapsed come from shared', () => {
     expect(typeof pickPuzzle).toBe('function')
     expect(formatElapsed(65)).toBe('1 min')
+  })
+})
+
+// 2×2 flat square: all four tiles free, kinds paired [0,0,1,1]
+const SQUARE: MahjongLayout = { positions: [
+  { x: 0, y: 0, z: 0 }, { x: 2, y: 0, z: 0 },
+  { x: 0, y: 2, z: 0 }, { x: 2, y: 2, z: 0 },
+] }
+const squareState = () => startGame(dealFor(SQUARE, [0, 0, 1, 1]))
+
+describe('removePair', () => {
+  it('removes a free matching pair and records it in order', () => {
+    const s = removePair(SQUARE, squareState(), 0, 1)
+    expect(s.removed).toEqual([0, 1])
+    expect(freeSet(SQUARE, s)).toEqual(new Set([2, 3]))
+  })
+
+  it('no-ops (same object) on: same tile, kind mismatch, removed tile, blocked tile', () => {
+    const s0 = squareState()
+    expect(removePair(SQUARE, s0, 1, 1)).toBe(s0)          // same tile
+    expect(removePair(SQUARE, s0, 0, 2)).toBe(s0)          // kinds 0 vs 1
+    const s1 = removePair(SQUARE, s0, 0, 1)
+    expect(removePair(SQUARE, s1, 0, 1)).toBe(s1)          // already removed
+    const row: MahjongLayout = { positions: [
+      { x: 0, y: 0, z: 0 }, { x: 2, y: 0, z: 0 }, { x: 4, y: 0, z: 0 },
+      { x: 0, y: 4, z: 0 },
+    ] }
+    const rs = startGame(dealFor(row, [0, 0, 0, 0]))
+    expect(removePair(row, rs, 1, 3)).toBe(rs)             // middle tile is side-blocked
+  })
+})
+
+describe('undo / isCleared / hasMoves / findHint', () => {
+  it('undo restores the last pair; no-op on empty history', () => {
+    const s0 = squareState()
+    expect(undo(s0)).toBe(s0)
+    const s1 = removePair(SQUARE, s0, 0, 1)
+    const s2 = undo(s1)
+    expect(s2.removed).toEqual([])
+    expect(freeSet(SQUARE, s2).size).toBe(4)
+  })
+
+  it('clearing every pair sets isCleared; hasMoves goes false', () => {
+    let s = squareState()
+    expect(isCleared(s)).toBe(false)
+    s = removePair(SQUARE, s, 0, 1)
+    s = removePair(SQUARE, s, 2, 3)
+    expect(isCleared(s)).toBe(true)
+    expect(hasMoves(SQUARE, s)).toBe(false)
+  })
+
+  it('findHint returns the first free matching pair in index order', () => {
+    expect(findHint(SQUARE, squareState())).toEqual([0, 1])
+  })
+
+  it('a full-but-unmatchable free pair is a dead end: hasMoves false, not cleared', () => {
+    const pair: MahjongLayout = { positions: [
+      { x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 0 },
+    ] }
+    const s = startGame(dealFor(pair, [0, 1])) // both free, kinds differ
+    expect(hasMoves(pair, s)).toBe(false)
+    expect(isCleared(s)).toBe(false)
+    expect(findHint(pair, s)).toBeNull()
   })
 })
