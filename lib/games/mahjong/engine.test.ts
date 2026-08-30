@@ -196,14 +196,14 @@ describe('shuffleRemaining', () => {
       { x: 0, y: 0, z: 0 }, { x: 2, y: 0, z: 0 }, { x: 4, y: 0, z: 0 },
       { x: 0, y: 2, z: 0 }, { x: 2, y: 2, z: 0 }, { x: 4, y: 2, z: 0 },
     ] }
-    let s = startGame(dealFor(layout, [0, 1, 0, 1, 2, 2]))
-    s = removePair(layout, s, 4, 5) // remove the kind-2 pair
-    const before = [0, 1, 3].map((i) => s.kinds[i]).sort()
+    let s = startGame(dealFor(layout, [0, 1, 2, 0, 1, 2]))
+    s = removePair(layout, s, 2, 5) // right-edge kind-2 pair — genuinely free
+    expect(s.removed).toEqual([2, 5]) // sanity: the removal actually happened
+    const before = [0, 1, 3, 4].map((i) => s.kinds[i]).sort()
     const shuffled = shuffleRemaining(layout, s, Math.random)
     expect(shuffled.removed).toEqual(s.removed)               // history survives
-    expect(shuffled.kinds[4]).toBe(2)                          // removed keep old kinds
-    const after = [0, 1, 3].map((i) => shuffled.kinds[i])
-    expect([...after, shuffled.kinds[2]].sort()).toEqual([...before, s.kinds[2]].sort())
+    expect(shuffled.kinds[2]).toBe(2)                          // removed keep old kinds
+    expect([0, 1, 3, 4].map((i) => shuffled.kinds[i]).sort()).toEqual(before)
     expect(hasMoves(layout, shuffled)).toBe(true)              // winnable-from-here starts with a move
   })
 
