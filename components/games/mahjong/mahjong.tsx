@@ -44,7 +44,14 @@ function initState(): InitState {
   const saved = loadProgress()
   if (saved?.puzzleId) {
     const deal = MAHJONG_DEALS.find((d) => d.id === saved.puzzleId)
-    if (deal) {
+    // A wrong-length or out-of-range saved.kinds passes storage.ts's shape
+    // check (just "array of non-negative integers") but would index past
+    // deal.kinds / KINDS once replayed, crashing TileFace on render. Treat
+    // it the same as an unreplayable removed list: fall through below.
+    const kindsOk =
+      saved.kinds === null ||
+      (saved.kinds.length === deal?.kinds.length && saved.kinds.every((k) => k < KINDS.length))
+    if (deal && kindsOk) {
       let state = startGame(deal)
       if (saved.kinds) state = { ...state, kinds: saved.kinds }
       let valid = true
@@ -153,7 +160,7 @@ export function Mahjong() {
       setSelected(null)
       setHintPair(null)
       const left = (next.deal.kinds.length - next.removed.length) / 2
-      setStatus(`Matched two ${faceName}s — ${left} pairs left`)
+      setStatus(`Matched two ${faceName} tiles — ${left} ${left === 1 ? 'pair' : 'pairs'} left`)
     } else {
       setSelected(i)
       setStatus(`No match — ${faceName} selected`)
@@ -176,7 +183,7 @@ export function Mahjong() {
     }
     setHintPair(pair)
     const faceName = FACE_NAMES[KINDS[state.kinds[pair[0]]]]
-    setStatus(`Hint: two ${faceName}s`)
+    setStatus(`Hint: two ${faceName} tiles`)
   }
 
   const handleShuffle = () => {
@@ -234,7 +241,7 @@ export function Mahjong() {
           </span>
         </p>
         <p className="font-[family-name:var(--font-mono)] text-[12px] text-ink-subtle dark:text-night-muted">
-          fig. 04 · {pairsLeft} pairs · {state.deal.difficulty}
+          fig. 04 · {pairsLeft} {pairsLeft === 1 ? 'pair' : 'pairs'} · {state.deal.difficulty}
         </p>
       </header>
 

@@ -8,7 +8,7 @@ import { render, screen, fireEvent, act } from '@testing-library/react'
 import { Mahjong } from '@/components/games/mahjong/mahjong'
 import { MAHJONG_DEALS } from '@/lib/games/mahjong-deals'
 import { MAHJONG_LAYOUTS } from '@/lib/games/mahjong-layouts'
-import { KINDS } from '@/lib/games/mahjong/engine'
+import { KINDS, freeSet, startGame } from '@/lib/games/mahjong/engine'
 import { FACE_NAMES } from '@/components/games/mahjong/tile-faces'
 import { STORAGE_KEY } from '@/lib/games/mahjong/storage'
 
@@ -20,6 +20,12 @@ const label = (i: number) => {
 }
 const [pairA, pairB] = [deal.solution[0], deal.solution[1]]
 const totalPairs = deal.kinds.length / 2
+// Two tiles free at the very start whose index is NOT 0 — used to exercise a
+// corrupt kinds:[<something>] save without accidentally tripping removePair's
+// own kind-mismatch check (index 0 is the one in-bounds slot of a length-1
+// kinds array, so a pair touching it would "coincidentally" mismatch and
+// mask the bug this test targets).
+const [freeA, freeB] = [...freeSet(layout, startGame(deal))].filter((i) => i !== 0).sort((a, b) => a - b)
 
 beforeEach(() => {
   vi.spyOn(Math, 'random').mockReturnValue(0)
@@ -167,4 +173,22 @@ it('the no-moves rescue never appears on a cleared board', () => {
   seed({ removed: deal.solution })
   render(<Mahjong />)
   expect(screen.queryByText('No moves left')).toBeNull()
+})
+
+it('the penultimate match announces "1 pair left" (singular) with the tiles wording', () => {
+  seed({ removed: deal.solution.slice(0, -4) }) // two pairs left
+  render(<Mahjong />)
+  const [a, b] = deal.solution.slice(-4, -2) // the next solution pair
+  fireEvent.click(screen.getByRole('button', { name: label(a) }))
+  fireEvent.click(screen.getByRole('button', { name: label(b) }))
+  const statusText = screen.getByRole('status').textContent
+  expect(statusText).toContain('1 pair left')
+  expect(statusText).not.toContain('1 pairs')
+  expect(statusText).toContain('tiles —')
+})
+
+it('a corrupt saved kinds array (wrong length) falls back to a fresh deal instead of crashing', () => {
+  seed({ removed: [freeA, freeB], kinds: [0] })
+  render(<Mahjong />)
+  expect(screen.getByText(`fig. 04 · ${totalPairs} pairs · easy`)).toBeInTheDocument()
 })
