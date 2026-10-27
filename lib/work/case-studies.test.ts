@@ -304,6 +304,41 @@ describe('capstone case study wording rules', () => {
   })
 })
 
+// Oct 2026 correction: the original voice-only 0.775 came from a Mann-Whitney
+// filter fit on all 81 participants before CV (leaky). With selection nested
+// inside CV the voice-only AUC is about 0.73. Rules: never cite 0.775 as a
+// result, and never claim feature selection improved AUC.
+describe('parkinsons case study: nested-CV correction', () => {
+  const pk = getCaseStudy('parkinsons-voice-screening')!
+  const texts = [
+    pk.summary,
+    pk.lead,
+    ...(pk.metrics ?? []).flatMap((m) => [m.value, m.label]),
+    ...(pk.bars ?? []).flatMap((b) => [b.label, b.from.label, b.to.label]),
+    ...pk.sections.flatMap((s) => [s.heading, ...s.body]),
+  ]
+  const sentences = texts.join(' ').split(/(?<=[.!?])\s+/)
+
+  it('reports the voice-only AUC as about 0.73 in the summary and lead', () => {
+    expect(pk.summary).toContain('0.73')
+    expect(pk.lead).toContain('0.73')
+  })
+
+  it('mentions 0.775 only where it is labeled as leaky', () => {
+    for (const sentence of sentences.filter((s) => s.includes('0.775'))) {
+      expect(sentence, sentence).toMatch(/leak/i)
+    }
+  })
+
+  it('never claims feature selection raised or improved the AUC', () => {
+    for (const sentence of sentences) {
+      if (/\b(filter|selection|selected)/i.test(sentence)) {
+        expect(sentence, sentence).not.toMatch(/\b(raised|improved|recovered)\b/i)
+      }
+    }
+  })
+})
+
 describe('getCaseStudy', () => {
   it('returns the matching study for every known slug', () => {
     for (const c of CASE_STUDIES) {

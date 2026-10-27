@@ -257,9 +257,9 @@ export const CASE_STUDIES: CaseStudy[] = [
     title: "Parkinson's Voice Screening — Refusing an Age-Confounded AUC",
     shortTitle: "Parkinson's Voice",
     summary:
-      "Four classifier families by four feature sets on 81 sustained-vowel recordings. The best cross-validated AUC in the notebook is 0.912 — and the analysis exists to explain why that number cannot be claimed: age alone separates the groups at 0.864, and the defensible voice-only estimate is 0.775.",
+      "Four classifier families by four feature sets on 81 sustained-vowel recordings. The best cross-validated AUC in the notebook is 0.912 — and the analysis exists to explain why that number cannot be claimed: age alone separates the groups at 0.864, and the defensible voice-only estimate is about 0.73, with feature selection nested inside cross-validation.",
     lead:
-      "The strongest number this project produces is a cross-validated AUC of 0.912, and the analysis exists to explain why I will not claim it. The Parkinson's group averages 19 years older than the controls, and age alone separates the groups at AUC 0.864 — better than any voice-only model I trained. What survives the confound is a feature-selected, cross-validated AUC of 0.775 from acoustic features alone. Smaller number, defensible study.",
+      "The strongest number this project produces is a cross-validated AUC of 0.912, and the analysis exists to explain why I will not claim it. The Parkinson's group averages 19 years older than the controls, and age alone separates the groups at AUC 0.864 — better than any voice-only model I trained. What survives the confound is a voice-only cross-validated AUC of about 0.73, with feature selection nested inside cross-validation. Smaller number, defensible study.",
     role: 'Solo project — feature extraction, modeling, and writeup',
     provenance: 'Graduate coursework · IDS 506 Healthcare Information Management & Analytics, UIC MS MIS',
     accent: 'mauve',
@@ -275,12 +275,14 @@ export const CASE_STUDIES: CaseStudy[] = [
       {
         label: '10-fold CV AUC — the confound vs the voice signal',
         from: { value: 0.864, label: 'Age alone (0.864)' },
-        to: { value: 0.775, label: 'Best voice-only model (0.775)' },
+        to: { value: 0.73, label: 'Voice only (0.73)' },
       },
       {
-        label: 'Voice-only CV AUC — feature selection vs the full set',
-        from: { value: 0.714, label: 'All 165 features (0.714)' },
-        to: { value: 0.775, label: '85 filtered features (0.775)' },
+        // The corrected result (Oct 2026): 0.775 appears only labeled as
+        // leaky — never cite it as a result.
+        label: 'Voice-only CV AUC — where the Mann-Whitney filter is fit',
+        from: { value: 0.775, label: 'Before CV, leaky (0.775)' },
+        to: { value: 0.713, label: 'Inside each fold (0.713)' },
       },
     ],
     plate: {
@@ -296,7 +298,7 @@ export const CASE_STUDIES: CaseStudy[] = [
         body: [
           "Sixteen models — four classifier families by four feature sets — trained to tell Parkinson's patients from healthy controls using sustained-vowel voice recordings. The best cross-validated AUC was 0.912, from XGBoost on every feature including demographics. The finding is that this number is not the result.",
           'Exploratory analysis surfaced the problem before any model ran: the patient group averages 67 years old, the controls 48. Age alone — no audio at all — classifies at AUC 0.864, beating every voice-only model I trained. A model handed age, or anything correlated with it, gets to look brilliant by detecting birthdays.',
-          'The defensible result is voice-only: acoustic features filtered by univariate significance, cross-validated at AUC 0.775. The rest of the analysis is what it takes to trust even that smaller number — calibration, threshold behavior, and the limits an 81-sample study has to state.',
+          'The defensible result is voice-only: a cross-validated AUC of about 0.73, with feature selection nested inside cross-validation — still well below age alone at 0.864. The rest of the analysis is what it takes to trust even that smaller number — calibration, threshold behavior, and the limits an 81-sample study has to state.',
         ],
       },
       {
@@ -325,8 +327,9 @@ export const CASE_STUDIES: CaseStudy[] = [
         heading: 'Sixteen models, and the curse of dimensionality',
         body: [
           'The grid was four classifiers — logistic regression, random forest, RBF-kernel SVM, XGBoost — by four incremental feature sets: 17 speech features, 97 adding the baseline spectral block, 165 adding the librosa block, 167 adding demographics. Hyperparameters stayed at established defaults, deliberately: with 64 training samples and up to 165 features, nested tuning is as likely to overfit the validation metric as to improve the model.',
-          'The fixed 17-sample test split turned out to be nearly useless on its own — one flipped prediction moves accuracy by six points — so every claim rests on 10-fold stratified cross-validation instead. CV delivered the classic small-sample verdict: adding features hurt. The 17 speech features alone cross-validated at 0.767; all 165 voice features managed 0.714.',
-          "Filtering recovered the signal. Univariate Mann-Whitney tests found 57 of the 165 features discriminating at p < 0.05; keeping the 85 that pass a liberal p < 0.20 screen raised the best voice-only CV AUC to 0.775. The selected features are almost all variance measures, elevated in Parkinson's — frame-to-frame instability, not average voice quality, is where the signal lives, consistent with the motor-control character of the disease.",
+          'The fixed 17-sample test split turned out to be nearly useless on its own — one flipped prediction moves accuracy by six points — so every claim rests on 10-fold stratified cross-validation instead. CV delivered the classic small-sample verdict: adding features hurt. The 17 speech features alone cross-validated at 0.767 (0.738 over 10 repeats of 10-fold CV); all 165 voice features managed 0.714.',
+          'Feature filtering added nothing. The first version of this analysis ran a Mann-Whitney filter on all 81 participants before cross-validation, keeping the 85 features that passed p < 0.20. That leaked the test folds\' labels into feature selection and inflated the voice-only AUC to 0.775. With the filter fit inside each training fold instead, the same SVM scores 0.713 (0.734 over 10 repeats of 10-fold CV), the same as using all 165 features unfiltered.',
+          "Descriptively, 57 of the 165 features differ between the groups at p < 0.05, uncorrected for 165 tests. They are mostly variance measures, higher in Parkinson's: frame-to-frame instability rather than average voice quality.",
         ],
       },
       {
