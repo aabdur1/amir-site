@@ -35,7 +35,7 @@ export function Education() {
             }}
           >
             <p className="text-xs tracking-[0.15em] uppercase font-[family-name:var(--font-mono)] text-peach dark:text-peach-dark mb-1">
-              Expected Fall 2026
+              Expected Dec 2026
             </p>
             <h3 className="font-[family-name:var(--font-display)] text-xl sm:text-2xl text-ink dark:text-night-text">
               Master of Science in Management Information Systems
@@ -43,16 +43,21 @@ export function Education() {
             <p className="text-sm font-[family-name:var(--font-body)] text-ink-subtle dark:text-night-muted mt-1">
               University of Illinois Chicago
             </p>
+            <p className="text-[12px] tracking-wide font-[family-name:var(--font-mono)] text-ink-subtle dark:text-night-muted mt-1">
+              GPA 4.0 &middot; Concentration: Healthcare Information Systems
+            </p>
             <div className="flex flex-wrap gap-2 mt-3">
               {[
+                "Capstone: IDS 507 (CCC-sponsored)",
+                "Data Mining for Business",
+                "Statistics for Management",
+                "Health Info Management & Analytics",
+                "Advanced DB Management",
+                "Healthcare IS",
                 "Enterprise App Dev",
                 "Systems Analysis",
                 "Info Security",
                 "Project Management",
-                "Healthcare IS",
-                "Advanced DB Management",
-                "Data Mining for Business",
-                "Health Info Management & Analytics",
               ].map((course) => (
                 <span
                   key={course}
