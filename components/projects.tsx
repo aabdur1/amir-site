@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useScrollReveal } from "@/lib/hooks";
 import { ACCENT_STYLES } from "@/lib/styles";
 import { SectionDivider } from "@/components/section-divider";
 import { SectionHeader } from "@/components/section-header";
+import { DistillationRecovery } from "@/components/work/distillation-recovery";
 
 const STRIPE_STYLES = {
   sapphire: "border-t-sapphire dark:border-t-sapphire-dark",
@@ -17,14 +17,16 @@ const STRIPE_STYLES = {
 
 const projects = [
   {
-    name: "My Spotify Listening, 2021–2026",
-    subtitle: "Personal-Data Pipeline & Tableau Dashboard",
-    provenance: "Personal project · Full case study",
+    // Numbers from the public write-up (github.com/aabdur1/dataset-distillation-vehicle-damage);
+    // the case study in lib/work/case-studies.ts carries the wording rules.
+    name: "Dataset Distillation for Vehicle Damage",
+    subtitle: "PyTorch Capstone · Sponsored by CCC Intelligent Solutions",
+    provenance: "Graduate capstone · UIC MS MIS · Full case study",
     description:
-      "4.7 years of my own Spotify extended streaming history — 61,230 raw plays cleaned to 57,200 music streams with pandas, genre-enriched via the Last.fm API (~98.3% artist coverage), and published as a seven-view Tableau dashboard: midday listening peaks, a 45.7% skip-rate anchor, and the week's one silent hour. Includes the live interactive viz.",
-    pills: ["Tableau", "Python", "pandas", "Last.fm API"],
-    accent: "sapphire" as const,
-    url: "/work/spotify-listening",
+      "A team-of-three capstone, in progress: distribution-matching dataset distillation on two vehicle-damage datasets, scored once on held-out test splits under a protocol frozen in advance. At 100 images per class — 9.7% of CarDD's training crops — the distilled set recovers 84% of full-data macro-F1 on a ConvNet and 83% on ResNet-18; the herding-selected real crops it started from recover 78% and 80%.",
+    pills: ["PyTorch", "Python", "torchvision", "Google Colab"],
+    accent: "lavender" as const,
+    url: "/work/dataset-distillation-vehicle-damage",
     tier: "featured" as const,
   },
   {
@@ -48,6 +50,17 @@ const projects = [
     accent: "mauve" as const,
     url: "/work/parkinsons-voice-screening",
     tier: "emphasized" as const,
+  },
+  {
+    name: "My Spotify Listening, 2021–2026",
+    subtitle: "Personal-Data Pipeline & Tableau Dashboard",
+    provenance: "Personal project · Full case study",
+    description:
+      "4.7 years of my own Spotify extended streaming history — 61,230 raw plays cleaned to 57,200 music streams with pandas, genre-enriched via the Last.fm API (~98.3% artist coverage), and published as a seven-view Tableau dashboard: midday listening peaks, a 45.7% skip-rate anchor, and the week's one silent hour. Includes the live interactive viz.",
+    pills: ["Tableau", "Python", "pandas", "Last.fm API"],
+    accent: "sapphire" as const,
+    url: "/work/spotify-listening",
+    tier: "standard" as const,
   },
   {
     name: "WIEIAD Risk Scoring",
@@ -282,8 +295,10 @@ function CardShell({
   );
 }
 
-// Tier 1 — full-width plate card. The dashboard screenshot is a mounted
-// print: Latte-styled in both themes, framed by fixed reg marks at lg+.
+// Tier 1 — full-width plate card. The plate is a mounted print: the capstone's
+// results chart (drawn from the reported test numbers — no dataset images, by
+// rule), Latte-styled in both themes, framed by fixed reg marks at lg+.
+// public/work/spotify-plate.png, the previous plate, is now unused.
 function FeaturedCard({ project, visible }: { project: Project; visible: boolean }) {
   return (
     <CardShell
@@ -301,17 +316,30 @@ function FeaturedCard({ project, visible }: { project: Project; visible: boolean
           <span className="reg-mark bottom-0 left-0 border-b border-l" />
           <span className="reg-mark bottom-0 right-0 border-b border-r" />
         </div>
-        <Image
-          src="/work/spotify-plate.png"
-          alt="KPI row and annotated monthly-hours line chart from the Spotify listening dashboard"
-          width={1600}
-          height={1325}
-          sizes="(min-width: 1024px) 440px, (min-width: 640px) 90vw, 100vw"
-          className="w-full h-auto rounded-xl border border-cream-border/60 dark:border-night-border/60"
-        />
+        <DistillationRecovery />
+        <p className="mt-3 text-center font-[family-name:var(--font-mono)] text-[12px] text-ink-subtle dark:text-night-muted">
+          share of full-data macro-F1 recovered · CarDD test split · 100 images per class
+        </p>
       </div>
     </CardShell>
   );
+}
+
+// A last standard card alone in its row is centered instead of left flush:
+// alone at 2 columns (sm) when the count is odd, at 3 columns (lg) when the
+// count leaves a remainder of 1. Half-width at sm subtracts half the sm:gap-6.
+function loneCardClass(i: number, count: number): string {
+  if (i !== count - 1) return "";
+  const loneSm = count % 2 === 1;
+  const loneLg = count % 3 === 1;
+  if (loneSm && loneLg) {
+    return "sm:col-span-2 sm:justify-self-center sm:w-[calc(50%-0.75rem)] lg:col-span-1 lg:col-start-2 lg:w-auto lg:justify-self-stretch";
+  }
+  if (loneSm) {
+    return "sm:col-span-2 sm:justify-self-center sm:w-[calc(50%-0.75rem)] lg:col-span-1 lg:w-auto lg:justify-self-stretch";
+  }
+  if (loneLg) return "lg:col-start-2";
+  return "";
 }
 
 export function Projects() {
@@ -385,7 +413,7 @@ export function Projects() {
             <CardShell
               key={project.name}
               project={project}
-              className={frameClass(project.accent, "flex flex-col p-5")}
+              className={`${frameClass(project.accent, "flex flex-col p-5")} ${loneCardClass(i, standard.length)}`}
               style={entryStyle(visible, 3 + i)}
             >
               <CardBody project={project} emphasized={false} drawn={false} />
