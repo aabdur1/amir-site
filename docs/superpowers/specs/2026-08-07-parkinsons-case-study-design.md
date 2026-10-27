@@ -1,5 +1,7 @@
 # Parkinson's Voice Screening Case Study — Design
 
+> **Correction (Oct 2026):** the voice-only 0.775 below came from a Mann-Whitney filter fit on all 81 participants before cross-validation (leaky). With the filter fit inside each training fold the same SVM scores 0.713 (0.734 over 10×10 repeated CV), the same as no filter (0.714); the site now reports voice-only ≈ 0.73 with selection nested inside CV. The numbers below are kept as the August record.
+
 **Date:** 2026-08-07
 **Status:** Implemented from the 2026-08-07 handoff (`docs/superpowers/HANDOFF-parkinsons-case-study.md`)
 **Scope:** Publish `/work/parkinsons-voice-screening` as case study 04; correct the
