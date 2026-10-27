@@ -6,13 +6,13 @@ import { ACCENT_STYLES } from '@/lib/styles'
 // exists), sitemap entries, per-slug OG cards, and JSON-LD all derive from it.
 // The array is deliberately small (drafts are quarantined in
 // unpublished-drafts.ts), so these tests are written to hold at any length —
-// including the current four-entry case.
+// including the current five-entry case.
 
 describe('CASE_STUDIES data integrity', () => {
-  it('is a non-empty array (currently four published studies)', () => {
+  it('is a non-empty array (currently five published studies)', () => {
     expect(CASE_STUDIES.length).toBeGreaterThan(0)
     // Pin the current count so an accidental publish/unpublish is noticed.
-    expect(CASE_STUDIES).toHaveLength(4)
+    expect(CASE_STUDIES).toHaveLength(5)
   })
 
   it('has unique, non-empty, URL-safe slugs', () => {
@@ -191,7 +191,7 @@ describe('CASE_STUDIES sections, metrics, links, embed', () => {
     '%s: figure (when present) has a known kind and a non-empty caption',
     (_slug, c) => {
       if (!c.figure) return
-      expect(['grounding-pipeline']).toContain(c.figure.kind)
+      expect(['grounding-pipeline', 'distillation-recovery']).toContain(c.figure.kind)
       expect(c.figure.caption.trim().length).toBeGreaterThan(0)
     },
   )
@@ -211,6 +211,99 @@ describe('CASE_STUDIES sections, metrics, links, embed', () => {
   )
 })
 
+describe('CASE_STUDIES tables', () => {
+  it.each(CASE_STUDIES.map((c) => [c.slug, c] as const))(
+    '%s: any section flagged table: true requires the study to define a table, at most one such section',
+    (_slug, c) => {
+      const tableSections = c.sections.filter((s) => s.table === true)
+      if (tableSections.length > 0) {
+        expect(c.table).toBeDefined()
+      }
+      expect(tableSections.length).toBeLessThanOrEqual(1)
+    },
+  )
+
+  it.each(CASE_STUDIES.map((c) => [c.slug, c] as const))(
+    '%s: a declared table is rendered by some section',
+    (_slug, c) => {
+      if (!c.table) return
+      expect(
+        c.sections.some((s) => s.table === true),
+        'defines a table but no section sets table: true — it would never render',
+      ).toBe(true)
+    },
+  )
+
+  it.each(CASE_STUDIES.map((c) => [c.slug, c] as const))(
+    '%s: table (when present) has a caption, labelled columns, and rows exactly as wide as the header',
+    (_slug, c) => {
+      if (!c.table) return
+      expect(c.table.caption.trim().length).toBeGreaterThan(0)
+      expect(c.table.columns.length).toBeGreaterThan(0)
+      for (const col of c.table.columns) {
+        expect(col.label.trim().length).toBeGreaterThan(0)
+      }
+      expect(c.table.rows.length).toBeGreaterThan(0)
+      for (const row of c.table.rows) {
+        expect(row).toHaveLength(c.table.columns.length)
+      }
+    },
+  )
+})
+
+// The capstone's public record comes with wording rules (see the comment on
+// its entry). These pin the ones a future copy edit could silently break.
+describe('capstone case study wording rules', () => {
+  const capstone = getCaseStudy('dataset-distillation-vehicle-damage')!
+  const allText = [
+    capstone.title,
+    capstone.summary,
+    capstone.lead,
+    capstone.role,
+    capstone.provenance,
+    ...(capstone.metrics ?? []).flatMap((m) => [m.value, m.label]),
+    capstone.figure?.caption ?? '',
+    capstone.table?.caption ?? '',
+    ...capstone.sections.flatMap((s) => [s.heading, ...s.body]),
+  ].join(' ')
+  const sentences = allText.split(/(?<=[.!?])\s+/)
+
+  it('is published first', () => {
+    expect(CASE_STUDIES[0]).toBe(capstone)
+  })
+
+  it('says "ran the reported PyTorch runs", never the unqualified "every run"', () => {
+    expect(capstone.role).toContain('ran the reported PyTorch runs')
+    expect(allText).not.toMatch(/\bevery run\b/i)
+  })
+
+  it('never says ResNet-18 "beats" the picks on CarDD — that result is "at or above"', () => {
+    for (const sentence of sentences) {
+      if (/ResNet-18/.test(sentence) && /\bbeats?\b/i.test(sentence)) {
+        expect(sentence, sentence).toMatch(/VehiDE/)
+        expect(sentence, sentence).not.toMatch(/CarDD/)
+      }
+    }
+  })
+
+  it('shows no images (no plate) and links only to the public write-up', () => {
+    expect(capstone.plate).toBeUndefined()
+    expect(capstone.embed).toBeUndefined()
+    expect(capstone.links.map((l) => l.href)).toEqual([
+      'https://github.com/aabdur1/dataset-distillation-vehicle-damage',
+    ])
+  })
+
+  it('keeps every validation figure beside its test figure in the table', () => {
+    const numeric = capstone.table!.rows.flat().filter((cell) => typeof cell !== 'string')
+    expect(numeric.length).toBeGreaterThan(0)
+    for (const cell of numeric) {
+      expect(cell.aside).toBeDefined()
+      expect(cell.asideLabel).toBe('validation')
+    }
+  })
+})
+
 describe('getCaseStudy', () => {
   it('returns the matching study for every known slug', () => {
     for (const c of CASE_STUDIES) {
@@ -228,21 +321,21 @@ describe('getCaseStudy', () => {
 })
 
 describe('getAdjacentCaseStudies', () => {
-  it('spotify-listening (first) has no prev and airline-flight-patterns as next', () => {
-    const { prev, next } = getAdjacentCaseStudies('spotify-listening')
+  it('dataset-distillation-vehicle-damage (first) has no prev and parkinsons-voice-screening as next', () => {
+    const { prev, next } = getAdjacentCaseStudies('dataset-distillation-vehicle-damage')
     expect(prev).toBeNull()
-    expect(next).toBe(getCaseStudy('airline-flight-patterns'))
+    expect(next).toBe(getCaseStudy('parkinsons-voice-screening'))
   })
 
-  it('airline-flight-patterns (middle) has spotify-listening as prev and docdefend-agent as next', () => {
+  it('docdefend-agent (middle) has parkinsons-voice-screening as prev and spotify-listening as next', () => {
+    const { prev, next } = getAdjacentCaseStudies('docdefend-agent')
+    expect(prev).toBe(getCaseStudy('parkinsons-voice-screening'))
+    expect(next).toBe(getCaseStudy('spotify-listening'))
+  })
+
+  it('airline-flight-patterns (last) has spotify-listening as prev and no next', () => {
     const { prev, next } = getAdjacentCaseStudies('airline-flight-patterns')
     expect(prev).toBe(getCaseStudy('spotify-listening'))
-    expect(next).toBe(getCaseStudy('docdefend-agent'))
-  })
-
-  it('parkinsons-voice-screening (last) has docdefend-agent as prev and no next', () => {
-    const { prev, next } = getAdjacentCaseStudies('parkinsons-voice-screening')
-    expect(prev).toBe(getCaseStudy('docdefend-agent'))
     expect(next).toBeNull()
   })
 

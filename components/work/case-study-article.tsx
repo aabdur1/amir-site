@@ -6,6 +6,8 @@ import { SectionDivider } from '@/components/section-divider'
 import { TableauEmbed } from '@/components/work/tableau-embed'
 import { GroundingPipeline } from '@/components/work/grounding-pipeline'
 import { CaseStudyPlate } from '@/components/work/case-study-plate'
+import { CaseStudyTable } from '@/components/work/case-study-table'
+import { DistillationRecovery } from '@/components/work/distillation-recovery'
 import type { CaseStudy, CaseStudyBar, CaseStudyFigure, CaseStudySection } from '@/lib/work/case-studies'
 
 // Renders a case study's content from its data entry — the client half of
@@ -17,6 +19,7 @@ import type { CaseStudy, CaseStudyBar, CaseStudyFigure, CaseStudySection } from 
 // matching entry here fails to compile, instead of silently rendering nothing.
 const FIGURES: Record<CaseStudyFigure['kind'], () => React.ReactElement> = {
   'grounding-pipeline': GroundingPipeline,
+  'distillation-recovery': DistillationRecovery,
 }
 
 function MetricTiles({ metrics }: { metrics: NonNullable<CaseStudy['metrics']> }) {
@@ -105,6 +108,11 @@ function ArticleSection({
           </p>
         ))}
       </div>
+      {section.table && study.table && (
+        <div className="mt-8">
+          <CaseStudyTable table={study.table} />
+        </div>
+      )}
       {section.embed && study.embed && (
         <div className="mt-8">
           <TableauEmbed embed={study.embed} />
