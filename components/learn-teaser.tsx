@@ -48,7 +48,7 @@ export function LearnTeaser() {
             ...(visible ? { animation: "fade-in-up 0.5s ease-out 150ms forwards" } : {}),
           }}
         >
-          Interactive ML explainers, built while studying for my data mining coursework.
+          Interactive ML explainers from my data mining coursework, plus SQL, Python, and R sandboxes with checked exercises.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">

@@ -80,7 +80,6 @@ export default function RootLayout({
                 'https://www.linkedin.com/in/amir-abdur-rahim/',
                 'https://www.credly.com/users/amir-abdur-rahim',
               ],
-              jobTitle: 'Healthcare Data Analyst',
               alumniOf: {
                 '@type': 'CollegeOrUniversity',
                 name: 'University of Illinois Chicago',

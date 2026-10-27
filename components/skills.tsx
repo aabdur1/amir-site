@@ -5,31 +5,46 @@ import { ACCENT_STYLES } from "@/lib/styles";
 import { SectionDivider } from "@/components/section-divider";
 import { SectionHeader } from "@/components/section-header";
 
+// Rows lead with ML & analytics; every resume skill (~/job_search/resume.md,
+// Technical Skills) appears here — keep the two in sync.
 const skillCategories = [
+  {
+    label: "ML & Analytics",
+    accent: "sapphire" as const,
+    skills: [
+      "PyTorch",
+      "scikit-learn",
+      "XGBoost",
+      "pandas",
+      "Tableau",
+      "SQL Server (SSIS/SSAS/SSRS)",
+      "Snowflake",
+      "BigQuery",
+      "Looker",
+      "Jupyter",
+      "Google Colab",
+      "Claude Code",
+    ],
+  },
+  {
+    label: "Programming",
+    accent: "mauve" as const,
+    skills: ["Python", "SQL", "R", "Java", "JavaFX", "JavaScript", "TypeScript", "React", "Next.js", "HTML/CSS"],
+  },
+  {
+    label: "Healthcare IT",
+    accent: "peach" as const,
+    skills: ["Epic EHR", "HL7/FHIR", "ICD-10/CPT", "HIPAA", "EHR Implementation", "Clinical Workflow", "Medical Documentation"],
+  },
   {
     label: "Cloud & Security",
     accent: "sapphire" as const,
     skills: ["AWS", "EC2", "S3", "VPC", "KMS", "IAM", "CloudFront", "GCP", "Firebase", "Zero Trust"],
   },
   {
-    label: "Programming",
-    accent: "mauve" as const,
-    skills: ["Java", "JavaFX", "JavaScript", "React", "Python", "R", "SQL", "HTML/CSS"],
-  },
-  {
-    label: "Healthcare IT",
-    accent: "peach" as const,
-    skills: ["Epic EMR", "EHR Implementation", "Clinical Workflow", "HIPAA", "Medical Documentation"],
-  },
-  {
-    label: "AI & Analytics",
-    accent: "sapphire" as const,
-    skills: ["Claude Code", "Google Colab", "BigQuery", "Looker", "Snowflake"],
-  },
-  {
     label: "Tools & Methods",
     accent: "lavender" as const,
-    skills: ["UML Modeling", "Agile/Scrum", "Git", "Systems Analysis", "Vendor Management"],
+    skills: ["Git", "Docker", "UML Modeling", "Agile/Scrum", "Systems Analysis", "Vendor Management"],
   },
 ];
 

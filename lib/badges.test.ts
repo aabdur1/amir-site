@@ -79,6 +79,7 @@ describe("badgeGroup()", () => {
     "SnowPro Associate: Platform Certification",
     "Data Analytics Essentials",
     "5-Day AI Agents: Intensive Vibe Coding Course",
+    "AWS Cloud Quest: Generative AI Practitioner - Training Badge",
   ])('classifies "%s" as "data"', (name) => {
     expect(badgeGroup(namedBadge(name))).toBe("data");
   });
