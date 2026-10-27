@@ -20,7 +20,7 @@ const roles = [
   },
   {
     title: "Chief Medical Scribe",
-    org: "ScribeAmerica — Advocate Christ & Condell Medical Centers",
+    org: "ScribeAmerica — Advocate Christ Medical Center",
     dates: "Aug 2021 – Sep 2023",
     border: "border-peach dark:border-peach-dark",
     dot: "bg-peach/60 dark:bg-peach-dark/60",

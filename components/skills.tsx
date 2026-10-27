@@ -34,7 +34,7 @@ const skillCategories = [
   {
     label: "Healthcare IT",
     accent: "peach" as const,
-    skills: ["Epic EHR", "HL7/FHIR", "ICD-10/CPT", "HIPAA", "EHR Implementation", "Clinical Workflow", "Medical Documentation"],
+    skills: ["Epic EHR", "HL7/FHIR", "ICD-10/CPT", "HIPAA", "Clinical Workflow", "Medical Documentation"],
   },
   {
     label: "Cloud & Security",
