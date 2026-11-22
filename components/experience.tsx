@@ -15,7 +15,7 @@ const roles = [
     border: "border-mauve dark:border-mauve-dark",
     dot: "bg-mauve/60 dark:bg-mauve-dark/60",
     bullets: [
-      "Graded 193 assignments and exams for IDS 401 (Java programming) and IDS 314 (AI Essentials); wrote the IDS 401 rubrics, compiled and tested every Java submission against the answer key, and proctored a 45-student exam.",
+      "Graded 275 assignments and exams for IDS 401 (Java programming) and IDS 314 (AI Essentials); wrote the IDS 401 rubrics, compiled and tested every Java submission against the answer key, and proctored two exams.",
     ],
   },
   {
